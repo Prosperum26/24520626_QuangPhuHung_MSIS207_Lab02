@@ -128,7 +128,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: B1.
   - Nghiệm thu: `plan` rỗng hoặc sai định dạng cho kế hoạch mặc định (một bước nhanh, không lỗi) thay vì ném lỗi; bước `'fail'` reject bằng `Error` có thông điệp đọc được; hết kế hoạch thì lặp bước cuối.
   - Test: dùng `vi.useFakeTimers()`; `parsePlan` với đầu vào rỗng, có khoảng trắng, giá trị âm hoặc chữ lạ; `createTimedFeed([100,'fail'])` resolve sau 100 ms, lần hai reject, lần ba reject (lặp bước cuối).
-- [ ] **B4 `errorMessageOf(err)`.** Nhận `unknown`, trả `string`: `Error` thì `err.message`; `string` thì chính nó; còn lại thì thông điệp mặc định "Unknown error"; chuỗi rỗng cũng thành mặc định.
+- [x] **B4 `errorMessageOf(err)`.** Nhận `unknown`, trả `string`: `Error` thì `err.message`; `string` thì chính nó; còn lại thì thông điệp mặc định "Unknown error"; chuỗi rỗng cũng thành mặc định.
   - Phụ thuộc: A1.
   - Nghiệm thu: không bao giờ trả `undefined` hay chuỗi rỗng; không đọc `.message` trên giá trị chưa kiểm kiểu.
   - Test: `new Error('x')`, `'boom'`, `undefined`, `null`, `42`, `{ message: 'fake' }` (không phải `Error` nên ra mặc định), `new Error('')`.
