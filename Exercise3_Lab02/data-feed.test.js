@@ -53,3 +53,33 @@ describe('IDLE (C1)', () => {
     }
   });
 });
+
+describe('LOADING (C2)', () => {
+  it('shows an aria-hidden skeleton with no text and marks the region busy', () => {
+    const { root } = setup();
+    root.querySelector('#load-feed').click();
+    const skeleton = root.querySelector('.skeleton');
+    expect(skeleton.getAttribute('aria-hidden')).toBe('true');
+    expect(skeleton.textContent).toBe('');
+    expect(skeleton.children.length).toBe(3);
+    expect(root.querySelector('.feed-region').getAttribute('aria-busy')).toBe('true');
+    expect(root.textContent).not.toContain('Press Load feed');
+  });
+
+  it('announces loading in the persistent status region', () => {
+    const { root, status } = setup();
+    root.querySelector('#load-feed').click();
+    expect(status.textContent).toBe('Loading feed');
+  });
+
+  it('relabels the button to Reload feed once started', () => {
+    const { root } = setup();
+    root.querySelector('#load-feed').click();
+    expect(root.querySelector('#load-feed').textContent).toBe('Reload feed');
+  });
+
+  it('is not busy in IDLE', () => {
+    const { root } = setup();
+    expect(root.querySelector('.feed-region').hasAttribute('aria-busy')).toBe(false);
+  });
+});

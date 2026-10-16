@@ -157,7 +157,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: A3, B5.
   - Nghiệm thu: render lần đầu là `IDLE`, chưa gọi `fetchFeed`; bấm nút gọi `fetchFeed` đúng một lần; không `addEventListener` trên nút (hub xử lý).
   - Test: dùng `setupEventDelegation`, `renderApp`, `createDeferredFeed`; `calls.length === 0` sau mount; sau click `calls.length === 1`; nút có nhãn "Load feed".
-- [ ] **C2 `LOADING` và skeleton.** Vùng nội dung có `aria-busy="true"`; hiện khối `<div class="skeleton" aria-hidden="true">` gồm 3 hàng giữ chỗ; `announce('Loading feed')` ghi vào `#status`. Nhãn nút đổi thành "Reload feed". Không còn dữ liệu cũ khi vào `LOADING` từ `SUCCESS`.
+- [x] **C2 `LOADING` và skeleton.** Vùng nội dung có `aria-busy="true"`; hiện khối `<div class="skeleton" aria-hidden="true">` gồm 3 hàng giữ chỗ; `announce('Loading feed')` ghi vào `#status`. Nhãn nút đổi thành "Reload feed". Không còn dữ liệu cũ khi vào `LOADING` từ `SUCCESS`.
   - Phụ thuộc: C1.
   - Nghiệm thu: skeleton không chứa chữ, ẩn khỏi trình đọc màn hình; `aria-busy` là chuỗi `"true"` ở `LOADING` và không có (hoặc `"false"`) ở các trạng thái khác; không có `<li>` dữ liệu trong `LOADING`.
   - Test: sau click, DOM có `.skeleton[aria-hidden="true"]` và vùng có `aria-busy="true"`; `#status` chứa "Loading feed"; đi `SUCCESS → LOADING` thì tiêu đề các item cũ biến mất khỏi DOM.
