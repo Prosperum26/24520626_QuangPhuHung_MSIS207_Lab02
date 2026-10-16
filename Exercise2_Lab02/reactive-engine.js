@@ -120,3 +120,65 @@ export function renderApp(component, container) {
   setRenderer(() => mount(component, container));
   mount(component, container);
 }
+
+// ---------- Event delegation hub (C3, C4) ----------
+
+/**
+ * Một nơi duy nhất quyết định hub nghe event nào và tên prop tương ứng.
+ * @type {Readonly<Record<string, string>>}
+ */
+const HANDLER_PROP_BY_EVENT = Object.freeze({
+  click: 'onClick',
+  input: 'onInput',
+  keydown: 'onKeydown',
+});
+
+/**
+ * @param {string} eventType
+ * @returns {string | undefined}
+ */
+export function handlerPropOf(eventType) {
+  // hasOwn: tra thẳng object sẽ trả về hàm kế thừa với các tên như "constructor".
+  return Object.hasOwn(HANDLER_PROP_BY_EVENT, eventType) ? HANDLER_PROP_BY_EVENT[eventType] : undefined;
+}
+
+/**
+ * Đi từ `target` lên (không tính `root`) tới node đầu tiên có handler, rồi dừng.
+ * @param {EventTarget | null} target
+ * @param {Element} root
+ * @param {string} eventType
+ * @returns {((event: Event) => void) | null}
+ */
+export function findHandler(target, root, eventType) {
+  const handlerProp = handlerPropOf(eventType);
+  if (handlerProp === undefined) return null;
+
+  let node = target instanceof Element ? target : null;
+  while (node !== null && node !== root) {
+    const handler = /** @type {import('./mini-react.js').VNode | undefined} */ (
+      /** @type {{ _vnode?: unknown }} */ (node)._vnode
+    )?.props[handlerProp];
+    if (typeof handler === 'function') return /** @type {(event: Event) => void} */ (handler);
+    node = node.parentElement;
+  }
+  return null;
+}
+
+/** Root đã gắn hub; gọi lại lần hai sẽ nhân đôi listener và mỗi click chạy handler hai lần. */
+const delegatedRoots = new WeakSet();
+
+/**
+ * Đúng một listener cho mỗi loại event, gắn ở root. Listener sống qua mọi lần
+ * `replaceChildren` vì nó nằm trên root, không nằm trên node bị thay.
+ * @param {Element} root
+ */
+export function setupEventDelegation(root) {
+  if (delegatedRoots.has(root)) return;
+  delegatedRoots.add(root);
+
+  for (const eventType of Object.keys(HANDLER_PROP_BY_EVENT)) {
+    root.addEventListener(eventType, (event) => {
+      findHandler(event.target, root, eventType)?.(event);
+    });
+  }
+}

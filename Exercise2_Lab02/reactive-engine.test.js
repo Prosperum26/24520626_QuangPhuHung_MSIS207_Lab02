@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createElement } from './mini-react.js';
+import { createElement, renderToDOM } from './mini-react.js';
 import {
   claimSlot,
   cursor,
+  findHandler,
+  handlerPropOf,
   renderApp,
   resetCursor,
   setRenderer,
+  setupEventDelegation,
   stateStore,
   useState,
 } from './reactive-engine.js';
@@ -218,5 +221,192 @@ describe('Quy tắc Hooks (B6: tài liệu hoá lỗi, không cố ngăn)', () =
 
     showTier = false;
     expect(render(BuggyProfile).age).toBe('Platinum');
+  });
+});
+
+/** Dựng cây vào một root mới, đã gắn hub. */
+function mountWithHub(vNode) {
+  const root = document.createElement('div');
+  document.body.append(root);
+  setupEventDelegation(root);
+  root.replaceChildren(renderToDOM(vNode));
+  return root;
+}
+
+describe('handlerPropOf / findHandler (C3)', () => {
+  it('ánh xạ click, input, keydown sang tên prop; loại khác là undefined', () => {
+    expect(handlerPropOf('click')).toBe('onClick');
+    expect(handlerPropOf('input')).toBe('onInput');
+    expect(handlerPropOf('keydown')).toBe('onKeydown');
+    expect(handlerPropOf('keypress')).toBeUndefined();
+    expect(handlerPropOf('constructor')).toBeUndefined();
+  });
+
+  it('click vào <span> bên trong <button> vẫn tìm ra onClick của button', () => {
+    const onClick = () => {};
+    const root = mountWithHub(
+      createElement('main', null, createElement('button', { onClick }, createElement('span', null, 'Add'))),
+    );
+    const span = root.querySelector('span');
+    expect(findHandler(span, root, 'click')).toBe(onClick);
+  });
+
+  it('handler gần target nhất thắng handler của tổ tiên', () => {
+    const inner = () => {};
+    const outer = () => {};
+    const root = mountWithHub(
+      createElement('section', { onClick: outer }, createElement('button', { onClick: inner }, 'x')),
+    );
+    expect(findHandler(root.querySelector('button'), root, 'click')).toBe(inner);
+  });
+
+  it('không có handler trên đường đi thì trả null', () => {
+    const root = mountWithHub(createElement('main', null, createElement('p', null, 'x')));
+    expect(findHandler(root.querySelector('p'), root, 'click')).toBeNull();
+  });
+
+  it('dừng ở root: handler nằm ngoài root không bao giờ được tìm thấy', () => {
+    const outside = document.createElement('section');
+    outside._vnode = createElement('section', { onClick: () => {} });
+    const root = document.createElement('div');
+    outside.append(root);
+    const p = document.createElement('p');
+    root.append(p);
+    expect(findHandler(p, root, 'click')).toBeNull();
+  });
+
+  it('prop on* không phải hàm bị bỏ qua, đi tiếp lên tổ tiên', () => {
+    const outer = () => {};
+    const root = mountWithHub(
+      createElement('section', { onClick: outer }, createElement('button', { onClick: 'alert(1)' }, 'x')),
+    );
+    expect(findHandler(root.querySelector('button'), root, 'click')).toBe(outer);
+  });
+
+  it('target không phải Element (null, text node) thì trả null', () => {
+    const root = mountWithHub(createElement('p', null, 'x'));
+    expect(findHandler(null, root, 'click')).toBeNull();
+    expect(findHandler(root.querySelector('p').firstChild, root, 'click')).toBeNull();
+  });
+});
+
+describe('setupEventDelegation (C4)', () => {
+  it('đúng 3 addEventListener trên root: click, input, keydown', () => {
+    const root = document.createElement('div');
+    const spy = vi.spyOn(root, 'addEventListener');
+    setupEventDelegation(root);
+    expect(spy.mock.calls.map(([type]) => type)).toEqual(['click', 'input', 'keydown']);
+  });
+
+  it('gọi setup lần hai trên cùng root không thêm listener', () => {
+    const root = document.createElement('div');
+    const spy = vi.spyOn(root, 'addEventListener');
+    setupEventDelegation(root);
+    setupEventDelegation(root);
+    expect(spy).toHaveBeenCalledTimes(3);
+  });
+
+  it('click vào con gọi onClick đúng một lần và truyền event', () => {
+    const onClick = vi.fn();
+    const root = mountWithHub(createElement('button', { onClick }, createElement('span', null, 'Add')));
+    root.querySelector('span').click();
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onClick.mock.calls[0][0]).toBeInstanceOf(Event);
+  });
+
+  it('chỉ handler của nút được bấm chạy, nút anh em thì không', () => {
+    const a = vi.fn();
+    const b = vi.fn();
+    const root = mountWithHub(
+      createElement(
+        'main',
+        null,
+        createElement('button', { onClick: a }, 'a'),
+        createElement('button', { onClick: b }, 'b'),
+      ),
+    );
+    root.querySelectorAll('button')[1].click();
+    expect(a).not.toHaveBeenCalled();
+    expect(b).toHaveBeenCalledTimes(1);
+  });
+
+  it('input event tới onInput', () => {
+    const onInput = vi.fn();
+    const root = mountWithHub(createElement('input', { onInput }));
+    root.querySelector('input').dispatchEvent(new Event('input', { bubbles: true }));
+    expect(onInput).toHaveBeenCalledTimes(1);
+  });
+
+  it('click lên vùng không có handler không ném lỗi', () => {
+    const root = mountWithHub(createElement('p', null, 'x'));
+    expect(() => root.querySelector('p').click()).not.toThrow();
+  });
+
+  it('event ngoài danh sách (vd. focus) không gọi gì', () => {
+    const onFocus = vi.fn();
+    const root = mountWithHub(createElement('button', { onFocus }, 'x'));
+    root.querySelector('button').dispatchEvent(new Event('focus', { bubbles: true }));
+    expect(onFocus).not.toHaveBeenCalled();
+  });
+});
+
+describe('Bàn phím (C5)', () => {
+  it('keydown với e.key === "Enter" tới onKeydown', () => {
+    const onKeydown = vi.fn();
+    const root = mountWithHub(createElement('input', { onKeydown }));
+    root
+      .querySelector('input')
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(onKeydown).toHaveBeenCalledTimes(1);
+    expect(onKeydown.mock.calls[0][0].key).toBe('Enter');
+  });
+});
+
+describe('Không có listener mồ côi (C6)', () => {
+  it('mount 3 nút + hub: mọi addEventListener đều gắn lên root, kể cả sau khi re-render', () => {
+    const spy = vi.spyOn(EventTarget.prototype, 'addEventListener');
+    const root = document.createElement('div');
+    setupEventDelegation(root);
+
+    let setCount;
+    const App = () => {
+      const [count, set] = useState(0);
+      setCount = set;
+      return createElement(
+        'main',
+        null,
+        createElement('p', null, `n=${count}`),
+        createElement('button', { onClick: () => {} }, 'one'),
+        createElement('button', { onClick: () => {} }, 'two'),
+        createElement('button', { onClick: () => {} }, 'three'),
+      );
+    };
+    renderApp(App, root);
+    setCount(1);
+    setCount(2);
+
+    const targets = [...spy.mock.contexts];
+    spy.mockRestore();
+    expect(root.querySelectorAll('button')).toHaveLength(3);
+    expect(targets).toHaveLength(3);
+    expect(targets.every((target) => target === root)).toBe(true);
+  });
+
+  it('luồng đầy đủ: click -> hub -> handler -> setter -> re-render -> DOM', () => {
+    const root = document.createElement('div');
+    setupEventDelegation(root);
+    const App = () => {
+      const [count, setCount] = useState(0);
+      return createElement(
+        'main',
+        null,
+        createElement('p', null, `n=${count}`),
+        createElement('button', { onClick: () => setCount((c) => c + 1) }, 'inc'),
+      );
+    };
+    renderApp(App, root);
+    root.querySelector('button').click();
+    root.querySelector('button').click();
+    expect(root.querySelector('p').textContent).toBe('n=2');
   });
 });

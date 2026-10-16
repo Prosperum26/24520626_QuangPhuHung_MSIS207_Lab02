@@ -72,13 +72,13 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm C — Commit 3: `feat(events): attach root event delegation listener`
 
-- [ ] C1 `renderToDOM` (bản sao ở Exercise 2) gán `dom._vnode = vNode` cho element; text node không cần. Test: node sau render có `_vnode` trỏ đúng VNode.
-- [ ] C2 Bỏ `addEventListener` trực tiếp trong `applyProp`: prop `on*` bị bỏ qua khi dựng DOM (handler nằm trong `_vnode.props`). Cập nhật test B3 của bản sao cho khớp. Test: nút có `onClick` không có listener nào gắn lên chính nó.
-- [ ] C3 `handlerPropOf(eventType)` và `findHandler(target, root, eventType)`: đi từ `target` lên `root` qua `parentElement`, trả handler đầu tiên tìm được. Test: click vào `<span>` bên trong `<button>` vẫn tìm ra `onClick` của button; gặp root thì trả `null`.
-- [ ] C4 `setupEventDelegation(root)`: đúng một `addEventListener` cho mỗi loại `click`, `input`, `keydown`; gọi handler rồi dừng. Test: `vi.spyOn(root, 'addEventListener')` được gọi đúng 3 lần; click gọi đúng handler một lần.
-- [ ] C5 Test bàn phím: `keydown` với `e.key === 'Enter'` tới `onKeydown`; không có `keypress` và `keyCode` ở bất kỳ đâu (`grep`).
-- [ ] C6 Test "không listener mồ côi" (thay cho `getEventListeners`, vốn chỉ có trong DevTools): spy `Element.prototype.addEventListener` khi mount cây có 3 nút; chỉ `root` xuất hiện trong danh sách `this`.
-- [ ] C7 Verify và commit 3: `npm test`, xem `git diff`, tick WBS, commit đúng message.
+- [x] C1 `renderToDOM` (bản sao ở Exercise 2) gán `dom._vnode = vNode` cho element; text node không cần. Test: node sau render có `_vnode` trỏ đúng VNode.
+- [x] C2 Bỏ `addEventListener` trực tiếp trong `applyProp`: prop `on*` bị bỏ qua khi dựng DOM (handler nằm trong `_vnode.props`). Cập nhật test B3 của bản sao cho khớp. Test: nút có `onClick` không có listener nào gắn lên chính nó.
+- [x] C3 `handlerPropOf(eventType)` và `findHandler(target, root, eventType)`: đi từ `target` lên `root` qua `parentElement`, trả handler đầu tiên tìm được. Test: click vào `<span>` bên trong `<button>` vẫn tìm ra `onClick` của button; gặp root thì trả `null`.
+- [x] C4 `setupEventDelegation(root)`: đúng một `addEventListener` cho mỗi loại `click`, `input`, `keydown`; gọi handler rồi dừng. Test: `vi.spyOn(root, 'addEventListener')` được gọi đúng 3 lần; click gọi đúng handler một lần.
+- [x] C5 Test bàn phím: `keydown` với `e.key === 'Enter'` tới `onKeydown`; không có `keypress` và `keyCode` ở bất kỳ đâu (`grep`).
+- [x] C6 Test "không listener mồ côi" (thay cho `getEventListeners`, vốn chỉ có trong DevTools): spy `Element.prototype.addEventListener` khi mount cây có 3 nút; chỉ `root` xuất hiện trong danh sách `this`.
+- [x] C7 Verify và commit 3: `npm test`, xem `git diff`, tick WBS, commit đúng message.
 
 ### Nhóm D — Commit 4: `feat(ui): assemble reactive todo application`
 

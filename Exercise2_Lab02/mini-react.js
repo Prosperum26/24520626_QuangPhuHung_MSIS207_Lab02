@@ -99,14 +99,6 @@ function isEventProp(name) {
 }
 
 /**
- * `onClick` thành `click`. Đổi quy ước tên event ở đây.
- * @param {string} name
- */
-function eventNameOf(name) {
-  return name.slice(2).toLowerCase();
-}
-
-/**
  * Chỗ duy nhất quyết định prop thành gì trên DOM thật.
  * @param {Element} dom
  * @param {string} name
@@ -116,10 +108,7 @@ function applyProp(dom, name, value) {
   if (RESERVED_PROPS.has(name)) return;
 
   if (isEventProp(name)) {
-    // Gắn trực tiếp từng node; event delegation tập trung là việc của Exercise 2.
-    if (typeof value === 'function') {
-      dom.addEventListener(eventNameOf(name), /** @type {EventListener} */ (value));
-    }
+    // Không gắn listener ở đây: handler nằm trong `dom._vnode.props`, hub ở root sẽ tra ra.
     return;
   }
 
@@ -141,6 +130,11 @@ function isVNode(value) {
 }
 
 /**
+ * Element dựng bởi `renderToDOM` giữ VNode của nó để event hub tra handler.
+ * @typedef {Element & { _vnode?: VNode }} MountedElement
+ */
+
+/**
  * Chỉ dùng createTextNode / createElement / setAttribute, không đụng
  * innerHTML, nên mọi chuỗi trong VNode đều là text thuần (chống XSS).
  * @param {VNode} vNode
@@ -159,7 +153,8 @@ export function renderToDOM(vNode) {
     return renderToDOM(vNode.type(vNode.props));
   }
 
-  const dom = document.createElement(vNode.type);
+  const dom = /** @type {MountedElement} */ (document.createElement(vNode.type));
+  dom._vnode = vNode;
   for (const [name, value] of Object.entries(vNode.props)) {
     applyProp(dom, name, value);
   }
