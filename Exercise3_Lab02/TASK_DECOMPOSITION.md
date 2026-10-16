@@ -120,7 +120,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: A1.
   - Nghiệm thu: `FEED_ITEMS` đóng băng, `id` không trùng.
   - Test: `new Set(FEED_ITEMS.map(i => i.id)).size === FEED_ITEMS.length`.
-- [ ] **B2 `createDeferredFeed()` (mock cho test).** Trả `{ fetchFeed, calls }`; mỗi lần gọi `fetchFeed()` tạo một promise treo và đẩy `{ resolve(items), reject(error) }` vào `calls`.
+- [x] **B2 `createDeferredFeed()` (mock cho test).** Trả `{ fetchFeed, calls }`; mỗi lần gọi `fetchFeed()` tạo một promise treo và đẩy `{ resolve(items), reject(error) }` vào `calls`.
   - Phụ thuộc: B1.
   - Nghiệm thu: `fetchFeed` không tự settle; `calls[n]` điều khiển đúng lần gọi thứ n; thứ tự settle do test quyết định.
   - Test: gọi hai lần được hai phần tử trong `calls`; resolve lần 2 trước lần 1 thì promise 2 settle trước.
