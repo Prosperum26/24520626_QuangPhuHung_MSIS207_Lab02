@@ -165,7 +165,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: C2.
   - Nghiệm thu: số `<li>` bằng số item; `key` của VNode là `item.id`; `aria-busy` không còn là `true`.
   - Test: resolve với `FEED_ITEMS` → đủ `<li>` đúng thứ tự; mảng rỗng → thông báo, không có `<ul>`; item có `title` là `<img src=x onerror=alert(1)>` hiển thị như chữ, không tạo `<img>`.
-- [ ] **C4 `ERROR` và Retry Connection.** Khối `<div role="alert">` gồm `<h3>` "Couldn't load the feed", đoạn chữ lỗi (`textContent` từ `state.error`) và `<button id="retry-feed">Retry Connection</button>`. Bấm Retry gọi `loader.load(dispatch)`.
+- [x] **C4 `ERROR` và Retry Connection.** Khối `<div role="alert">` gồm `<h3>` "Couldn't load the feed", đoạn chữ lỗi (`textContent` từ `state.error`) và `<button id="retry-feed">Retry Connection</button>`. Bấm Retry gọi `loader.load(dispatch)`.
   - Phụ thuộc: C2.
   - Nghiệm thu: thông báo dễ hiểu và không chỉ dựa vào màu (có chữ và tiêu đề); Retry là `<button>`; Retry đưa trạng thái qua `LOADING` rồi mới tới `SUCCESS` hoặc `ERROR`; lỗi có HTML được hiển thị như chữ.
   - Test: reject bằng `Error('Network down')` → DOM có `[role="alert"]` chứa "Network down" và nút tên "Retry Connection"; click Retry → có skeleton, `calls.length === 2`; resolve lần 2 → hiện danh sách, hết `role="alert"`; retry rồi lỗi tiếp → quay lại `ERROR`; `error` chứa `<b>x</b>` không sinh thẻ `<b>`.

@@ -6,6 +6,7 @@ import { STATUS, initialState, transition } from './state-machine.js';
 
 const HEADING_ID = 'feed-heading';
 const LOAD_BUTTON_ID = 'load-feed';
+const RETRY_BUTTON_ID = 'retry-feed';
 const STATUS_ID = 'status';
 const SKELETON_ROWS = 3;
 
@@ -43,15 +44,31 @@ function renderItems(items) {
 }
 
 /**
- * @param {import('./state-machine.js').ViewState} state
+ * role="alert" trên node mới chèn để trình đọc màn hình đọc ngay; có tiêu đề chữ nên không chỉ dựa vào màu.
+ * @param {string} message
+ * @param {() => void} onRetry
  */
-function renderContent(state) {
+function renderError(message, onRetry) {
+  return createElement(
+    'div',
+    { className: 'feed-error', role: 'alert' },
+    createElement('h2', null, "Couldn't load the feed"),
+    createElement('p', null, message),
+    createElement('button', { id: RETRY_BUTTON_ID, type: 'button', onClick: onRetry }, 'Retry Connection'),
+  );
+}
+
+/**
+ * @param {import('./state-machine.js').ViewState} state
+ * @param {{ onRetry: () => void }} handlers
+ */
+function renderContent(state, { onRetry }) {
   if (state.status === STATUS.IDLE) {
     return createElement('p', null, 'Press Load feed to start.');
   }
   if (state.status === STATUS.LOADING) return renderSkeleton();
   if (state.status === STATUS.SUCCESS) return renderItems(state.data);
-  return null;
+  return renderError(state.error, onRetry);
 }
 
 /**
@@ -89,7 +106,7 @@ export function createDataFeed({ fetchFeed }) {
       createElement(
         'div',
         { className: 'feed-region', 'aria-busy': state.status === STATUS.LOADING ? 'true' : null },
-        renderContent(state),
+        renderContent(state, { onRetry: onLoad }),
       ),
     );
   };

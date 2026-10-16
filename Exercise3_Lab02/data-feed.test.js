@@ -134,3 +134,57 @@ describe('SUCCESS (C3)', () => {
     expect(t.root.textContent).not.toContain(FEED_ITEMS[0].title);
   });
 });
+
+/** Bấm Load feed rồi reject lần gọi cuối. */
+async function failWith(t, error) {
+  t.root.querySelector('#load-feed').click();
+  t.calls[t.calls.length - 1].reject(error);
+  await flush();
+}
+
+describe('ERROR and Retry Connection (C4)', () => {
+  it('shows a readable alert with the message and a Retry Connection button', async () => {
+    const t = setup();
+    await failWith(t, new Error('Network down'));
+    const alert = t.root.querySelector('[role="alert"]');
+    expect(alert.querySelector('h2').textContent).toBe("Couldn't load the feed");
+    expect(alert.textContent).toContain('Network down');
+    expect(alert.querySelector('button#retry-feed').textContent).toBe('Retry Connection');
+    expect(t.root.querySelector('.skeleton')).toBeNull();
+  });
+
+  it('Retry goes through LOADING and then shows the data', async () => {
+    const t = setup();
+    await failWith(t, new Error('Network down'));
+    t.root.querySelector('#retry-feed').click();
+    expect(t.calls).toHaveLength(2);
+    expect(t.root.querySelector('.skeleton')).not.toBeNull();
+    expect(t.root.querySelector('[role="alert"]')).toBeNull();
+    t.calls[1].resolve(FEED_ITEMS);
+    await flush();
+    expect(t.root.querySelectorAll('ul > li')).toHaveLength(FEED_ITEMS.length);
+    expect(t.root.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('a failing retry returns to ERROR', async () => {
+    const t = setup();
+    await failWith(t, new Error('first'));
+    t.root.querySelector('#retry-feed').click();
+    t.calls[1].reject(new Error('second'));
+    await flush();
+    expect(t.root.querySelector('[role="alert"]').textContent).toContain('second');
+  });
+
+  it('renders HTML in the error message as plain text', async () => {
+    const t = setup();
+    await failWith(t, new Error('<b>x</b>'));
+    expect(t.root.querySelector('[role="alert"] b')).toBeNull();
+    expect(t.root.querySelector('[role="alert"]').textContent).toContain('<b>x</b>');
+  });
+
+  it('falls back to a default message for a non-Error rejection', async () => {
+    const t = setup();
+    await failWith(t, undefined);
+    expect(t.root.querySelector('[role="alert"]').textContent).toContain('Unknown error');
+  });
+});
