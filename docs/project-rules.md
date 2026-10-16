@@ -52,6 +52,15 @@ Quy tắc của dự án, tổng hợp từ slide của thầy và quy tắc cá
 - `docs/prompt_logs/`: export session AI cho mỗi lần code mỗi bài.
 - `docs/AI_FAILURE_AUDIT.md`: 3 lỗi AI phát hiện, kèm bằng chứng DevTools và bản sửa thủ công (15% điểm).
 
+## 6.1 Chuẩn bị cho bảo vệ trực tiếp [Thầy]
+
+Bảo vệ 3 phút chiếm 25% điểm; giảng viên sửa một biến kiến trúc trên repo của mình và mình phải chẩn đoán, sửa, kiểm chứng bằng DevTools. Vì vậy:
+
+- Mỗi quyết định kiến trúc (ánh xạ prop, nơi kích hoạt render, thuật toán cửa sổ) nằm ở **một chỗ** trong mã.
+- Mã gọn, module nhỏ, tên rõ nghĩa; không giữ đoạn mã mà mình không giải thích được.
+- Luôn có test và cách kiểm chứng bằng DevTools cho từng module để sửa xong biết ngay đúng hay sai.
+- Mỗi bài tập phải chạy được từ repo sạch (một lệnh cài, một lệnh chạy).
+
 ## 7. Git [Thầy + thực hành]
 
 - Mỗi task xong = một commit atomic, Conventional Commits (`feat(core): implement vdom engine`).

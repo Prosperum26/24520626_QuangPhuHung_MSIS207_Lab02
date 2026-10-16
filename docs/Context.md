@@ -26,6 +26,24 @@ Triết lý xuyên suốt: **AI sinh code (xác suất), developer kiểm chứn
 
 > Quy tắc scope: nếu một việc thuộc Tier 2/3 thì chỉ giải thích, không cài đặt.
 
+### 2.1 Bài tập và đánh giá
+
+| Bài | Chủ đề | Thời lượng | Ghi chú |
+|---|---|---|---|
+| Exercise 1 | VNode và mounting engine | 35 phút | [Exercise1_Lab02](../Exercise1_Lab02/TASK_DECOMPOSITION.md) |
+| Exercise 2 | `useState` và delegation hub (Task Manager) | 40 phút | [Exercise2_Lab02](../Exercise2_Lab02/TASK_DECOMPOSITION.md) |
+| Exercise 3 | FSM 4 trạng thái và skeleton loader | 35 phút | [Exercise3_Lab02](../Exercise3_Lab02/TASK_DECOMPOSITION.md) |
+| Homework 1 | Data-Grid WCAG 2.2 AA, Lighthouse 100 | 1 tuần | [Homework1_Lab02](../Homework1_Lab02/TASK_DECOMPOSITION.md) |
+| Homework 2 | Hàng đợi FIFO âm thanh và visualizer | 1 tuần | [Homework2_Lab02](../Homework2_Lab02/TASK_DECOMPOSITION.md) |
+| Homework 3 | Flash-sale engine, timer không trôi | 1 tuần | [Homework3_Lab02](../Homework3_Lab02/TASK_DECOMPOSITION.md) |
+
+Các thành phần điểm đã biết (phần còn lại chưa rõ):
+
+| Thành phần | Tỉ trọng | Ghi chú |
+|---|---|---|
+| Bảo vệ trực tiếp (live defense) | 25% | Mã chưa kiểm chứng được thì điểm phần này bằng 0 (xem 3.15) |
+| `AI_FAILURE_AUDIT.md` | 15% | 3 lỗi AI có bằng chứng DevTools và bản sửa thủ công |
+
 ## 3. Kiến thức cốt lõi
 
 ### 3.1 Vì sao cần Virtual DOM
@@ -133,6 +151,100 @@ interface CardProps {
 - Điều kiện để hub chạy: `renderToDOM` phải lưu VNode vào DOM node (ví dụ `dom._vnode = vNode`) để hub tra `props` được.
 - Synthetic event (chuẩn hoá cross-browser, pooling) chỉ ở mức awareness, không cài.
 
+### 3.12 Re-render lan truyền và memo hóa (hiệu năng)
+- Mặc định, khi cha render thì mọi component con bị gọi lại. Re-render **không** đồng nghĩa với đổi DOM thật; nó chỉ tính lại cây VDOM.
+- Điểm nghẽn: cây lớn phải cấp phát hàng nghìn VNode (ví dụ `<ExpensiveDataVisualization />` bị gọi lại khi chỉ có bộ đếm của cha đổi).
+- **Quy tắc kỹ thuật:** tối ưu sau khi đo bằng profiler (React DevTools Profiler hoặc Performance panel). Không tối ưu sớm.
+- Công cụ:
+  - `memo(Component)`: so sánh nông (`Object.is`) giữa props cũ và mới, bỏ qua render nếu giống nhau.
+  - `useMemo(() => fn, [deps])`: lưu kết quả của hàm thuần tốn kém.
+  - `useCallback(fn, [deps])`: giữ tham chiếu hàm ổn định để không phá `memo` ở component con.
+- Cạm bẫy: object hoặc mảng literal tạo trong thân render là tham chiếu mới mỗi lần, làm `memo` mất tác dụng.
+- Mẫu `memo` tự viết (đã chỉnh lỗi gõ):
+
+```js
+export function memo(FunctionalComponent) {
+  let prevProps = null;
+  let prevVNode = null;
+  return function MemoizedComponent(props) {
+    if (prevProps && shallowEqual(prevProps, props)) {
+      return prevVNode; // Bỏ qua: dùng lại cây VNode đã lưu
+    }
+    prevProps = props;
+    prevVNode = FunctionalComponent(props);
+    return prevVNode;
+  };
+}
+
+function shallowEqual(objA, objB) {
+  const keysA = Object.keys(objA);
+  return (
+    keysA.length === Object.keys(objB).length &&
+    keysA.every((key) => Object.is(objA[key], objB[key]))
+  );
+}
+```
+
+### 3.13 Windowing (virtual scrolling) cho danh sách lớn
+- Vấn đề: dựng 100.000 `<tr>` làm sập thiết bị di động và cạn bộ nhớ (OOM).
+- Ý tưởng: chỉ dựng lát cắt đang giao với viewport (khoảng 10 đến 20 dòng), số node DOM gần như không đổi (O(1)).
+- **Phantom spacer:** một vùng vô hình cao `totalHeight = itemCount * itemHeight` để thanh cuộn thể hiện đúng toàn bộ danh sách.
+- Các dòng thật được dịch vị trí bằng `transform: translateY(offsetY)` (tăng tốc GPU).
+- Công thức:
+
+```ts
+startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+endIndex   = Math.min(totalCount, Math.ceil((scrollTop + viewportHeight) / itemHeight) + overscan);
+offsetY    = startIndex * itemHeight;
+totalHeight = totalCount * itemHeight;
+```
+
+- Overscan 2 đến 3 dòng trên và dưới để tránh nháy trắng khi cuộn nhanh.
+- Hàm mẫu đã chỉnh lỗi gõ:
+
+```ts
+export interface WindowParams {
+  scrollTop: number;
+  viewportHeight: number;
+  itemHeight: number;
+  totalCount: number;
+  buffer?: number;
+}
+
+export function calculateWindow({
+  scrollTop, viewportHeight, itemHeight, totalCount, buffer = 2,
+}: WindowParams) {
+  const rawStart = Math.floor(scrollTop / itemHeight);
+  const visibleCount = Math.ceil(viewportHeight / itemHeight);
+  const startIndex = Math.max(0, rawStart - buffer);
+  const endIndex = Math.min(totalCount, rawStart + visibleCount + buffer);
+  const offsetY = startIndex * itemHeight;
+  const totalHeight = totalCount * itemHeight;
+  return { startIndex, endIndex, offsetY, totalHeight };
+}
+```
+
+- Truy cập được: danh sách ảo hóa cần `aria-rowcount`/`aria-rowindex` (hoặc `aria-setsize`/`aria-posinset`) để trình đọc màn hình biết tổng số dòng, và bàn phím phải cuộn tới mục chưa dựng.
+
+### 3.14 Runtime VDOM và compiler (awareness, Tier 2)
+- **Runtime reconciliation** (React, Vue): đóng gói engine (khoảng 40 đến 100 KB), so sánh cây VDOM lúc chạy, rất linh hoạt.
+- **Compiler** (Svelte, Solid): biên dịch component thành lệnh sửa DOM chính xác (`text_node.data = ctx.count`), không có VDOM, không có thuật toán diff lúc chạy, bundle nhỏ, phản ứng mịn (fine-grained).
+- Cùng thay đổi `count += 1`: React chạy lại `App()`, cấp phát VDOM mới, diff, rồi vá DOM; compiler chỉ gán trực tiếp node bị ảnh hưởng.
+- Chỉ cần hiểu và so sánh, không phải cài đặt.
+
+### 3.15 Bảo vệ trực tiếp 3 phút (live defense)
+- 1 đối 1 tại bàn giảng viên, 60 đến 180 giây, chiếm **25%** điểm. Mã không kiểm chứng được thì điểm phần này bằng 0.
+- Giảng viên sửa một biến kiến trúc trên repo đang chạy; sinh viên phải **chẩn đoán nguyên nhân, sửa logic ngay, và kiểm chứng bằng DevTools**.
+- Ví dụ đột biến đã biết:
+  - Đổi setter đồng bộ sang hàng đợi microtask (batch).
+  - Đổi ánh xạ prop `className` sang `class`.
+  - Đảo logic overscan của cửa sổ ảo.
+- Thử thách mẫu:
+  - A: `renderToDOM` hỗ trợ SVG, dùng `document.createElementNS('http://www.w3.org/2000/svg', type)`.
+  - B: `useState` phải xử lý setter dạng hàm: `typeof nextValue === 'function' ? nextValue(prev) : nextValue`.
+  - C: thêm kiểm tra phát hiện vòng lặp (cycle) khi làm phẳng `children` trong `createElement`.
+- Hệ quả thiết kế: giữ mã nhỏ, tách module rõ ràng, tên có nghĩa, mỗi quyết định (ánh xạ prop, nơi gọi `triggerRender`, thuật toán cửa sổ) nằm ở **một chỗ** để sửa nhanh. Phải hiểu từng dòng, nên không nhận mã AI mà không giải thích được.
+
 ## 4. Chuẩn kỹ thuật bắt buộc (Modernization Audit)
 
 | Cấm | Dùng thay thế |
@@ -193,10 +305,16 @@ Slide được chép từ ảnh nên có chỗ sai/vỡ định dạng. Khi dùn
 - `useState` mẫu không gọi `resetCursor()` ở đâu; runtime phải gọi trước mỗi lần render, nếu không cursor tăng mãi.
 - Event hub mẫu chỉ chạy khi DOM node có `_vnode`; slide `renderToDOM` chưa gán thuộc tính này.
 - Slide `functional-component` có `className={card card--${status}}` thiếu dấu backtick; viết lại là `` className={`card card--${status}`} ``.
-- Slide Exercise 1 bị vỡ cú pháp (thiếu `=`, ngoặc); bản sửa nằm trong [exercise1/TASK_DECOMPOSITION.md](../exercise1/TASK_DECOMPOSITION.md).
+- Slide Exercise 1 bị vỡ cú pháp (thiếu `=`, ngoặc); bản sửa nằm trong [Exercise1_Lab02/TASK_DECOMPOSITION.md](../Exercise1_Lab02/TASK_DECOMPOSITION.md).
+- Slide Exercise 2: template literal hỏng (`` `Task ${Date.now()}` ``), biến `filter` khai báo nhưng chưa dùng, mẫu JSX nằm trong file `.js`.
+- Slide Exercise 3: chuỗi `'LOADING"` lệch dấu nháy; `err.message` sai kiểu trong TypeScript (`err` là `unknown`); mẫu chưa chặn race condition dù mục tiêu bài là loại bỏ race condition.
+- Slide `memo`: viết sai `prevWNode` (đúng là `prevVNode`) và đặt `prevProps = props` sai vị trí. Ngoài ra bộ nhớ đệm nằm ở phạm vi `memo()` nên mọi instance của cùng component dùng chung một cache; ở bản thật cache phải gắn theo từng instance.
+- Slide `calculateWindow`: `offsety` (đúng là `offsetY`), thiếu toán tử (`rawStart - buffer`, `totalCount * itemHeight`). Cách tính `endIndex` của hàm (`rawStart + visibleCount + buffer`) có thể thiếu một dòng so với công thức (`Math.ceil((scrollTop + viewportHeight) / itemHeight) + buffer`) khi `scrollTop` không chia hết `itemHeight`; cần viết test kiểm tra biên.
+- Slide thử thách B (live defense) bị vỡ ký hiệu (`Rightarrow`); ý đúng là setter dạng hàm `setCount(c => c + 1)`.
+- Slide Homework 2 và Homework 3: khung mã chưa hoàn chỉnh (thiếu `AudioTask`, `processNext`); `Date.now()` có thể bị đổi giờ hệ thống nên không tuyệt đối đơn điệu.
 
 ## 8. Tài liệu và bài tập liên quan
 
 - Quy tắc dự án (gồm WCAG 2.2 AA): [project-rules.md](project-rules.md)
 - Báo cáo lỗi AI: [AI_FAILURE_AUDIT.md](AI_FAILURE_AUDIT.md)
-- Exercise 1: [exercise1/TASK_DECOMPOSITION.md](../exercise1/TASK_DECOMPOSITION.md)
+- Bài tập: xem bảng ở mục 2.1 để mở từng `TASK_DECOMPOSITION.md`.

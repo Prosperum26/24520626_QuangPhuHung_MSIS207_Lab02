@@ -69,7 +69,7 @@ Cần lưu ý:
 
 ## 6. Câu hỏi còn mở
 
-- Cấu trúc file của bài: để `mini-react.js` ở gốc `exercise1/` hay trong `src/`?
+- Cấu trúc file của bài: để `mini-react.js` ở gốc `Exercise1_Lab02/` hay trong `src/`?
 - Có dùng TypeScript cho bài này không? Slide dùng file `.js`.
 - `renderToDOM` trong bài này gắn `onClick` bằng `addEventListener` trực tiếp (theo slide mẫu). Event delegation là bài sau, nên chấp nhận tạm ở Exercise 1?
 - Có cần lưu ảnh chụp DevTools làm bằng chứng không, và để ở đâu?

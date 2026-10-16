@@ -47,6 +47,11 @@ Trước khi bắt đầu, nếu yêu cầu mơ hồ hoặc phải đoán, **h�
 - Mọi tài liệu Markdown viết ra cũng theo WCAG 2.2 AA: heading phân cấp, link có mô tả, bảng có tiêu đề, code block có ngôn ngữ, ảnh có alt, không dùng emoji để mang nghĩa.
 - Không tự khẳng định "đạt WCAG" khi chưa kiểm tra; ghi rõ đã kiểm tra những tiêu chí nào và bằng cách nào.
 
+### Sẵn sàng cho bảo vệ trực tiếp
+
+- Người dùng sẽ bị giảng viên sửa mã ngay tại chỗ (xem [docs/Context.md §3.15](docs/Context.md)). Vì vậy: mã đơn giản, mỗi quyết định kiến trúc ở một chỗ, và luôn giải thích lý do cho từng đoạn mã sinh ra.
+- Không thêm trừu tượng hoặc thư viện mà người dùng không giải thích được.
+
 ## 4. Kiểm chứng
 
 - Test runner: Vitest + jsdom (giả định; xem Context.md §6). Mỗi module Tier 1 có test đi kèm.
