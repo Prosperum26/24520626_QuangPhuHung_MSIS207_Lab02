@@ -38,6 +38,15 @@ Trước khi bắt đầu, nếu yêu cầu mơ hồ hoặc phải đoán, **h�
 - Đọc DOM và ghi DOM tách pha (tránh layout thrashing).
 - Hàm nhỏ, một trách nhiệm, tên rõ nghĩa; comment chỉ khi giải thích *vì sao*.
 
+### Khả năng truy cập (WCAG 2.2 AA) — bắt buộc
+
+- Chi tiết ở [docs/project-rules.md §8](docs/project-rules.md). Tóm tắt cho agent:
+  - Dùng thẻ ngữ nghĩa, không div-soup; control tương tác phải là `<button>`/`<a>`/`<input>`, không phải `<span>` gắn click.
+  - Có thể thao tác bằng bàn phím, thấy rõ focus, vùng bấm ít nhất 24×24 CSS px, tương phản đạt 4.5:1 (chữ thường).
+  - Không truyền thông tin chỉ bằng màu; control có tên truy cập được.
+- Mọi tài liệu Markdown viết ra cũng theo WCAG 2.2 AA: heading phân cấp, link có mô tả, bảng có tiêu đề, code block có ngôn ngữ, ảnh có alt, không dùng emoji để mang nghĩa.
+- Không tự khẳng định "đạt WCAG" khi chưa kiểm tra; ghi rõ đã kiểm tra những tiêu chí nào và bằng cách nào.
+
 ## 4. Kiểm chứng
 
 - Test runner: Vitest + jsdom (giả định; xem Context.md §6). Mỗi module Tier 1 có test đi kèm.

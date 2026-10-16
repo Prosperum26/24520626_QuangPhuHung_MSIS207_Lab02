@@ -95,9 +95,47 @@ export interface VNode {
 - **Index làm key = bug**: xoá phần tử đầu thì state cục bộ (vd. nội dung input) "dính" sang phần tử khác. Key phải là ID thực thể bền vững (`task.uuid`).
 - Fiber (awareness): node nối thành linked list (`child`, `sibling`, `return`) cho phép ngắt/tiếp tục render.
 
+### 3.9 Function component (Tier 1)
+- Component là hàm thuần: `f(props, state) = VNode`. Cùng input phải ra cùng output.
+- Tên viết hoa (`<Header />`) là component, viết thường (`<header>`) là thẻ native.
+- **Props bất biến và chảy một chiều** từ cha xuống con. Component con không được sửa props nhận vào.
+- Ưu tiên composition hơn inheritance: dùng `props.children` và render props.
+- Contract mẫu:
+
+```ts
+interface CardProps {
+  title: string;
+  status: 'active' | 'archived';
+  children: VNode | VNode[];
+}
+```
+
+- Ví dụ `StatusCard` trong slide trả về `<article>` với `<header>` và `<h3>`. Phần body trong slide dùng `<div className="card__body">`; khi làm bài nên cân nhắc thẻ ngữ nghĩa hơn (xem quy tắc "không div-soup").
+
+### 3.10 State store và call-order của hook (Tier 1)
+- Hàm component chạy lại từ đầu mỗi lần render, nên state **không** nằm trong hàm. State nằm trong mảng tuyến tính bên ngoài, do runtime quản lý.
+- Cursor là con trỏ toàn cục cho biết hook nào đang xin state. Reset về 0 trước mỗi lần render. Setter đóng (closure) trên `currentCursor` được cấp lúc gọi hook.
+- Trình tự `useState`:
+  1. Khởi tạo: nếu `states[cursor]` chưa có thì gán giá trị đầu.
+  2. Tạo dispatcher: `const currentCursor = cursor`.
+  3. Nếu setter nhận hàm, gọi hàm đó với state trước.
+  4. Chỉ re-render khi giá trị đổi thật (`Object.is`).
+- API tối thiểu của runtime: `useState`, `setRenderer(fn)`, `resetCursor()`.
+- **Quy tắc Hooks** (bất biến thứ tự gọi):
+  1. Chỉ gọi hook ở top level của component hoặc custom hook.
+  2. Không gọi trong `if`, `for`/`while` hay hàm lồng.
+  - Vi phạm làm lệch cursor: ví dụ `BuggyProfile` bỏ hook `tier` ở render 2 thì `age` nhận nhầm giá trị `'Platinum'` (state bị hỏng). Ngoài đời, `eslint-plugin-react-hooks` bắt lỗi này lúc build.
+
+### 3.11 Event delegation hub (Tier 1)
+- Cách ngây thơ gắn hàng nghìn `addEventListener` tốn bộ nhớ và tạo áp lực GC.
+- Delegation: gắn **một** listener cho mỗi loại event (`click`, `input`, `keydown`) ở root; sự kiện nổi bọt lên, hub đọc `event.target`.
+- Hub đi ngược từ `target` lên `rootContainer` qua `parentElement`, tìm node có handler tương ứng (`onClick`, `onInput`, `onKeydown`...) rồi gọi và dừng.
+- Điều kiện để hub chạy: `renderToDOM` phải lưu VNode vào DOM node (ví dụ `dom._vnode = vNode`) để hub tra `props` được.
+- Synthetic event (chuẩn hoá cross-browser, pooling) chỉ ở mức awareness, không cài.
+
 ## 4. Chuẩn kỹ thuật bắt buộc (Modernization Audit)
 
-| ❌ Cấm | ✅ Dùng |
+| Cấm | Dùng thay thế |
 |---|---|
 | `var`, implicit global | `const` / `let` |
 | `keypress`, `e.keyCode` | `keydown`, `e.key` / `e.code` |
@@ -151,3 +189,14 @@ Slide được chép từ ảnh nên có chỗ sai/vỡ định dạng. Khi dùn
 - Ví dụ layout-thrashing: `}` đặt sai chỗ, `width` đọc trong vòng lặp phải đưa ra ngoài (đọc một lần, ghi sau).
 - Ví dụ key anti-pattern: `Key ('Task A'...` nên là `key 0 / key 1` (index) để ví dụ có nghĩa.
 - Mã `name.startsWith('on')` cần whitelist/escape hợp lý, và event delegation (3.6) thay thế `addEventListener` từng node.
+- `useState` mẫu dùng `stateStore[cursor] ?? initialValue`: nếu state hợp lệ là `null`/`undefined` thì bị khởi tạo lại mỗi lần. Nên kiểm tra theo độ dài mảng hoặc cờ "đã khởi tạo".
+- `useState` mẫu không gọi `resetCursor()` ở đâu; runtime phải gọi trước mỗi lần render, nếu không cursor tăng mãi.
+- Event hub mẫu chỉ chạy khi DOM node có `_vnode`; slide `renderToDOM` chưa gán thuộc tính này.
+- Slide `functional-component` có `className={card card--${status}}` thiếu dấu backtick; viết lại là `` className={`card card--${status}`} ``.
+- Slide Exercise 1 bị vỡ cú pháp (thiếu `=`, ngoặc); bản sửa nằm trong [exercise1/TASK_DECOMPOSITION.md](../exercise1/TASK_DECOMPOSITION.md).
+
+## 8. Tài liệu và bài tập liên quan
+
+- Quy tắc dự án (gồm WCAG 2.2 AA): [project-rules.md](project-rules.md)
+- Báo cáo lỗi AI: [AI_FAILURE_AUDIT.md](AI_FAILURE_AUDIT.md)
+- Exercise 1: [exercise1/TASK_DECOMPOSITION.md](../exercise1/TASK_DECOMPOSITION.md)
