@@ -124,7 +124,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: B1.
   - Nghiệm thu: `fetchFeed` không tự settle; `calls[n]` điều khiển đúng lần gọi thứ n; thứ tự settle do test quyết định.
   - Test: gọi hai lần được hai phần tử trong `calls`; resolve lần 2 trước lần 1 thì promise 2 settle trước.
-- [ ] **B3 `createTimedFeed(plan)` và `parsePlan(search)` (mock cho demo).** `parsePlan('?plan=3000,500,fail')` trả `[3000, 500, 'fail']`; `createTimedFeed` dùng `setTimeout`, tên mục trong kết quả ghi số thứ tự yêu cầu (ví dụ "Item A (request #2)") để thấy ngay phản hồi của yêu cầu nào đang hiển thị.
+- [x] **B3 `createTimedFeed(plan)` và `parsePlan(search)` (mock cho demo).** `parsePlan('?plan=3000,500,fail')` trả `[3000, 500, 'fail']`; `createTimedFeed` dùng `setTimeout`, tên mục trong kết quả ghi số thứ tự yêu cầu (ví dụ "Item A (request #2)") để thấy ngay phản hồi của yêu cầu nào đang hiển thị.
   - Phụ thuộc: B1.
   - Nghiệm thu: `plan` rỗng hoặc sai định dạng cho kế hoạch mặc định (một bước nhanh, không lỗi) thay vì ném lỗi; bước `'fail'` reject bằng `Error` có thông điệp đọc được; hết kế hoạch thì lặp bước cuối.
   - Test: dùng `vi.useFakeTimers()`; `parsePlan` với đầu vào rỗng, có khoảng trắng, giá trị âm hoặc chữ lạ; `createTimedFeed([100,'fail'])` resolve sau 100 ms, lần hai reject, lần ba reject (lặp bước cuối).
