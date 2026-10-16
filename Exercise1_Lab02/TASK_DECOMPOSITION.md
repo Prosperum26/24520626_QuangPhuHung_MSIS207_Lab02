@@ -55,13 +55,14 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm B — Commit 2: `feat(core): implement renderToDOM`
 
-- [ ] B1 `renderToDOM(vNode)` nhánh tạo node: `createTextNode` cho `TEXT_ELEMENT`, `document.createElement` cho tag. Test: text vs element.
-- [ ] B2 `applyProp(dom, name, value)`: bỏ `children`/`nodeValue`/`key`, ánh xạ `className` → `class`, gán attribute bằng `setAttribute`. Test: `id`, `role`, `className`.
-- [ ] B3 Prop `on*`: `eventNameOf` rồi `addEventListener`. Test: dispatch `click` gọi handler đúng một lần.
-- [ ] B4 Đệ quy children + `appendChild` + nhánh function component (typeguard). Test: cây lồng 3 cấp, component trả cây con.
-- [ ] B5 Test bảo mật: child là `<script>alert(1)</script>` và `<img onerror=alert(1)> Safe Text` hiện như text; `querySelector('script')` và `querySelector('img')` đều `null`.
-- [ ] B6 Checkpoint 1: chạy `test-runner.js` của đề trong trình duyệt, `console.assert` không báo lỗi.
+- [x] B1 `renderToDOM(vNode)` nhánh tạo node: `createTextNode` cho `TEXT_ELEMENT`, `document.createElement` cho tag. Test: text vs element.
+- [x] B2 `applyProp(dom, name, value)`: bỏ `children`/`nodeValue`/`key`, ánh xạ `className` → `class`, gán attribute bằng `setAttribute`. Test: `id`, `role`, `className`.
+- [x] B3 Prop `on*`: `eventNameOf` rồi `addEventListener`. Test: dispatch `click` gọi handler đúng một lần.
+- [x] B4 Đệ quy children + `appendChild` + nhánh function component (typeguard). Test: cây lồng 3 cấp, component trả cây con.
+- [x] B5 Test bảo mật: child là `<script>alert(1)</script>` và `<img onerror=alert(1)> Safe Text` hiện như text; `querySelector('script')` và `querySelector('img')` đều `null`.
+- [x] B6 Checkpoint 1: chạy `test-runner.js` của đề trong trình duyệt, `console.assert` không báo lỗi.
 - [ ] B7 Audit DevTools: Elements khớp VNode, không node mồ côi, ghi nhận `role="main"` thừa; lưu ảnh chụp vào `Exercise1_Lab02/evidence/` (có alt text khi nhúng).
+  - Tiến độ: đã có `evidence/dom-dump.html` (DOM sau khi mount, từ Edge headless) và `evidence/page-render.png` (ảnh trang). Còn thiếu ảnh panel Elements thật, cần tự chụp bằng DevTools.
 - [ ] B8 Export prompt log vào `docs/prompt_logs/`; verify, commit 2 đúng message.
 
 ## 5. Bộ kiểm tra Checkpoint 1
