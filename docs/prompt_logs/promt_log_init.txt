@@ -1,0 +1,1415 @@
+  ⎿  SessionStart:startup hook error
+  ⎿  [bash C:\Users\Phu Hung\.claude\plugins\cache\anthropic-plugin-directory\cl
+     aude-memory\1.0.0-0afb7b2da7cc/hooks/scripts/memory-context.sh]:
+     C:/Users/Phu: line 1: syntax error near unexpected token `('
+
+> Đây là project lab02 của môn phát triển phần mềm của mình, bạn brainstorm
+  đống data dưới đây là và tạo Context.md kèm Agents.md cho bạn đi:
+  PEDAGOGICAL MANIFESTO   Engineering Standards in the AI Era: Generate &
+  VerifyEmbracing AI capabilities while holding ultimate engineering
+  accountability.   Foundational PrinciplesHTML is the semantic foundation; CSS
+  handles presentation.   JavaScript governs reactive state & computational
+  behavior.   AI enhances developer velocity, NOT replaces foundational
+  comprehension.   AI generates probabilistic code; Developers provide
+  deterministic verification.   Zero Monolithic Vibe Coding: Enforce atomic
+  task decomposition and contract-first workflows.   engineering-contract.ts
+  TypeScript// Engineering Verification Rule:
+  // Never accept unverified AI outputs into production.
+  export interface SystemContract<TState, TEvent> {
+    readonly state: Readonly<TState>;
+    transition(event: TEvent): TState;
+    verifyInvariants(): boolean; // Must pass in runtime
+  }
+
+  // Verified Engineering Workflow:
+  // 1. Functional Slice -> 2. Type Contract
+  // 3. Atomic Gen       -> 4. DevTools / Unit Audit
+  ```[cite: 1]
+  Modernization Audit: Eliminating Legacy Web Anti-PatternsPurging obsolete
+  specifications and aligning with Baseline Widely Available standards.
+  Deprecated Patterns (Strictly Forbidden)BANNED: 'var' scoping & implicit
+  globals -> MUST USE 'const' & 'let'.   BANNED: 'keypress' & 'e.keyCode' ->
+  MUST USE 'keydown' & 'e.key' / 'e.code'.   BANNED: Raw 'innerHTML' injection
+  -> MUST USE DOM APIs or sanitized text nodes (XSS Prevention).   BANNED:
+  Inline event handlers (onclick=...) -> MUST USE centralized Event Delegation.
+    BANNED: Outdated Babel standalones -> MUST USE modern bundlers
+  (Vite/ESBuild) & JSX Transform.   legacy-vs-modern.js   JavaScript// ❌
+  DEPRECATED & INSECURE (Legacy Lab)
+  function renderBad(data) {
+    var div = document.getElementById('app');
+    div.innerHTML = '<span onkeypress="doStuff(event.keyCode)">'
+                  + data.userInput + '</span>'; // XSS
+    Vulnerability!
+  }
+
+  // ✔️ MODERN BASELINE SPECIFICATION (Lab 02)
+  export function renderModern(target, textContent) {
+    const el = document.createElement('span');
+    el.textContent = textContent; // Safe from injection
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleInput(e.target.value);
+    });
+    target.replaceChildren(el);
+  }
+  ```[cite: 2]
+  CURRICULUM ARCHITECTURE   The 3-Tier Knowledge Taxonomy: Core, Awareness,
+  LaterClear cognitive load management f
+  ──── (143 lines hidden) ─────────────────────────────────────────────────────
+  ventListener(name.toLowerCase().substring(2), vNode.props [name]); } else {
+  dom [name vNode.props [name]; } }); 'className'? 'className': name] =
+  // 3. Recurse for children vNode.props.children.forEach((child) =>
+  dom.appendChild(renderToDOM (child))); return dom; }
+  ALGORITHMS & COMPLEXITY
+  Reconciliation Engine: O(n) Heuristic Tree Diffing
+  How React reduces an NP-hard O(n^3) tree comparison to linear O(n) execution.
+  The Two Fundamental Heuristics
+  Generic tree comparison is O(n^3) - impractical for modern 60fps
+  applications.
+  Heuristic 1: Two elements of different types generate entirely different
+  trees. Old tree is dismantled completely.
+  Heuristic 2: Child element stability is signaled via unique 'key' props
+  across render passes.
+  Diffing Scope: Comparison only occurs at the same hierarchy level
+  (Breadth-first level matching).
+  diff-logic.js
+  // Diffing Heuristic Decision Tree: function diff(oldVNode, newVNode) {
+  // Rule 1: Type change -> Complete teardown & recreate if (!oldVNode ||
+  oldVNode.type !== newNode.type) { } return { type: 'REPLACE", newVNode };
+  // Rule 2: Text node update
+  if (newNode.type == 'TEXT_ELEMENT') { return oldVNode.props.nodeValue !==
+  newVNode.props.nodeValue
+  }
+  ? { type: 'TEXT', text: newVNode.props.nodeValue } : { type: 'NOOP' };
+  // Rule 3: Same type -> Diff props & diff children by key return { type:
+  'UPDATE", props: diffProps (oldVNode.props, newWNode.props), children:
+  diffChildren (oldVNode.props.children, newWNode.props.children) };
+  }
+  ALGORITHMS & COMPLEXITY
+  Reconciliation: Patch Operations & The Key Prop Contract
+  Preventing state corruption and minimizing expensive DOM destruction.
+  The Anatomy of Key Stability
+  Patch Action Types: CREATE (mount new node), REMOVE (unmount old node),
+  UPDATE_PROPS, REORDER.
+  Array Index Anti-Pattern: Using array indices as keys corrupts local
+  component state on deletion/insertion!
+  Stable Identity: Keys must be globally unique within the sibling list and
+  persistent across renders.
+  Fiber Concept: React's Fiber architecture links nodes as singly-linked lists
+  (child, sibling, return).
+  key-anti-pattern.js
+  // X CATASTROPHIC BUG: Index as Key during item removal
+  // Items: ['Task A', 'Task B'] -> User deletes 'Task A'
+  // Old: Key ('Task A' [Input State: 'Draft A']), Key 1 ('Task B)
+  // New: Key ('Task B') -> DOM thinks Key was UPDATED!
+  // Result: 'Draft A' text remains inside 'Task B' input box!
+  // CORRECT CONTRACT: Persistent Entity ID
+  <ul>
+  (tasks.map((task) => (
+  <TaskItem key={task.uuid) data={task} />
+  ))}
+  </ul>
+
+● Using superpowers:brainstorming to brainstorm the lab content before writing
+  the files.
+
+● Skill(superpowers:brainstorming)
+  ⎿  Successfully loaded skill
+
+● Việc này chỉ là viết 2 file tài liệu nên mình sẽ làm nhẹ gọn: xem qua repo
+  hiện có gì, sau đó viết luôn 2 file và ghi rõ các giả định để bạn dễ sửa lại.
+  · summary
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(Context.md)
+  ⎿  Wrote 153 lines to Context.md
+       1 # Context.md — Lab 02: Mini React Engine (VDOM, JSX, Reconciliat
+       2
+       3 > Môn: MSIS207 (Phát triển phần mềm) · SV: 24520626 – Quang Phú
+       4 > Tài liệu này là nguồn sự thật về **bối cảnh, phạm vi và kiến t
+         hức** của lab. Quy tắc làm việc với AI nằm ở [Agents.md](Agents.
+       5
+       6 ---
+       8 ## 1. Mục tiêu lab
+       9
+         hay vì chỉ dùng React:
+     … +205 lines (ctrl+o to expand)
+
+● Write(Agents.md)
+  ⎿  Wrote 88 lines to Agents.md
+       1 # Agents.md — Hướng dẫn cho AI agent (Lab 02)
+       3 Đọc [Context.md](Context.md) trước. File này là **luật làm việc*
+         ưa kiểm chứng vào production.
+       4
+       6
+         OMPOSITION.md](TASK_DECOMPOSITION.md). Không gộp >1 task, không
+       8 2. **Contract-first**: có interface/type trước, rồi mới viết imp
+         lementation.
+          kiểm chứng và thấy output.
+         ắn khi chọn thiết kế (đây là bài học, không chỉ là nộp bài).
+     … +114 lines (ctrl+o to expand)
+
+● Mình đã tạo Context.md và Agents.md ở thư mục gốc. Mình chưa commit gì, và
+  repo hiện chỉ có README.md.
+
+  Context.md gồm:
+  - Mục tiêu lab và phạm vi chia theo 3 tier. Tier 1 (VNode, createElement,
+    renderToDOM, useState, event delegation, reconciliation) phải tự cài. Tier 2
+    chỉ giải thích. Tier 3 không đụng tới.
+  - Tóm tắt kiến thức: layout thrashing, VNode contract, JSX và compiler, key và
+    reconciliation O(n).
+  - Bảng cấm/dùng (var, keypress, innerHTML, inline handler, Babel standalone)
+    và quy trình 4 giai đoạn.
+  - Mục "giả định" và mục "lỗi trong tài liệu gốc" (xem bên dưới).
+
+  Agents.md gồm:
+  - Luật cho AI: mỗi lượt chỉ làm một task trong WBS, viết contract trước, chỉ
+    báo xong khi đã chạy test.
+  - Quy tắc code bắt buộc và danh sách test tối thiểu cho từng module, kể cả
+    test regression cho bug dùng index làm key.
+  - Quy ước commit atomic và WBS khởi điểm.
+
+  Slide được chép từ ảnh nên có vài chỗ sai. Mình đã sửa trong Context.md §7
+  thay vì chép nguyên:
+  - VNode interface: bị vỡ định dạng. Mình chốt children nằm trong props, khớp
+    với code createElement.
+  - Typo: có newNode, newWNode và TEXT ELEMENT thiếu gạch dưới.
+  - Ví dụ layout-thrashing: } đặt sai chỗ.
+  - Ví dụ key anti-pattern: key ghi sai.
+
+  Mình tự giả định mấy điểm này, bạn xác nhận hoặc sửa giúp:
+  1. Stack: Vite + TypeScript + Vitest. Nếu đề bắt JS thuần thì mình đổi
+     contract sang JSDoc.
+  2. Tier 1: mình tính cả useState và reconciliation vào phần phải cài đặt, vì
+     slide xếp cả hai vào Tier 1.
+  3. Yêu cầu nộp bài: chưa có thông tin (báo cáo, demo, hạn nộp). Bạn gửi đề thì
+     mình thêm vào.
+
+  Agents.md có nhắc tới project-rules.md và TASK_DECOMPOSITION.md, nhưng hai
+  file này chưa tồn tại. Bạn muốn mình tạo luôn không?
+
+> <ide_opened_file>The user opened the file
+  c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\Agents.md in the IDE. This
+  may or may not be related to the current task.</ide_opened_file>
+
+> Có nhưng để mình giải thích đã project này gồm cấu trúc 3 exercise và 3
+  homework 6 folder riêng, 1 folder docs chứa các promt_log mình sẽ export
+  session code cho mỗi lần code mỗi bài và các file iên quan như context,
+  project rules và ai falure audit. Còn task decompistion sẽ tạo và lưu cho bài
+  exercise và mỗi homework lưu mỗi folder của nó. Giờ giải thích cho từng
+  file:
+  AI_FALURE_AUDIT.md sẽ do mình viết, bạn chỉ viết lại cho đẹp sau khi mình
+  điền vào dựa vào template và thông tin thầy nói như sau: "
+  SECURITY & CODE INTEGRITY
+  Al Failure Mode Audit: Detecting Hallucinations & Security Holes
+  Mandatory 15% evaluation deliverable: Documenting and refactoring Al risks.
+  Top 3 Classic Al Failure Modes in UI Development
+  1. Security: Al defaults to el.innerHTML = props.text, opening catastrophic
+  Cross-Site Scripting (XSS).
+  2. Memory Leaks: Al binds event listeners directly inside component render
+  body without unmounting/delegation.
+  3. Phantom Keys: Al sets key=[Math.random()} or key=(index), triggering total
+  DOM destruction every render pass.
+     Deliverable: Al_FAILURE_AUDIT.md documenting 3 detected bugs with DevTools
+  proof and manual fixes.
+     AI FAILURE_AUDIT.md
+  Sample Audit Report Entry:
+
+  Vulnerability 01: Raw innerHTML Ingestion
+
+  AI Prompt: "Generate a rich text renderer for comment items.
+  AI Generated Code: container.innerHTML
+  comment.text;
+  Risk: Stored XSS via <img src=x onerror=stealToken()>
+  Detection Method: DevTools Security Panel & Git Diff
+  Engineering Refactor:
+  const textNode document.createTextNode(comment.text);
+  container.replaceChildren (textNode);
+  "
+  Bạn tạo sẵn 1 file AI falure kèm 1 template sẵn mình điền r bạn rewrite lại
+  cho đẹp thôi.
+  project_rule.md là những rules vừa có cá nhân của mình vừa có của thầy trong
+  slide, bạn hiện tại viết file này từ context.md mà bạn đã biết, mình sửa thì
+  sẽ nói bạn viết lại hoặc bổ sung.
+  task decompistion là chia task nhỏ ra cho mỗi bài.
+
+● Mình sẽ đưa Context.md vào docs/ và tạo AI_FAILURE_AUDIT.md cùng
+  project-rules.md ở đó. Task decomposition mình để lại, vì chưa biết nội dung
+  từng bài.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(docs\AI_FAILURE_AUDIT.md)
+  ⎿  Wrote 89 lines to docs\AI_FAILURE_AUDIT.md
+      1 # AI Failure Mode Audit
+      2
+      3 > Deliverable bắt buộc (15% điểm): ghi lại **3 lỗi AI** đã phát h
+      4 > Cách dùng: điền các chỗ `<...>` bằng thông tin thật từ session
+        của bạn. Xong báo mình để viết lại cho gọn và đẹp.
+      5
+      6 - **Sinh viên:** Quang Phú Hùng — 24520626
+      8 - **Công cụ AI:** <Claude Code / model nào>
+      9 - **Prompt log liên quan:** <đường dẫn tới file trong `docs/promp
+        t_logs/`>
+     … +98 lines (ctrl+o to expand)
+
+● Write(docs\project-rules.md)
+  ⎿  Wrote 65 lines to docs\project-rules.md
+       1 # Project Rules — Lab 02
+       3 Quy tắc của dự án, tổng hợp từ slide của thầy và quy tắc cá nhân
+         . Bối cảnh chi tiết xem [Context.md](Context.md); quy tắc dành r
+       4
+       5 > Nguồn: **[Thầy]** = từ slide, **[Cá nhân]** = do mình đặt thêm
+       6
+       7 ## 1. Nguyên tắc nền tảng [Thầy]
+       9 1. HTML là nền ngữ nghĩa, CSS lo trình bày, JavaScript lo state
+         và hành vi.
+         xác suất, developer kiểm chứng tất định.
+     … +74 lines (ctrl+o to expand)
+
+● Giờ cập nhật link trong Context.md và Agents.md cho khớp cấu trúc mới.
+
+● Update(docs\Context.md)
+  ⎿  Error editing file
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Update(docs\Context.md)
+  ⎿  Added 1 line, removed 1 line
+      1  # Context.md — Lab 02: Mini React Engine (VDOM, JSX, Reconciliat
+         ion)
+      2  
+      3  > Môn: MSIS207 (Phát triển phần mềm) · SV: 24520626 – Quang Phú 
+         Hùng
+      4 -> Tài liệu này là nguồn sự thật về **bối cảnh, phạm vi và kiến t
+        -hức** của lab. Quy tắc làm việc với AI nằm ở [Agents.md](Agents.
+        -md).                                                            
+      4 +> Tài liệu này là nguồn sự thật về **bối cảnh, phạm vi và kiến t
+        +hức** của lab. Quy tắc làm việc với AI nằm ở [Agents.md](../Agen
+        +ts.md).                                                         
+      5  
+      6  ---
+      7  
+
+● Update(docs\Context.md)
+  ⎿  Added 1 line, removed 1 line
+      112  3. **Atomic Generation** — mỗi lần prompt AI chỉ **một** hàm/m
+           odule.
+      113  4. **Independent Verification** — kiểm chứng bằng DevTools pro
+           filer, test case, `git diff`.
+      114  
+      115 -Artifact bắt buộc: [project-rules.md](project-rules.md) và [TA
+          -SK_DECOMPOSITION.md](TASK_DECOMPOSITION.md) (WBS). Hợp đồng ru
+          -ntime:                                                        
+      115 +Artifact bắt buộc: [project-rules.md](project-rules.md) và `TA
+          +SK_DECOMPOSITION.md` (WBS, một file riêng trong folder của mỗi
+          + bài). Hợp đồng runtime:                                      
+      116  
+      117  ```ts
+      118  export interface SystemContract<TState, TEvent> {
+
+● Update(Agents.md)
+  ⎿  Added 1 line, removed 1 line
+      1  # Agents.md — Hướng dẫn cho AI agent (Lab 02)
+      2  
+      3 -Đọc [Context.md](Context.md) trước. File này là **luật làm việc*
+        -*: AI sinh code, con người kiểm chứng. Không chấp nhận output ch
+        -ưa kiểm chứng vào production.                                   
+      3 +Đọc [docs/Context.md](docs/Context.md) và [docs/project-rules.md
+        +](docs/project-rules.md) trước. File này là **luật làm việc**: A
+        +I sinh code, con người kiểm chứng. Không chấp nhận output chưa k
+        +iểm chứng vào production.                                       
+      4  
+      5  ## 1. Nguyên tắc
+      6  
+
+● Update(Agents.md)
+  ⎿  Added 1 line, removed 1 line
+       4  
+       5  ## 1. Nguyên tắc
+       6  
+       7 -1. **Atomic**: mỗi lượt chỉ làm **một** sub-task trong [TASK_DE
+         -COMPOSITION.md](TASK_DECOMPOSITION.md). Không gộp >1 task, khôn
+         -g "dump" cả engine một phát.                                   
+       7 +1. **Atomic**: mỗi lượt chỉ làm **một** sub-task trong `TASK_DE
+         +COMPOSITION.md` của bài đang làm (nằm trong folder của bài đó).
+         + Không gộp >1 task, không "dump" cả engine một phát.           
+       8  2. **Contract-first**: có interface/type trước, rồi mới viết im
+          plementation.
+       9  3. **Verify-before-claim**: chỉ nói "xong" khi đã chạy test/lện
+          h kiểm chứng và thấy output.
+      10  4. **Giải thích được**: người dùng phải hiểu code; thêm lý do n
+          gắn khi chọn thiết kế (đây là bài học, không chỉ là nộp bài).
+
+● Update(Agents.md)
+  ⎿  Added 7 lines, removed 3 lines
+      61  
+      62  | File | Vai trò |
+      63  |---|---|
+      64 -| [Context.md](Context.md) | Bối cảnh, phạm vi, kiến thức |    
+      64 +| [docs/Context.md](docs/Context.md) | Bối cảnh, phạm vi, kiến 
+         +thức |                                                         
+      65  | [Agents.md](Agents.md) | Luật cho AI (file này) |
+      66 -| `project-rules.md` | Bản rút gọn quy tắc dự án (tạo khi được 
+         -yêu cầu) |                                                     
+      67 -| `TASK_DECOMPOSITION.md` | WBS, tick `[x]` khi task xong và đã
+         - verify |                                                      
+      66 +| [docs/project-rules.md](docs/project-rules.md) | Quy tắc dự á
+         +n (thầy + cá nhân) |                                           
+      67 +| [docs/AI_FAILURE_AUDIT.md](docs/AI_FAILURE_AUDIT.md) | Báo cá
+         +o 3 lỗi AI (người dùng điền, AI chỉ viết lại) |                
+      68 +| `docs/prompt_logs/` | Export session AI cho mỗi lần code mỗi 
+         +bài |                                                          
+      69 +| `<folder bài>/TASK_DECOMPOSITION.md` | WBS riêng từng bài, ti
+         +ck `[x]` khi task xong và đã verify |                          
+      70  
+      71 +Với `AI_FAILURE_AUDIT.md`: nội dung do người dùng viết. AI chỉ 
+         +chỉnh câu chữ/định dạng, **không bịa** bằng chứng, prompt hay k
+         +ết quả DevTools.                                               
+      72 +                                                               
+      73  WBS khởi điểm (từ slide), mở rộng khi cần:
+      74  
+      75  ```markdown
+
+● Mình đã tạo xong phần tài liệu theo cấu trúc bạn mô tả, nhưng chưa làm
+  TASK_DECOMPOSITION.md. Mình chưa commit gì.
+
+  Agents.md                      (để ở gốc repo)
+  docs/
+    Context.md                   (mình chuyển từ gốc vào đây)
+    project-rules.md
+    AI_FAILURE_AUDIT.md
+    prompt_logs/                 (folder rỗng, để bạn export session)
+
+  - docs/AI_FAILURE_AUDIT.md: là template theo mẫu của thầy, có bảng tóm tắt và
+    3 mục lỗi (XSS innerHTML, memory leak do listener, phantom key). Mỗi mục có
+    các trường prompt, code AI sinh, risk, cách phát hiện, bằng chứng DevTools,
+    bản sửa, cách verify và bài học. Chỗ cần bạn điền ghi dạng <...>. Bạn điền
+    xong thì báo mình viết lại cho đẹp.
+  - docs/project-rules.md: viết từ Context.md, mỗi mục gắn nhãn [Thầy] hoặc [Cá
+    nhân]. Mục §8 "Quy quy tắc cá nhân" đang để trống chờ bạn bổ sung.
+  - Link và Agents.md: mình đã sửa link trong Context.md và Agents.md cho khớp
+    đường dẫn mới. Agents.md giờ ghi rõ luật cho AI_FAILURE_AUDIT.md: AI chỉ
+    chỉnh câu chữ, không được bịa prompt hay bằng chứng DevTools.
+
+  Mình chưa làm TASK_DECOMPOSITION.md vì chưa biết đề của từng bài. Để tạo 6
+  file, mình cần:
+  1. Tên 6 folder, ví dụ exercise-01 đến exercise-03 và homework-01 đến
+     homework-03. Mình chưa tạo folder nào để khỏi phải đổi tên sau.
+  2. Đề hoặc yêu cầu của từng bài. Nếu đề chưa có, bạn nói bài nào học phần nào
+     (VNode, useState, diff…) thì mình chia task theo đó.
+
+  Mình sẽ bám đúng luật mỗi task chỉ có một sub-task và có bước verify.
+
+> <ide_opened_file>The user opened the file
+  c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\docs\project-rules.md in
+  the IDE. This may or may not be related to the current
+  task.</ide_opened_file>
+
+> ok giờ cập nhật tiếp và chuẩn bị cho exercise 1, bạn tạo tạm 1 file task
+  compistion 1 trong folder exercise1 nhưng hiện tại chỉ note lại thông tin cảu
+  exercise 1 trong đó, bạn tự phân loại infor nào của exercise 1 thì quẳng vào
+  task decompostion của ex1 còn lại quẳng vào docs phù hợp:
+  IN-CLASS SPRINT 1 | 35 MINUTES
+  Exercise 1: Building Mini-React VNode & Mounting Engine
+  Deliverable: Zero div-soup, strict typeguard verification, and live DevTools
+  audit.
+  Task Specifications & Constraints
+  Objective: Implement createElement, createTextElement, and renderToDOM from
+  scratch.
+  Semantic Constraint: Output must produce semantic tags (<main>, <section>,
+  <button>) - div-soup banned.
+  Security Checkpoint: Verify XSS resistance when passing
+  '<script>alert(1)</script>' string as child.
+  DevTools Audit: Inspect Elements panel to ensure DOM nodes match VNode tree
+  without orphan nodes.
+  Git Requirement: Commit 1: 'feat(core): implement createElement factory' |
+  Commit 2: 'feat(core): implement renderToDOM'.
+  test-runner.js
+  // Checkpoint 1 Verification Test Suite:
+  import { createElement, renderToDOM } from './mini-react.js';
+  const vApp createElement('main', { id: 'root-view', role: 'main' },
+  createElement('header', { className: 'hero' }, createElement('h1', null,
+  'Mini React Engine'), createElement('p', null, '<img onerror=alert(1)> Safe
+  Text') ), createElement('button', { onClick: () => console.log('Ping') },
+  'Click') );
+  const root document.getElementById('app'); root.replaceChildren
+  (renderToDOM(vApp)); console.assert(root.querySelector('button') != null,
+  'Mount Failed');
+  |
+  COMPONENT DESIGN
+  Component Architecture: Pure Functions & Unidirectional Flow
+  Deconstructing Ul into deterministic mathematical functions of props and
+  state.
+  Functional Component Principles
+  Mathematical Purity: f(props, state) = UI representation (VNode tree).
+  Capitalization Signal: Compiler differentiates native tags (<header>) from
+  custom components (<Header />).
+  Props Immutability: Props flow strictly downward (unidirectional). Children
+  must never mutate received props.
+  Composition over Inheritance: Use props.children and render props for
+  flexible, decoupled Ul assembly.
+  functional-component.jsx
+  // Type contract for Component Props interface CardProps {
+  title: string;
+  status: 'active' | 'archived';
+  children: VNode | VNode[];
+  }
+  // Pure Functional Component
+  return (
+  export function StatusCard({ title, status, children }: CardProps) { } );
+  <article className={card card--${status}`}> <header className="card
+  __header"> <h3>{title}</h3> <span
+  className="badge">{status.toUpperCase()}</span> </header> <div
+  className="card_body">{children}</div> </article>
+  REACTIVE STATE ENGINE
+  Reactive State Under the Hood: Cursor & Closure Memory
+  Why function components can be completely stateless while preserving state.
+  The External State Store Model
+  The Illusion: Developers think state lives inside the function. In reality,
+  functions re-execute from scratch!
+  The Reality: State is stored in an external linear array managed by the
+  framework's runtime dispatcher.
+  The Cursor Index: A global integer pointer tracks which hook is currently
+  requesting state during render.
+  Closure Power: The returned setState function closes over the specific cursor
+  index allocated during that pass.
+  state-cursor-concept.js
+  // Framework Internal State Memory Structure:
+  const stateStore = {
+  states: [], // [vall, val2, val3]
+  }; cursor: 0 // Incremented on every hook call
+  function renderPass() {
+  stateStore.cursor 0; // Reset cursor before component
+  execution
+  // Component reads from stateStore[0],
+  App(); stateStore[1]...
+  }
+  // If conditional execution changes hook order:
+  // stateStore[0] gets mixed with stateStore[1] -> SYSTEM CORRUPTION!
+  REACTIVE STATE ENGINE
+  Deconstructing useState: Dispatcher Queue & Batch Rerender
+  Complete implementation of the useState hook using closures and render
+  triggers.
+  Operational Sequence
+  1. Initialization: If states [cursor] is undefined, assign initial value.
+  2. Dispatcher Creation: Bind setter to current cursor value (const
+  currentCursor = cursor).
+  3. Invariant Protection: If setter receives a function, execute updater with
+  previous state.
+  4. Re-render Trigger: Invoke root reconciliation callback when state values
+  actually change (Object.is).
+  use-state-impl.js
+  let stateStore = [];
+  let cursor 0; let triggerRender = () => {};
+  export function setRenderer (rerenderFn) { triggerRender rerenderFn; } export
+  function resetCursor() { cursor = 0; }
+  export function useState(initialValue) { const currentCursor = cursor;
+  stateStore [currentCursor] = stateStore[currentCursor] ?? initialValue;
+  const setState (nextValue) => {
+  const resolvedValue = typeof nextValue 'function' ?
+  nextValue(stateStore[currentCursor]) : nextValue; if
+  (!Object.is(stateStore[currentCursor], resolvedValue)) {
+  stateStore[currentCursor] = resolvedValue; triggerRender(); // Re-execute
+  component tree }
+  };
+  cursor++;
+  return [stateStore [currentCursor], setState];
+  HOOK INVARIANTS
+  The Invariable Rules of Hooks: Deterministic Call Order
+  Why hooks cannot be placed inside if-statements, loops, or nested callbacks.
+  The Mathematical Call-Order Invariant
+  Rule 1: Only call hooks at the top level of your component or custom hook.
+  Rule 2: Never call hooks inside conditions (if), loops (for/while), or nested
+  functions.
+  Failure Mode: Skipping a hook shifts subsequent cursor indices, corrupting
+  all downstream state variables!
+  Static Analysis: Enforced at build-time by eslint-plugin-react-hooks.
+  hook-violation-failure.is
+  // X SEVERE BUG: Conditional Hook Call function BuggyProfile({ isPremium }) {
+  // Render 1: isPremium true
+  // Cursor 0 -> name
+  const [name, setName] = useState('Khiem');
+  if (isPremium) {
+  }
+  // Cursor 1 -> tier (Present only in Render 1)
+  const [tier, setTier] = useState('Platinum");
+  // Render 1: Cursor 2 -> age
+  // Render 2 (isPremium = false): Cursor 1 -> age receives 'Platinum'!
+  } const [age, setAge] = useState(28); // CORRUPTED!
+  EVENT ARCHITECTURE
+  Event Architecture: 1000 Listeners vs Root Delegation Hub
+  Solving massive memory allocation and garbage collection churn via event
+  bubbling.
+  Event Delegation Mechanics
+  Naive Approach: Attaching 10,000 addEventListener instances consumes
+  megabytes of memory.
+  Delegation Solution: Attach a single listener to document or root container
+  for each event type.
+  Bubbling Protocol: Event bubbles up DOM tree; root listener inspects
+  event.target.
+  Synthetic Wrappers: Cross-browser normalization, event pooling, and polyfills
+  for unified execution.
+  event-delegation-hub.js
+  export function setupEventDelegation (rootContainer) {
+  const supportedEvents = ['click', 'input', 'keydown'];
+  supportedEvents.forEach((eventType) => {
+  { rootContainer.addEventListener(eventType, (nativeEvent) =>
+  let target = nativeEvent.target;
+  const handlerProp `on${eventType.charAt(0).toUpperCase() +
+  eventType.slice(1)}`;
+  // Traverse up to find virtual event handler
+  while (target && target !== rootContainer) {
+  if (target._vnode && target._vnode.props [handlerProp]) { }
+  target._vnode.props [handlerProp] (nativeEvent); break;
+  }
+  target = target.parentElement;
+  });
+  });
+  và nhớ viết mọi tài liệu theo tiêu chuẩn WCAG 2.2 AA nhe
+
+● Phân loại: phần Exercise 1 vào exercise1/TASK_DECOMPOSITION.md. Các slide về
+  component, state, hook, event delegation là kiến thức chung nên vào
+  docs/Context.md. WCAG 2.2 AA vào project-rules.md và Agents.md.
+● Write(exercise1\TASK_DECOMPOSITION.md)
+  ⎿  Not run · auto mode's check had no usable answer (ctrl+o to expand)
+
+● Update(docs\Context.md)
+  ⎿  Not run · auto mode's check had no usable answer (ctrl+o to expand)
+
+● API Error: Connection lost mid-response. The response above may be
+  incomplete.
+
+● Hệ thống kiểm tra quyền chưa trả kết quả cho hai lệnh ghi này, nên mình thử
+  lại đúng như cũ.
+
+● Write(exercise1\TASK_DECOMPOSITION.md)
+  ⎿  Wrote 75 lines to exercise1\TASK_DECOMPOSITION.md
+       1 # Exercise 1 — Task Decomposition (bản nháp ghi chú)
+       2
+       3 > Trạng thái: **mới ghi lại thông tin đề bài**. Chưa chia WBS. K
+         docs/project-rules.md) (mỗi task một sub-task, có bước verify).
+       4 > Kiến thức nền xem [Context](../docs/Context.md).
+       5
+       6 ## 1. Thông tin chung
+       8 | Mục | Nội dung |
+       9 |---|---|
+      10 | Tên bài | Building Mini-React VNode & Mounting Engine |
+     … +83 lines (ctrl+o to expand)
+
+● Update(docs\Context.md)
+  ⎿  Added 39 lines, removed 1 line
+       95  - **Index làm key = bug**: xoá phần tử đầu thì state cục bộ (v
+           d. nội dung input) "dính" sang phần tử khác. Key phải là ID th
+           ực thể bền vững (`task.uuid`).
+       96  - Fiber (awareness): node nối thành linked list (`child`, `sib
+           ling`, `return`) cho phép ngắt/tiếp tục render.
+       97  
+       98 +### 3.9 Function component (Tier 1)                           
+       99 +- Component là hàm thuần: `f(props, state) = VNode`. Cùng inpu
+          +t phải ra cùng output.                                        
+      100 +- Tên viết hoa (`<Header />`) là component, viết thường (`<hea
+          +der>`) là thẻ native.                                         
+      101 +- **Props bất biến và chảy một chiều** từ cha xuống con. Compo
+          +nent con không được sửa props nhận vào.                       
+      102 +- Ưu tiên composition hơn inheritance: dùng `props.children` v
+          +à render props.                                               
+      103 +- Contract mẫu:                                               
+      104 +                                                              
+      105 +```ts                                                         
+      106 +interface CardProps {                                         
+      107 +  title: string;                                              
+      108 +  status: 'active' | 'archived';                              
+      109 +  children: VNode | VNode[];                                  
+      110 +}                                                             
+      111 +```                                                           
+      112 +                                                              
+      113 +- Ví dụ `StatusCard` trong slide trả về `<article>` với `<head
+          +er>` và `<h3>`. Phần body trong slide dùng `<div className="ca
+          +rd__body">`; khi làm bài nên cân nhắc thẻ ngữ nghĩa hơn (xem q
+          +uy tắc "không div-soup").                                     
+      114 +                                                              
+      115 +### 3.10 State store và call-order của hook (Tier 1)          
+      116 +- Hàm component chạy lại từ đầu mỗi lần render, nên state **kh
+          +ông** nằm trong hàm. State nằm trong mảng tuyến tính bên ngoài
+          +, do runtime quản lý.                                         
+      117 +- Cursor là con trỏ toàn cục cho biết hook nào đang xin state.
+          + Reset về 0 trước mỗi lần render. Setter đóng (closure) trên `
+          +currentCursor` được cấp lúc gọi hook.                         
+      118 +- Trình tự `useState`:                                        
+      119 +  1. Khởi tạo: nếu `states[cursor]` chưa có thì gán giá trị đầ
+          +u.                                                            
+      120 +  2. Tạo dispatcher: `const currentCursor = cursor`.          
+      121 +  3. Nếu setter nhận hàm, gọi hàm đó với state trước.         
+      122 +  4. Chỉ re-render khi giá trị đổi thật (`Object.is`).        
+      123 +- API tối thiểu của runtime: `useState`, `setRenderer(fn)`, `r
+          +esetCursor()`.                                                
+      124 +- **Quy tắc Hooks** (bất biến thứ tự gọi):                    
+      125 +  1. Chỉ gọi hook ở top level của component hoặc custom hook. 
+      126 +  2. Không gọi trong `if`, `for`/`while` hay hàm lồng.        
+      127 +  - Vi phạm làm lệch cursor: ví dụ `BuggyProfile` bỏ hook `tie
+          +r` ở render 2 thì `age` nhận nhầm giá trị `'Platinum'` (state 
+          +bị hỏng). Ngoài đời, `eslint-plugin-react-hooks` bắt lỗi này l
+          +úc build.                                                     
+      128 +                                                              
+      129 +### 3.11 Event delegation hub (Tier 1)                        
+      130 +- Cách ngây thơ gắn hàng nghìn `addEventListener` tốn bộ nhớ v
+          +à tạo áp lực GC.                                              
+      131 +- Delegation: gắn **một** listener cho mỗi loại event (`click`
+          +, `input`, `keydown`) ở root; sự kiện nổi bọt lên, hub đọc `ev
+          +ent.target`.                                                  
+      132 +- Hub đi ngược từ `target` lên `rootContainer` qua `parentElem
+          +ent`, tìm node có handler tương ứng (`onClick`, `onInput`, `on
+          +Keydown`...) rồi gọi và dừng.                                 
+      133 +- Điều kiện để hub chạy: `renderToDOM` phải lưu VNode vào DOM 
+          +node (ví dụ `dom._vnode = vNode`) để hub tra `props` được.    
+      134 +- Synthetic event (chuẩn hoá cross-browser, pooling) chỉ ở mức
+          + awareness, không cài.                                        
+      135 +                                                              
+      136  ## 4. Chuẩn kỹ thuật bắt buộc (Modernization Audit)
+      137  
+      100 -| ❌ Cấm | ✅ Dùng |                                          
+      138 +| Cấm | Dùng thay thế |                                       
+      139  |---|---|
+      140  | `var`, implicit global | `const` / `let` |
+      141  | `keypress`, `e.keyCode` | `keydown`, `e.key` / `e.code` |
+
+● Tiếp theo là lỗi của slide mới, WCAG 2.2 AA và liên kết sang Exercise 1.
+
+● Update(docs\Context.md)
+  ⎿  Added 11 lines
+      189  - Ví dụ layout-thrashing: `}` đặt sai chỗ, `width` đọc trong v
+           òng lặp phải đưa ra ngoài (đọc một lần, ghi sau).
+      190  - Ví dụ key anti-pattern: `Key ('Task A'...` nên là `key 0 / k
+           ey 1` (index) để ví dụ có nghĩa.
+      191  - Mã `name.startsWith('on')` cần whitelist/escape hợp lý, và e
+           vent delegation (3.6) thay thế `addEventListener` từng node.
+      192 +- `useState` mẫu dùng `stateStore[cursor] ?? initialValue`: nế
+          +u state hợp lệ là `null`/`undefined` thì bị khởi tạo lại mỗi l
+          +ần. Nên kiểm tra theo độ dài mảng hoặc cờ "đã khởi tạo".      
+      193 +- `useState` mẫu không gọi `resetCursor()` ở đâu; runtime phải
+          + gọi trước mỗi lần render, nếu không cursor tăng mãi.         
+      194 +- Event hub mẫu chỉ chạy khi DOM node có `_vnode`; slide `rend
+          +erToDOM` chưa gán thuộc tính này.                             
+      195 +- Slide `functional-component` có `className={card card--${sta
+          +tus}}` thiếu dấu backtick; viết lại là `` className={`card car
+          +d--${status}`} ``.                                            
+      196 +- Slide Exercise 1 bị vỡ cú pháp (thiếu `=`, ngoặc); bản sửa n
+          +ằm trong [exercise1/TASK_DECOMPOSITION.md](../exercise1/TASK_D
+          +ECOMPOSITION.md).                                             
+      197 +                                                              
+      198 +## 8. Tài liệu và bài tập liên quan                           
+      199 +                                                              
+      200 +- Quy tắc dự án (gồm WCAG 2.2 AA): [project-rules.md](project-
+          +rules.md)                                                     
+      201 +- Báo cáo lỗi AI: [AI_FAILURE_AUDIT.md](AI_FAILURE_AUDIT.md)  
+      202 +- Exercise 1: [exercise1/TASK_DECOMPOSITION.md](../exercise1/T
+          +ASK_DECOMPOSITION.md)                                         
+
+● Update(docs\project-rules.md)
+  ⎿  Added 40 lines, removed 1 line
+       58  - Xem `git diff` trước khi commit.
+       59  - Không `--force`, không `--no-verify`.
+       60  
+       61 -## 8. Quy tắc cá nhân [Cá nhân]                               
+       61 +## 8. Khả năng truy cập: WCAG 2.2 mức AA [Cá nhân]            
+       62  
+       63 +Áp dụng cho **mọi UI** do lab tạo ra và cho **mọi tài liệu** t
+          +rong repo.                                                    
+       64 +                                                              
+       65 +### 8.1 Với UI / code                                         
+       66 +                                                              
+       67 +| Tiêu chí WCAG | Quy tắc |                                   
+       68 +|---|---|                                                     
+       69 +| 1.3.1 Info and Relationships | Dùng thẻ ngữ nghĩa (`<main>`,
+          + `<header>`, `<section>`, `<button>`, `<ul>`). Không div-soup.
+          + Không dùng `role` thừa khi thẻ đã có role ngầm. |            
+       70 +| 1.4.1 Use of Color | Không truyền đạt thông tin chỉ bằng màu
+          + (ví dụ trạng thái `active`/`archived` phải có chữ). |        
+       71 +| 1.4.3 Contrast (Minimum) | Chữ thường tỉ lệ tương phản ít nh
+          +ất 4.5:1, chữ lớn ít nhất 3:1. |                              
+       72 +| 1.4.11 Non-text Contrast | Viền nút, icon, focus indicator í
+          +t nhất 3:1. |                                                 
+       73 +| 2.1.1 Keyboard | Mọi chức năng dùng được bằng bàn phím. Dùng
+          + `<button>`, không dùng `<span>` gắn click. |                 
+       74 +| 2.4.3 / 2.4.7 Focus | Thứ tự focus hợp lý; luôn thấy focus (
+          +`:focus-visible`). |                                          
+       75 +| 2.4.11 Focus Not Obscured (Minimum) [mới ở 2.2] | Phần tử đa
+          +ng focus không bị che hoàn toàn. |                            
+       76 +| 2.5.7 Dragging Movements [mới ở 2.2] | Thao tác kéo thả phải
+          + có cách thay thế bằng nhấp/bàn phím. |                       
+       77 +| 2.5.8 Target Size (Minimum) [mới ở 2.2] | Vùng bấm tối thiểu
+          + 24×24 CSS px. |                                              
+       78 +| 3.2.6 Consistent Help [mới ở 2.2] | Chỗ trợ giúp (nếu có) đặ
+          +t nhất quán giữa các trang. |                                 
+       79 +| 3.3.7 Redundant Entry [mới ở 2.2] | Không bắt nhập lại thông
+          + tin đã nhập trong cùng quy trình. |                          
+       80 +| 3.3.8 Accessible Authentication (Minimum) [mới ở 2.2] | Khôn
+          +g bắt giải bài toán nhận thức để đăng nhập. |                 
+       81 +| 4.1.2 Name, Role, Value | Control có tên truy cập được (nhãn
+          + hiển thị hoặc `aria-label`). |                               
+       82 +| 4.1.3 Status Messages | Thông báo trạng thái động dùng `role
+          +="status"` hoặc `aria-live`. |                                
+       83 +                                                              
+       84 +Ghi chú thêm:                                                 
+       85 +- Ưu tiên HTML gốc trước, ARIA là phương án cuối. ARIA sai còn
+          + tệ hơn không có.                                             
+       86 +- Nội dung động đổ vào DOM bằng `textContent`/`createTextNode`
+          + (an toàn XSS và đọc đúng với screen reader).                 
+       87 +- Dùng `lang` trên `<html>` và tiêu đề trang (`<title>`) có ng
+          +hĩa.                                                          
+       88 +- Kiểm tra bằng DevTools Accessibility panel, tab bằng bàn phí
+          +m, và ít nhất một công cụ tự động (Lighthouse hoặc axe). Công 
+          +cụ tự động không bắt hết lỗi, vẫn cần kiểm tra tay.           
+       89 +                                                              
+       90 +### 8.2 Với tài liệu Markdown                                 
+       91 +                                                              
+       92 +- Tiêu đề phân cấp liên tục (H1 → H2 → H3), mỗi file đúng một 
+          +H1.                                                           
+       93 +- Link có văn bản mô tả đích đến, không dùng "bấm vào đây".   
+       94 +- Bảng có hàng tiêu đề; không dùng bảng để dàn trang.         
+       95 +- Khối code luôn ghi ngôn ngữ (` ```js `, ` ```ts `).         
+       96 +- Không dùng emoji hay màu để mang nghĩa duy nhất; trạng thái 
+          +luôn có chữ (ví dụ "Cấm", "Đã sửa").                          
+       97 +- Ảnh (ví dụ ảnh chụp DevTools) phải có văn bản thay thế mô tả
+          + nội dung: `![Mô tả cụ thể](đường-dẫn)`.                      
+       98 +- Câu ngắn, ngôn ngữ rõ ràng, giải thích từ viết tắt lần đầu x
+          +uất hiện.                                                     
+       99 +                                                              
+      100 +## 9. Quy tắc cá nhân [Cá nhân]                               
+      101 +                                                              
+      102  <!-- Bổ sung quy tắc của riêng bạn ở đây, rồi nhờ mình viết lạ
+           i cho gọn. -->
+      103  
+      104  - _(chưa có)_
+
+● Update(docs\project-rules.md)
+  ⎿  Added 1 line, removed 1 line
+      2  
+      3  Quy tắc của dự án, tổng hợp từ slide của thầy và quy tắc cá nhân
+         . Bối cảnh chi tiết xem [Context.md](Context.md); quy tắc dành r
+         iêng cho AI xem [../Agents.md](../Agents.md).
+      4  
+      5 -> Nguồn: **[Thầy]** = từ slide, **[Cá nhân]** = do mình đặt thêm
+        -. Hiện chưa có mục [Cá nhân] nào; bổ sung ở §8.                 
+      5 +> Nguồn: **[Thầy]** = từ slide, **[Cá nhân]** = do mình đặt thêm
+        +. Hiện chưa có mục [Cá nhân] nào; bổ sung ở §9. Riêng WCAG 2.2 A
+        +A (§8) là yêu cầu bắt buộc cho UI và tài liệu.                  
+      6  
+      7  ## 1. Nguyên tắc nền tảng [Thầy]
+      8  
+
+● Update(Agents.md)
+  ⎿  Added 9 lines
+      38  - Đọc DOM và ghi DOM tách pha (tránh layout thrashing).
+      39  - Hàm nhỏ, một trách nhiệm, tên rõ nghĩa; comment chỉ khi giải 
+          thích *vì sao*.
+      40  
+      41 +### Khả năng truy cập (WCAG 2.2 AA) — bắt buộc                 
+      42 +                                                               
+      43 +- Chi tiết ở [docs/project-rules.md §8](docs/project-rules.md).
+         + Tóm tắt cho agent:                                            
+      44 +  - Dùng thẻ ngữ nghĩa, không div-soup; control tương tác phải 
+         +là `<button>`/`<a>`/`<input>`, không phải `<span>` gắn click.  
+      45 +  - Có thể thao tác bằng bàn phím, thấy rõ focus, vùng bấm ít n
+         +hất 24×24 CSS px, tương phản đạt 4.5:1 (chữ thường).           
+      46 +  - Không truyền thông tin chỉ bằng màu; control có tên truy cậ
+         +p được.                                                        
+      47 +- Mọi tài liệu Markdown viết ra cũng theo WCAG 2.2 AA: heading 
+         +phân cấp, link có mô tả, bảng có tiêu đề, code block có ngôn ng
+         +ữ, ảnh có alt, không dùng emoji để mang nghĩa.                 
+      48 +- Không tự khẳng định "đạt WCAG" khi chưa kiểm tra; ghi rõ đã k
+         +iểm tra những tiêu chí nào và bằng cách nào.                   
+      49 +                                                               
+      50  ## 4. Kiểm chứng
+      51  
+      52  - Test runner: Vitest + jsdom (giả định; xem Context.md §6). Mỗ
+          i module Tier 1 có test đi kèm.
+
+● Mình đã phân loại xong thông tin và cập nhật các file. Mình chưa commit gì.
+
+  Exercise 1 nằm ở exercise1/TASK_DECOMPOSITION.md. File này mới là bản ghi chú,
+  chưa chia task. Nó có:
+  - Thông tin chung của bài và deliverable.
+  - Các ràng buộc: thẻ ngữ nghĩa, kiểm tra XSS với <script>alert(1)</script>,
+    DevTools audit, và đúng 2 commit theo message đề cho.
+  - Bộ test Checkpoint 1, mình đã chỉnh lại cú pháp vì slide bị vỡ (thiếu =,
+    ngoặc).
+  - Checklist nghiệm thu và 4 câu hỏi còn mở.
+
+  docs/Context.md nhận các slide còn lại, vì đó là kiến thức dùng chung nhiều
+  bài:
+  - §3.9 Function component.
+  - §3.10 State store, cursor và quy tắc Hooks.
+  - §3.11 Event delegation hub.
+  - §7 thêm các lỗi của slide mới: useState dùng ?? sẽ khởi tạo lại state khi
+    giá trị là null, không có chỗ gọi resetCursor(), hub cần dom._vnode mà
+    renderToDOM chưa gán, và một template literal thiếu backtick.
+  - §8 mới: liên kết sang các tài liệu và bài tập liên quan.
+
+  WCAG 2.2 AA có trong docs/project-rules.md §8 (docs/project-rules.md) và trong
+  Agents.md:
+  - Với UI: bảng tiêu chí gồm cả các tiêu chí mới của 2.2 (focus không bị che,
+    kéo thả có cách thay thế, vùng bấm tối thiểu 24×24 px, hỗ trợ nhất quán,
+    không bắt nhập lại, đăng nhập dễ tiếp cận).
+  - Với tài liệu Markdown: heading phân cấp, link có mô tả, bảng có tiêu đề,
+    code block có ngôn ngữ, ảnh có alt, không dùng emoji hay màu để mang nghĩa.
+  - AI không được tự khẳng định "đạt WCAG" khi chưa kiểm tra.
+  - Mình đã bỏ emoji ❌ ✅ trong bảng của Context.md cho khớp quy tắc này.
+
+  Mình chưa kiểm tra tương phản màu hay chạy công cụ như axe, vì chưa có UI nào
+  để kiểm tra. Mình chỉ viết quy tắc.
+
+  Phần này mình cần bạn quyết trước khi bắt đầu code:
+  1. Cấu trúc file: mini-react.js để ở gốc exercise1/ hay trong src/?
+  2. Ngôn ngữ: dùng JS thuần hay TypeScript? Slide đề dùng .js.
+  3. Sự kiện trong bài này: renderToDOM gắn onClick bằng addEventListener trực
+     tiếp (theo slide). Event delegation là bài sau, nên tạm chấp nhận ở
+     Exercise 1 được không?
+
+  Bạn trả lời xong thì mình chia WBS cho Exercise 1.
+
+> Khoan từ từ mình muốn cập nhật context đầy đủ đã rồi mới bắt đầu làm, giờ tới
+  exercise 2 và 3 kèm hw123 tương tự, đẩy information vào đúng chỗ:
+  IN-CLASS SPRINT 2 | 40 MINUTES
+  Exercise 2: Reactive State Machine & Delegation Hub
+  Deliverable: Custom useState with atomic Git history and unidirectional data
+  flow.
+  Task Specifications & Constraints
+  Objective: Build custom useState closure engine and integrate root Event
+  Delegation hub.
+  Application: Implement a real-time reactive Task Manager with dynamic filter
+  toggles.
+  Git Milestone Commits (Mandatory Atomic Commits):
+  'feat(state): implement stateStore and resetCursor engine'
+  'feat(state): implement reactive useState dispatcher'
+  'feat(events): attach root event delegation listener'
+  'feat(ui): assemble reactive todo application'
+  Checkpoint: Mutate state via UI; verify zero orphan event listeners attached
+  to button children.
+  checkpoint2-verify.js
+  // Checkpoint 2 Audit:
+  import { useState, renderApp } from './reactive-engine.js';
+  function TaskApp() {
+  const [tasks, setTasks] = useState(['Review PR', 'Verify AST']);
+  const [filter, setFilter] = useState('ALL');
+  return (
+  <main className="app-container">
+  <header><h2>Tasks: {tasks.length}</h2></header> <button onClick={() =>
+  setTasks([...tasks, Task ${Date.now()}^])}> ); Add Task </button> </main>
+  }
+  // Verify: Button click triggers state update and re-render
+  PERFORMANCE ENGINEERING
+  Performance Engineering: Cascading Re-renders & Diff Overhead
+  Why child components re-render by default and when it becomes an issue.
+  The Re-render Propagation Cascade
+  Default Behavior: When a parent component renders, JavaScript recursively
+  re-invokes all child components.
+  The Myth: Re-rendering does NOT always mean real DOM mutations occur; it
+  re-computes VDOM trees.
+  The Bottleneck: For large component trees, allocating thousands of VNode
+  objects exhausts CPU cycles.
+  Engineering Rule: Optimize only after profiling with React DevTools Profiler
+  (Never premature optimization).
+  render-cascade.jsx
+  function ParentDashboard() {
+  const [counter, setCounter] = useState(0);
+  // Clicking counter causes ParentDashboard to re-render.
+  // CONSEQUENCE: <ExpensiveDataVisualization /> is RE-INVOKED, // recreating
+  10,000 VNodes even though its props never changed!
+  return (
+  <div> <button onClick={() => setCounter(c => c + 1)}>Count:
+  {counter}</button> /> ); <ExpensiveDataVisualization
+  dataset={staticLargeDataset} }
+  </div>
+  PERFORMANCE OPTIMIZATION
+  Component Memoization: Shallow Equality & useMemo Caching
+  Short-circ
+  ──── (167 lines hidden) ─────────────────────────────────────────────────────
+  -grid-contract.ts
+  export interface ColumnDef<T> {
+  }
+  header: string;
+  accessorKey: keyof T;
+  sortable?: boolean;
+  export interface DataGridProps<T> {
+  data: T[];
+  columns: ColumnDef<T>[];
+  onRowSelect?: (item: T) => void;
+  ariaLabel: string;
+  } // Invariant: Full ARIA grid semantics (role="grid", role="row",
+  role="gridcell")
+  HOMEWORK 2 |
+  1 WEEK
+  HW 2: Concurrent FIFO Audio Visualizer Queue Engine
+  Advanced async concurrency, audio frequency analysis, and zero memory leaks.
+  Project Specification & Criteria
+  Engine: Web Audio API integration with Web Audio AnalyserNode (FFT 256/512
+  bins).
+  Concurrency Controller: FIFO Queue handling simultaneous track downloads and
+  audio buffer decoding.
+  Memory Safety: Explicit cleanup of AudioBufferSourceNodes, cancellation
+  tokens via AbortController.
+  Performance: 60fps Canvas or SVG visualizer driven by requestAnimationFrame
+  without state thrashing.
+  audio-queue-controller.ts
+  export class AudioTaskQueue {
+  private queue: AudioTask[] = [];
+  private isProcessing = false;
+  private activeController: AbortController | null null;
+  async enqueue (trackUrl: string): Promise<AudioBuffer> {
+  // Concurrency control with AbortSignal cancellation const controller new
+  AbortController(); return new Promise((resolve, reject) => {
+  this.processNext();
+  });
+  }
+  }
+  this.queue.push({ trackUrl, controller, resolve, reject
+  });
+  HOMEWORK 3 | 1 WEEK
+  HW 3: High-Concurrency Flash-Sale E-Commerce Engine
+  Realistic Vietnam market scenario: Zero-drift countdown timer & inventory
+  state machine.
+  Project Specification & Criteria
+  Domain: Vietnam Mega-Sale (Shopee / Lazada 11.11 / Midnight Flash Sale
+  simulation).
+  Zero-Drift Timer: Accurate millisecond countdown using Date.now() delta vs
+  drift-prone setInterval.
+  Optimistic Inventory Lock: Finite state machine handling inventory
+  reservation, lock expiry, and checkout.
+  Al Failure Mode Audit: Mandatory AI_FAILURE_AUDIT.md report documenting >= 3
+  Al flaws.
+  Atomic Commits: Minimum 8 discrete commits adhering to Conventional Commits
+  specification.
+  anti-drift-timer.ts
+  // Precision Anti-Drift Countdown Implementation
+  export function createAntiDriftTimer (durationMs: number, onTick: (remaining:
+  number) => void) { const targetTime = Date.now() + durationMs;
+  let rafId: number;
+  function tick() {
+  const remaining = Math.max(0, targetTime - Date.now()); onTick(remaining);
+  if (remaining > 0) {
+  rafId = requestAnimationFrame(tick); // Zero drift compared to setInterval
+  }
+  }
+  rafId requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(rafId); }
+
+● Mình sẽ tạo 5 folder bài tập (theo cách đặt tên exercise1) và đưa kiến thức
+  dùng chung vào docs/Context.md.
+
+● Write(exercise2\TASK_DECOMPOSITION.md)
+  ⎿  Wrote 86 lines to exercise2\TASK_DECOMPOSITION.md
+       1 # Exercise 2 — Task Decomposition (bản nháp ghi chú)
+       2
+         hi bắt đầu làm, chia task theo [project-rules](../docs/project-r
+         ules.md): mỗi task một sub-task, có bước verify.
+       4 > Kiến thức nền xem [Context](../docs/Context.md), mục 3.9 đến 3
+       5
+       6 ## 1. Thông tin chung
+       7
+       9 |---|---|
+      10 | Tên bài | Reactive State Machine & Delegation Hub |
+     … +104 lines (ctrl+o to expand)
+
+● Write(exercise3\TASK_DECOMPOSITION.md)
+  ⎿  Wrote 76 lines to exercise3\TASK_DECOMPOSITION.md
+       1 # Exercise 3 — Task Decomposition (bản nháp ghi chú)
+       2
+       3 > Trạng thái: **mới ghi lại thông tin đề bài**. Chưa chia WBS. K
+         ules.md): mỗi task một sub-task, có bước verify.
+       4 > Kiến thức nền xem [Context](../docs/Context.md).
+       5
+       6 ## 1. Thông tin chung
+       8 | Mục | Nội dung |
+       9 |---|---|
+      10 | Tên bài | Resilient State Machine & Skeleton Loader |
+     … +92 lines (ctrl+o to expand)
+
+● Write(homework1\TASK_DECOMPOSITION.md)
+  ⎿  Wrote 69 lines to homework1\TASK_DECOMPOSITION.md
+       1 # Homework 1 — Task Decomposition (bản nháp ghi chú)
+       2
+         hi bắt đầu làm, chia task theo [project-rules](../docs/project-r
+         ules.md).
+       4 > Quy tắc WCAG: xem [project-rules, mục 8](../docs/project-rules
+       5
+       6 ## 1. Thông tin chung
+       7
+       9 |---|---|
+      10 | Tên bài | Production Enterprise Data-Grid (WCAG 2.2 AA) |
+     … +88 lines (ctrl+o to expand)
+
+● Write(homework2\TASK_DECOMPOSITION.md)
+  ⎿  Wrote 77 lines to homework2\TASK_DECOMPOSITION.md
+       1 # Homework 2 — Task Decomposition (bản nháp ghi chú)
+       2
+         hi bắt đầu làm, chia task theo [project-rules](../docs/project-r
+         ules.md).
+       4 > Quy tắc WCAG: xem [project-rules, mục 8](../docs/project-rules
+       5
+       6 ## 1. Thông tin chung
+       7
+       9 |---|---|
+      10 | Tên bài | Concurrent FIFO Audio Visualizer Queue Engine |
+     … +101 lines (ctrl+o to expand)
+
+● Write(homework3\TASK_DECOMPOSITION.md)
+  ⎿  Wrote 90 lines to homework3\TASK_DECOMPOSITION.md
+       1 # Homework 3 — Task Decomposition (bản nháp ghi chú)
+       2
+         hi bắt đầu làm, chia task theo [project-rules](../docs/project-r
+         ules.md).
+       4 > Quy tắc WCAG: xem [project-rules, mục 8](../docs/project-rules
+       5
+       6 ## 1. Thông tin chung
+       7
+       9 |---|---|
+      10 | Tên bài | High-Concurrency Flash-Sale E-Commerce Engine |
+     … +112 lines (ctrl+o to expand)
+
+● Giờ phần kiến thức chung vào Context.md, và quy tắc bảo vệ trực tiếp vào
+  project-rules và Agents.
+
+● Update(docs\Context.md)
+  ⎿  Added 18 lines
+      26  
+      27  > Quy tắc scope: nếu một việc thuộc Tier 2/3 thì chỉ giải thích
+          , không cài đặt.
+      28  
+      29 +### 2.1 Bài tập và đánh giá                                    
+      30 +                                                               
+      31 +| Bài | Chủ đề | Thời lượng | Ghi chú |                        
+      32 +|---|---|---|---|                                              
+      33 +| Exercise 1 | VNode và mounting engine | 35 phút | [exercise1]
+         +(../exercise1/TASK_DECOMPOSITION.md) |                         
+      34 +| Exercise 2 | `useState` và delegation hub (Task Manager) | 40
+         + phút | [exercise2](../exercise2/TASK_DECOMPOSITION.md) |      
+      35 +| Exercise 3 | FSM 4 trạng thái và skeleton loader | 35 phút | 
+         +[exercise3](../exercise3/TASK_DECOMPOSITION.md) |              
+      36 +| Homework 1 | Data-Grid WCAG 2.2 AA, Lighthouse 100 | 1 tuần |
+         + [homework1](../homework1/TASK_DECOMPOSITION.md) |             
+      37 +| Homework 2 | Hàng đợi FIFO âm thanh và visualizer | 1 tuần | 
+         +[homework2](../homework2/TASK_DECOMPOSITION.md) |              
+      38 +| Homework 3 | Flash-sale engine, timer không trôi | 1 tuần | [
+         +homework3](../homework3/TASK_DECOMPOSITION.md) |               
+      39 +                                                               
+      40 +Các thành phần điểm đã biết (phần còn lại chưa rõ):            
+      41 +                                                               
+      42 +| Thành phần | Tỉ trọng | Ghi chú |                            
+      43 +|---|---|---|                                                  
+      44 +| Bảo vệ trực tiếp (live defense) | 25% | Mã chưa kiểm chứng đư
+         +ợc thì điểm phần này bằng 0 (xem 3.15) |                       
+      45 +| `AI_FAILURE_AUDIT.md` | 15% | 3 lỗi AI có bằng chứng DevTools
+         + và bản sửa thủ công |                                         
+      46 +                                                               
+      47  ## 3. Kiến thức cốt lõi
+      48  
+      49  ### 3.1 Vì sao cần Virtual DOM
+
+● Update(docs\Context.md)
+  ⎿  Added 94 lines
+      151  - Điều kiện để hub chạy: `renderToDOM` phải lưu VNode vào DOM 
+           node (ví dụ `dom._vnode = vNode`) để hub tra `props` được.
+      152  - Synthetic event (chuẩn hoá cross-browser, pooling) chỉ ở mức
+            awareness, không cài.
+      153  
+      154 +### 3.12 Re-render lan truyền và memo hóa (hiệu năng)         
+      155 +- Mặc định, khi cha render thì mọi component con bị gọi lại. R
+          +e-render **không** đồng nghĩa với đổi DOM thật; nó chỉ tính lạ
+          +i cây VDOM.                                                   
+      156 +- Điểm nghẽn: cây lớn phải cấp phát hàng nghìn VNode (ví dụ `<
+          +ExpensiveDataVisualization />` bị gọi lại khi chỉ có bộ đếm củ
+          +a cha đổi).                                                   
+      157 +- **Quy tắc kỹ thuật:** tối ưu sau khi đo bằng profiler (React
+          + DevTools Profiler hoặc Performance panel). Không tối ưu sớm. 
+      158 +- Công cụ:                                                    
+      159 +  - `memo(Component)`: so sánh nông (`Object.is`) giữa props c
+          +ũ và mới, bỏ qua render nếu giống nhau.                       
+      160 +  - `useMemo(() => fn, [deps])`: lưu kết quả của hàm thuần tốn
+          + kém.                                                         
+      161 +  - `useCallback(fn, [deps])`: giữ tham chiếu hàm ổn định để k
+          +hông phá `memo` ở component con.                              
+      162 +- Cạm bẫy: object hoặc mảng literal tạo trong thân render là t
+          +ham chiếu mới mỗi lần, làm `memo` mất tác dụng.               
+      163 +- Mẫu `memo` tự viết (đã chỉnh lỗi gõ):                       
+      164 +                                                              
+      165 +```js                                                         
+      166 +export function memo(FunctionalComponent) {                   
+      167 +  let prevProps = null;                                       
+      168 +  let prevVNode = null;                                       
+      169 +  return function MemoizedComponent(props) {                  
+      170 +    if (prevProps && shallowEqual(prevProps, props)) {        
+      171 +      return prevVNode; // Bỏ qua: dùng lại cây VNode đã lưu  
+      172 +    }                                                         
+      173 +    prevProps = props;                                        
+      174 +    prevVNode = FunctionalComponent(props);                   
+      175 +    return prevVNode;                                         
+      176 +  };                                                          
+      177 +}                                                             
+      178 +                                                              
+      179 +function shallowEqual(objA, objB) {                           
+      180 +  const keysA = Object.keys(objA);                            
+      181 +  return (                                                    
+      182 +    keysA.length === Object.keys(objB).length &&              
+      183 +    keysA.every((key) => Object.is(objA[key], objB[key]))     
+      184 +  );                                                          
+      185 +}                                                             
+      186 +```                                                           
+      187 +                                                              
+      188 +### 3.13 Windowing (virtual scrolling) cho danh sách lớn      
+      189 +- Vấn đề: dựng 100.000 `<tr>` làm sập thiết bị di động và cạn 
+          +bộ nhớ (OOM).                                                 
+      190 +- Ý tưởng: chỉ dựng lát cắt đang giao với viewport (khoảng 10 
+          +đến 20 dòng), số node DOM gần như không đổi (O(1)).           
+      191 +- **Phantom spacer:** một vùng vô hình cao `totalHeight = item
+          +Count * itemHeight` để thanh cuộn thể hiện đúng toàn bộ danh s
+          +ách.                                                          
+      192 +- Các dòng thật được dịch vị trí bằng `transform: translateY(o
+          +ffsetY)` (tăng tốc GPU).                                      
+      193 +- Công thức:                                                  
+      194 +                                                              
+      195 +```ts                                                         
+      196 +startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - 
+          +overscan);                                                    
+      197 +endIndex   = Math.min(totalCount, Math.ceil((scrollTop + viewp
+          +ortHeight) / itemHeight) + overscan);                         
+      198 +offsetY    = startIndex * itemHeight;                         
+      199 +totalHeight = totalCount * itemHeight;                        
+      200 +```                                                           
+      201 +                                                              
+      202 +- Overscan 2 đến 3 dòng trên và dưới để tránh nháy trắng khi c
+          +uộn nhanh.                                                    
+      203 +- Hàm mẫu đã chỉnh lỗi gõ:                                    
+      204 +                                                              
+      205 +```ts                                                         
+      206 +export interface WindowParams {                               
+      207 +  scrollTop: number;                                          
+      208 +  viewportHeight: number;                                     
+      209 +  itemHeight: number;                                         
+      210 +  totalCount: number;                                         
+      211 +  buffer?: number;                                            
+      212 +}                                                             
+      213 +                                                              
+      214 +export function calculateWindow({                             
+      215 +  scrollTop, viewportHeight, itemHeight, totalCount, buffer = 
+          +2,                                                            
+      216 +}: WindowParams) {                                            
+      217 +  const rawStart = Math.floor(scrollTop / itemHeight);        
+      218 +  const visibleCount = Math.ceil(viewportHeight / itemHeight);
+      219 +  const startIndex = Math.max(0, rawStart - buffer);          
+      220 +  const endIndex = Math.min(totalCount, rawStart + visibleCoun
+          +t + buffer);                                                  
+      221 +  const offsetY = startIndex * itemHeight;                    
+      222 +  const totalHeight = totalCount * itemHeight;                
+      223 +  return { startIndex, endIndex, offsetY, totalHeight };      
+      224 +}                                                             
+      225 +```                                                           
+      226 +                                                              
+      227 +- Truy cập được: danh sách ảo hóa cần `aria-rowcount`/`aria-ro
+          +windex` (hoặc `aria-setsize`/`aria-posinset`) để trình đọc màn
+          + hình biết tổng số dòng, và bàn phím phải cuộn tới mục chưa dự
+          +ng.                                                           
+      228 +                                                              
+      229 +### 3.14 Runtime VDOM và compiler (awareness, Tier 2)         
+      230 +- **Runtime reconciliation** (React, Vue): đóng gói engine (kh
+          +oảng 40 đến 100 KB), so sánh cây VDOM lúc chạy, rất linh hoạt.
+      231 +- **Compiler** (Svelte, Solid): biên dịch component thành lệnh
+          + sửa DOM chính xác (`text_node.data = ctx.count`), không có VD
+          +OM, không có thuật toán diff lúc chạy, bundle nhỏ, phản ứng mị
+          +n (fine-grained).                                             
+      232 +- Cùng thay đổi `count += 1`: React chạy lại `App()`, cấp phát
+          + VDOM mới, diff, rồi vá DOM; compiler chỉ gán trực tiếp node b
+          +ị ảnh hưởng.                                                  
+      233 +- Chỉ cần hiểu và so sánh, không phải cài đặt.                
+      234 +                                                              
+      235 +### 3.15 Bảo vệ trực tiếp 3 phút (live defense)               
+      236 +- 1 đối 1 tại bàn giảng viên, 60 đến 180 giây, chiếm **25%** đ
+          +iểm. Mã không kiểm chứng được thì điểm phần này bằng 0.       
+      237 +- Giảng viên sửa một biến kiến trúc trên repo đang chạy; sinh 
+          +viên phải **chẩn đoán nguyên nhân, sửa logic ngay, và kiểm chứ
+          +ng bằng DevTools**.                                           
+      238 +- Ví dụ đột biến đã biết:                                     
+      239 +  - Đổi setter đồng bộ sang hàng đợi microtask (batch).       
+      240 +  - Đổi ánh xạ prop `className` sang `class`.                 
+      241 +  - Đảo logic overscan của cửa sổ ảo.                         
+      242 +- Thử thách mẫu:                                              
+      243 +  - A: `renderToDOM` hỗ trợ SVG, dùng `document.createElementN
+          +S('http://www.w3.org/2000/svg', type)`.                       
+      244 +  - B: `useState` phải xử lý setter dạng hàm: `typeof nextValu
+          +e === 'function' ? nextValue(prev) : nextValue`.              
+      245 +  - C: thêm kiểm tra phát hiện vòng lặp (cycle) khi làm phẳng 
+          +`children` trong `createElement`.                             
+      246 +- Hệ quả thiết kế: giữ mã nhỏ, tách module rõ ràng, tên có ngh
+          +ĩa, mỗi quyết định (ánh xạ prop, nơi gọi `triggerRender`, thuậ
+          +t toán cửa sổ) nằm ở **một chỗ** để sửa nhanh. Phải hiểu từng 
+          +dòng, nên không nhận mã AI mà không giải thích được.          
+      247 +                                                              
+      248  ## 4. Chuẩn kỹ thuật bắt buộc (Modernization Audit)
+      249  
+      250  | Cấm | Dùng thay thế |
+
+● Update(docs\Context.md)
+  ⎿  Added 6 lines
+      306  - Event hub mẫu chỉ chạy khi DOM node có `_vnode`; slide `rend
+           erToDOM` chưa gán thuộc tính này.
+      307  - Slide `functional-component` có `className={card card--${sta
+           tus}}` thiếu dấu backtick; viết lại là `` className={`card car
+           d--${status}`} ``.
+      308  - Slide Exercise 1 bị vỡ cú pháp (thiếu `=`, ngoặc); bản sửa n
+           ằm trong [exercise1/TASK_DECOMPOSITION.md](../exercise1/TASK_D
+           ECOMPOSITION.md).
+      309 +- Slide Exercise 2: template literal hỏng (`` `Task ${Date.now
+          +()}` ``), biến `filter` khai báo nhưng chưa dùng, mẫu JSX nằm 
+          +trong file `.js`.                                             
+      310 +- Slide Exercise 3: chuỗi `'LOADING"` lệch dấu nháy; `err.mess
+          +age` sai kiểu trong TypeScript (`err` là `unknown`); mẫu chưa 
+          +chặn race condition dù mục tiêu bài là loại bỏ race condition.
+      311 +- Slide `memo`: viết sai `prevWNode` (đúng là `prevVNode`) và 
+          +đặt `prevProps = props` sai vị trí. Ngoài ra bộ nhớ đệm nằm ở 
+          +phạm vi `memo()` nên mọi instance của cùng component dùng chun
+          +g một cache; ở bản thật cache phải gắn theo từng instance.    
+      312 +- Slide `calculateWindow`: `offsety` (đúng là `offsetY`), thiế
+          +u toán tử (`rawStart - buffer`, `totalCount * itemHeight`). Cá
+          +ch tính `endIndex` của hàm (`rawStart + visibleCount + buffer`
+          +) có thể thiếu một dòng so với công thức (`Math.ceil((scrollTo
+          +p + viewportHeight) / itemHeight) + buffer`) khi `scrollTop` k
+          +hông chia hết `itemHeight`; cần viết test kiểm tra biên.      
+      313 +- Slide thử thách B (live defense) bị vỡ ký hiệu (`Rightarrow`
+          +); ý đúng là setter dạng hàm `setCount(c => c + 1)`.          
+      314 +- Slide Homework 2 và Homework 3: khung mã chưa hoàn chỉnh (th
+          +iếu `AudioTask`, `processNext`); `Date.now()` có thể bị đổi gi
+          +ờ hệ thống nên không tuyệt đối đơn điệu.                      
+      315  
+      316  ## 8. Tài liệu và bài tập liên quan
+      317  
+
+● Update(docs\Context.md)  ⎿  Added 1 line, removed 1 line
+      317  
+      318  - Quy tắc dự án (gồm WCAG 2.2 AA): [project-rules.md](project-
+           rules.md)
+      319  - Báo cáo lỗi AI: [AI_FAILURE_AUDIT.md](AI_FAILURE_AUDIT.md)
+      320 -- Exercise 1: [exercise1/TASK_DECOMPOSITION.md](../exercise1/T
+          -ASK_DECOMPOSITION.md)                                         
+      320 +- Bài tập: xem bảng ở mục 2.1 để mở từng `TASK_DECOMPOSITION.m
+          +d`.                                                           
+
+● Update(docs\project-rules.md)
+  ⎿  Added 9 lines
+      52  - `docs/prompt_logs/`: export session AI cho mỗi lần code mỗi b
+          ài.
+      53  - `docs/AI_FAILURE_AUDIT.md`: 3 lỗi AI phát hiện, kèm bằng chứn
+          g DevTools và bản sửa thủ công (15% điểm).
+      54  
+      55 +## 6.1 Chuẩn bị cho bảo vệ trực tiếp [Thầy]                    
+      56 +                                                               
+      57 +Bảo vệ 3 phút chiếm 25% điểm; giảng viên sửa một biến kiến trúc
+         + trên repo của mình và mình phải chẩn đoán, sửa, kiểm chứng bằn
+         +g DevTools. Vì vậy:                                            
+      58 +                                                               
+      59 +- Mỗi quyết định kiến trúc (ánh xạ prop, nơi kích hoạt render, 
+         +thuật toán cửa sổ) nằm ở **một chỗ** trong mã.                 
+      60 +- Mã gọn, module nhỏ, tên rõ nghĩa; không giữ đoạn mã mà mình k
+         +hông giải thích được.                                          
+      61 +- Luôn có test và cách kiểm chứng bằng DevTools cho từng module
+         + để sửa xong biết ngay đúng hay sai.                           
+      62 +- Mỗi bài tập phải chạy được từ repo sạch (một lệnh cài, một lệ
+         +nh chạy).                                                      
+      63 +                                                               
+      64  ## 7. Git [Thầy + thực hành]
+      65  
+      66  - Mỗi task xong = một commit atomic, Conventional Commits (`fea
+          t(core): implement vdom engine`).
+
+● Update(Agents.md)
+  ⎿  Added 5 lines
+      47  - Mọi tài liệu Markdown viết ra cũng theo WCAG 2.2 AA: heading 
+          phân cấp, link có mô tả, bảng có tiêu đề, code block có ngôn ng
+          ữ, ảnh có alt, không dùng emoji để mang nghĩa.
+      48  - Không tự khẳng định "đạt WCAG" khi chưa kiểm tra; ghi rõ đã k
+          iểm tra những tiêu chí nào và bằng cách nào.
+      49  
+      50 +### Sẵn sàng cho bảo vệ trực tiếp                              
+      51 +                                                               
+      52 +- Người dùng sẽ bị giảng viên sửa mã ngay tại chỗ (xem [docs/Co
+         +ntext.md §3.15](docs/Context.md)). Vì vậy: mã đơn giản, mỗi quy
+         +ết định kiến trúc ở một chỗ, và luôn giải thích lý do cho từng 
+         +đoạn mã sinh ra.                                               
+      53 +- Không thêm trừu tượng hoặc thư viện mà người dùng không giải 
+         +thích được.                                                    
+      54 +                                                               
+      55  ## 4. Kiểm chứng
+      56  
+      57  - Test runner: Vitest + jsdom (giả định; xem Context.md §6). Mỗ
+          i module Tier 1 có test đi kèm.
+
+● Mình đã đưa thông tin Exercise 2, 3 và Homework 1, 2, 3 vào đúng chỗ. Mình
+  chưa commit gì và chưa chia WBS.
+
+  Folder và file mới: exercise2, exercise3, homework1, homework2, homework3, mỗi
+  folder có một TASK_DECOMPOSITION.md. Mỗi file ghi thông tin đề, ràng buộc,
+  commit bắt buộc, mã mẫu đã sửa cú pháp, checklist nghiệm thu, ghi chú WCAG 2.2
+  AA riêng cho bài và các câu hỏi còn mở.
+
+  Các slide kiến thức chung vào docs/Context.md:
+  - §2.1: bảng 6 bài kèm tỉ trọng điểm đã biết (bảo vệ trực tiếp 25%, AI audit
+    15%).
+  - §3.12: re-render lan truyền, memo, useMemo, useCallback.
+  - §3.13: virtual scrolling và công thức cửa sổ.
+  - §3.14: so sánh VDOM lúc chạy với compiler (Svelte, Solid).
+  - §3.15: bảo vệ trực tiếp 3 phút.
+  - §7: thêm lỗi của các slide mới.
+  - Quy tắc bảo vệ: project-rules §6.1 (docs/project-rules.md) và Agents.md có
+    thêm quy tắc chuẩn bị cho phần bảo vệ trực tiếp.
+
+  Mình phát hiện các lỗi hoặc điểm đáng chú ý trong slide, đã ghi vào Context
+  §7:
+  - memo: cache nằm ở phạm vi memo(), nên mọi instance của cùng component dùng
+    chung một cache.
+  - calculateWindow: cách tính endIndex có thể thiếu một dòng ở biên. Mình chưa
+    chạy thử, cần viết test.
+  - Exercise 3: mục tiêu là loại bỏ race condition nhưng mã mẫu chưa xử lý.
+  - Homework 3: Date.now() có thể bị đổi giờ hệ thống.
+
+  Mình tự đưa vào vài thứ slide không nói, bạn xem có giữ không:
+  - Ghi chú WCAG riêng cho từng bài, ví dụ 2.2.1 với khóa giữ hàng và aria-sort
+    cho bảng.
+  - Phác thảo bảng trạng thái tồn kho trong Homework 3, đề chưa nêu rõ.
+
+  Câu hỏi cần hỏi thầy (đã ghi trong từng file):
+  1. AI_FAILURE_AUDIT.md là một file cho cả lab hay mỗi bài một file? HW3 yêu
+     cầu "ít nhất 3 lỗi".
+  2. Bài Homework dùng Mini-React tự viết hay framework thật?
+  3. Giới hạn song song của hàng đợi HW2, và số commit tối thiểu của HW1, HW2.
+
+  Ngoài ra mình vẫn chờ bạn trả lời 3 câu của Exercise 1 (vị trí mini-react.js,
+  JS hay TS, và onClick gắn trực tiếp). Context đã đủ chưa, hay bạn còn slide
+  nào để thêm?
+
+> Mình có tạo sẵn folder rồi ấy, tên folder nó sẽ cụ thể hơn, check dời vào dr
+  chỗ r xóa folder cũ
+
+  Searched for 1 pattern, ran 2 shell commands (ctrl+o to expand)
+
+● Đã dời file xong, giờ sửa các link cũ.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Mình đã dời 6 file TASK_DECOMPOSITION.md vào các folder bạn tạo sẵn và xóa 6
+  folder cũ (chữ thường). Các folder cũ chỉ có file đó nên không mất gì.
+
+  Exercise1_Lab02/TASK_DECOMPOSITION.md
+  Exercise2_Lab02/TASK_DECOMPOSITION.md
+  Exercise3_Lab02/TASK_DECOMPOSITION.md
+  Homework1_Lab02/TASK_DECOMPOSITION.md
+  Homework2_Lab02/TASK_DECOMPOSITION.md
+  Homework3_Lab02/TASK_DECOMPOSITION.md
+
+  Mình đã sửa các đường link trong docs/Context.md (bảng §2.1 và §7) và câu hỏi
+  trong Exercise1_Lab02 để trỏ đúng tên mới. Mình đã tìm lại toàn bộ file .md,
+  không còn link nào trỏ tới tên folder cũ.
+
+  Context.md có thay đổi trên đĩa mà mình không tạo ra, mình giữ nguyên.
+
+  Mình vẫn chờ 3 câu trả lời cho Exercise 1: vị trí mini-react.js, dùng JS hay
+  TS, và onClick gắn trực tiếp có được không.
