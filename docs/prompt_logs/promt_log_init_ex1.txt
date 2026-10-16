@@ -1,0 +1,491 @@
+  ⎿  SessionStart:startup hook error
+  ⎿  [bash C:\Users\Phu Hung\.claude\plugins\cache\anthropic-plugin-directory\cl
+     aude-memory\1.0.0-0afb7b2da7cc/hooks/scripts/memory-context.sh]:
+     C:/Users/Phu: line 1: syntax error near unexpected token `('
+
+> Ok giờ bắt đầu với exercise 1, bạn brainstorm mình về taks này và đồng thời
+  tạo task decompostion đi
+
+● Using superpowers:brainstorming để brainstorm Exercise 1.
+
+● Skill(superpowers:brainstorming)
+  ⎿  Successfully loaded skill
+
+  Searched for 1 pattern, read 3 files (ctrl+o to expand)
+
+● Mình chia Exercise 1 vào nhóm Architectural, vì repo chưa có code engine nào
+  để sửa. Nếu bạn thấy nó nên nhẹ hơn thì cứ nói. Mình chưa viết file nào, vì
+  còn một câu hỏi cần bạn chốt.
+
+  Mình hiểu bài thế này
+
+  - Mục tiêu: viết createTextElement, createElement, renderToDOM trong
+    mini-react.js. Trong 35 phút, console.assert của Checkpoint 1 phải pass.
+  - Thước đo:
+    - Output chỉ dùng thẻ ngữ nghĩa.
+    - Chuỗi <img onerror=...> và <script> hiện như text.
+    - DOM khớp VNode khi soi bằng DevTools.
+    - Đúng 2 commit theo thứ tự đề cho.
+  - Chuyện bảo vệ trực tiếp: thầy có thể đổi một chỗ trong code rồi bắt bạn sửa.
+    Vì vậy className→class, flatten/lọc children, và gắn listener mỗi cái phải
+    nằm ở đúng một chỗ.
+
+  Điểm cần để ý
+
+  1. Conflict về commit. AGENTS.md ghi mỗi task một commit. Đề bài lại yêu cầu
+     đúng 2 commit. Đề thắng, nên mình sẽ gộp WBS thành 2 nhóm: các task
+     createElement vào commit 1, các task renderToDOM vào commit 2. Test đi cùng
+     module của nó.
+  2. Slide import ./mini-react.js. Nếu dùng TypeScript thì cần bước build mới
+     chạy được test-runner của slide.
+  3. role="main" trên <main> là thừa (project-rules §8.1). Giữ vì đề cho, nhưng
+     ghi nhận khi audit.
+  4. Gắn onClick. Dùng addEventListener trực tiếp cho Exercise 1. Event
+     delegation để Exercise 2. Mình đề xuất chấp nhận tạm và ghi chú trong code.
+  5. Chống XSS miễn phí. Dùng createTextNode và không dùng innerHTML thì
+     <script> tự thành text. Test chỉ cần chứng minh điều này.
+
+  WBS nháp (chưa ghi file)
+
+  Commit 1: feat(core): implement createElement factory
+  - 1.1 Contract: VNode, Props, hằng TEXT_ELEMENT (JSDoc hoặc TS).
+  - 1.2 createTextElement, kèm test.
+  - 1.3 createElement: bọc primitive, lọc null/undefined/false, flat(Infinity),
+    props null thành {}, Object.freeze, kèm test.
+  - 1.4 Verify và commit.
+
+  Commit 2: feat(core): implement renderToDOM
+  - 2.1 Tạo node: createTextNode cho text, createElement cho tag, typeguard cho
+    function component.
+  - 2.2 Gán prop ở một chỗ: className→class, bỏ children/nodeValue.
+  - 2.3 Gắn listener cho prop on*: onClick→click, ở một chỗ.
+  - 2.4 Đệ quy children và test XSS.
+  - 2.5 Chạy Checkpoint 1, audit DevTools, export prompt log, commit.
+
+  Câu hỏi
+
+  Mình đề xuất JavaScript thuần + JSDoc @ts-check, vì khớp slide và chạy được
+  bằng một file HTML. Bạn muốn dùng JS hay TS cho bài này?
+
+● User answered Claude's questions:
+  ⎿  · Exercise 1 dùng JS hay TS cho mini-react? → JS + JSDoc @ts-check
+     (Recommended)
+
+● Write(Exercise1_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 71 lines, removed 31 lines
+      1 -# Exercise 1 — Task Decomposition (bản nháp ghi chú)            
+      1 +# Exercise 1 — Task Decomposition                               
+      2  
+      3 -> Trạng thái: **mới ghi lại thông tin đề bài**. Chưa chia WBS. K
+        -hi bắt đầu làm, chia thành các task nhỏ theo [project-rules](../
+        -docs/project-rules.md) (mỗi task một sub-task, có bước verify). 
+      4 -> Kiến thức nền xem [Context](../docs/Context.md).              
+      3 +> Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rul
+        +es](../docs/project-rules.md) và [Agents](../Agents.md).        
+      4 +> Quy ước: tick `[x]` chỉ khi task đã chạy lệnh kiểm chứng và th
+        +ấy output thật.                                                 
+      5  
+      6  ## 1. Thông tin chung
+      7  
+     ...
+      10  | Tên bài | Building Mini-React VNode & Mounting Engine |
+      11  | Hình thức | In-class Sprint 1, 35 phút |
+      12  | Mục tiêu | Tự cài `createElement`, `createTextElement`, `rend
+          erToDOM` |
+      13 +| Ngôn ngữ | JavaScript thuần, contract bằng JSDoc, bật `// @ts
+         +-check` (đã chốt) |                                            
+      14 +| File engine | `Exercise1_Lab02/mini-react.js` (slide import `
+         +./mini-react.js`) |                                            
+      15 +| Test | Vitest + jsdom, file `Exercise1_Lab02/mini-react.test.
+         +js` |                                                          
+      16  
+      14 -## 2. Deliverable                                              
+      17 +## 2. Ràng buộc từ đề                                          
+      18  
+      16 -- Không có "div-soup".                                         
+      17 -- Typeguard được kiểm chứng chặt.                              
+      18 -- Audit trực tiếp bằng DevTools.                               
+      19 -                                                               
+      20 -## 3. Ràng buộc                                                
+      21 -                                                               
+      22 -1. **Semantic HTML:** output phải dùng thẻ ngữ nghĩa như `<main
+         ->`, `<section>`, `<button>`. Cấm div-soup.                     
+      23 -2. **Bảo mật:** kiểm tra khả năng chống XSS khi truyền chuỗi `<
+         -script>alert(1)</script>` làm child. Chuỗi phải hiển thị như te
+         -xt, không được thực thi.                                       
+      24 -3. **DevTools audit:** dùng panel Elements để xác nhận DOM khớp
+         - với cây VNode và không có node mồ côi (orphan).               
+      19 +1. **Semantic HTML:** dùng `<main>`, `<header>`, `<button>`. Cấ
+         +m div-soup.                                                    
+      20 +2. **Bảo mật:** `<script>alert(1)</script>` và `<img onerror=al
+         +ert(1)>` làm child phải hiện như text.                         
+      21 +3. **DevTools audit:** panel Elements khớp cây VNode, không có 
+         +node mồ côi.                                                   
+      22  4. **Git:** đúng 2 commit, theo thứ tự:
+      23     1. `feat(core): implement createElement factory`
+      24     2. `feat(core): implement renderToDOM`
+      25  
+      29 -## 4. Bộ kiểm tra Checkpoint 1                                 
+      26 +## 3. Quyết định thiết kế (mỗi quyết định ở một chỗ)           
+      27  
+      31 -Slide gốc bị vỡ định dạng (thiếu dấu `=`). Dưới đây là bản đã c
+         -hỉnh lại cho đúng cú pháp, giữ nguyên ý:                       
+      28 +| Quyết định | Chốt | Lý do |                                  
+      29 +|---|---|---|                                                  
+      30 +| Hằng loại text | `TEXT_ELEMENT` export một lần | Sửa tên ở mộ
+         +t chỗ khi bị đổi lúc bảo vệ |                                  
+      31 +| Ánh xạ `className` → `class` | Một hàm `applyProp` duy nhất |
+         + Đột biến thầy hay đổi ở đây |                                 
+      32 +| Tên event | `name.toLowerCase().substring(2)` trong một hàm `
+         +eventNameOf` | `onClick` → `click` |                           
+      33 +| Gắn listener | `addEventListener` trực tiếp trên node | Event
+         + delegation là Exercise 2; ghi chú `why` trong code |          
+      34 +| `key` | Giữ trong `props.key`, chưa dùng ở bài này | Reconcil
+         +iation thuộc Exercise sau |                                    
+      35 +| Nơi `Object.freeze` | Chỉ trong `createElement` và `createTex
+         +tElement` | Immutability của VNode |                           
+      36 +| Function component | `renderToDOM` gọi `type(props)` khi `typ
+         +eof type === 'function'` | Typeguard mà đề yêu cầu "kiểm chứng 
+         +chặt" |                                                        
+      37  
+      38 +## 4. WBS                                                      
+      39 +                                                               
+      40 +Mỗi task là một lượt làm riêng (Slice → Contract → Generate → V
+         +erify). Test đi cùng module của nó.                            
+      41 +                                                               
+      42 +### Nhóm A — Commit 1: `feat(core): implement createElement fac
+         +tory`                                                          
+      43 +                                                               
+      44 +- [ ] A0 Setup: `package.json`, Vitest + jsdom, script `test`. 
+         +**Hỏi trước khi cài dependency.**                              
+      45 +- [ ] A1 Contract: JSDoc typedef `VNode`, `VNodeProps`, hằng `T
+         +EXT_ELEMENT`, chữ ký ba hàm (chưa có thân hàm).                
+      46 +- [ ] A2 `createTextElement(text)`: trả VNode `TEXT_ELEMENT`, `
+         +nodeValue` là chuỗi, `children: []`, frozen. Test: số được ép t
+         +hành chuỗi, kết quả frozen.                                    
+      47 +- [ ] A3 `createElement(type, props, ...children)`:            
+      48 +  - bọc `string`/`number` thành text VNode                     
+      49 +  - lọc `null`, `undefined`, `false`                           
+      50 +  - `flat(Infinity)` cho children lồng nhau                    
+      51 +  - `props` null thành `{}`                                    
+      52 +  - `Object.freeze` cả VNode lẫn `props`                       
+      53 +  - Test: từng ý trên một case, thêm case `0` không bị lọc nhầm
+         +.                                                              
+      54 +- [ ] A4 Verify và commit 1: chạy `npm test`, xem `git diff`, k
+         +iểm tra không còn `var`/`innerHTML`, commit đúng message.      
+      55 +                                                               
+      56 +### Nhóm B — Commit 2: `feat(core): implement renderToDOM`     
+      57 +                                                               
+      58 +- [ ] B1 `renderToDOM(vNode)` nhánh tạo node: `createTextNode` 
+         +cho `TEXT_ELEMENT`, `document.createElement` cho tag. Test: tex
+         +t vs element.                                                  
+      59 +- [ ] B2 `applyProp(dom, name, value)`: bỏ `children`/`nodeValu
+         +e`/`key`, ánh xạ `className` → `class`, gán attribute bằng `set
+         +Attribute`. Test: `id`, `role`, `className`.                   
+      60 +- [ ] B3 Prop `on*`: `eventNameOf` rồi `addEventListener`. Test
+         +: dispatch `click` gọi handler đúng một lần.                   
+      61 +- [ ] B4 Đệ quy children + `appendChild` + nhánh function compo
+         +nent (typeguard). Test: cây lồng 3 cấp, component trả cây con. 
+      62 +- [ ] B5 Test bảo mật: child là `<script>alert(1)</script>` và 
+         +`<img onerror=alert(1)> Safe Text` hiện như text; `querySelecto
+         +r('script')` và `querySelector('img')` đều `null`.             
+      63 +- [ ] B6 Checkpoint 1: chạy `test-runner.js` của đề trong trình
+         + duyệt, `console.assert` không báo lỗi.                        
+      64 +- [ ] B7 Audit DevTools: Elements khớp VNode, không node mồ côi
+         +, ghi nhận `role="main"` thừa; lưu ảnh chụp vào `Exercise1_Lab0
+         +2/evidence/` (có alt text khi nhúng).                          
+      65 +- [ ] B8 Export prompt log vào `docs/prompt_logs/`; verify, com
+         +mit 2 đúng message.                                            
+      66 +                                                               
+      67 +## 5. Bộ kiểm tra Checkpoint 1                                 
+      68 +                                                               
+      69 +Bản đã sửa cú pháp từ slide:                                   
+      70 +                                                               
+      71  ```js
+      72  // test-runner.js — Checkpoint 1
+      73  import { createElement, renderToDOM } from './mini-react.js';
+     ...
+       89  console.assert(root.querySelector('button') != null, 'Mount Fa
+           iled');
+       90  ```
+       91  
+       54 -Cần lưu ý:                                                    
+       55 -- File engine tên `mini-react.js`, export `createElement` và `
+          -renderToDOM`.                                                 
+       56 -- `role="main"` trên `<main>` là thừa (thẻ đã có role ngầm). G
+          -iữ vì đề cho, nhưng nên ghi nhận khi audit.                   
+       57 -- Chuỗi `<img onerror=alert(1)> Safe Text` phải hiện nguyên vă
+          -n như text, không tạo thẻ `<img>`.                            
+       92 +Lưu ý:                                                        
+       93 +- `role="main"` trên `<main>` là thừa. Giữ theo đề, ghi nhận k
+          +hi audit.                                                     
+       94 +- Chuỗi `<img onerror=alert(1)> Safe Text` phải hiện nguyên vă
+          +n, không tạo thẻ `<img>`.                                     
+       95  
+       59 -## 5. Điều kiện hoàn thành (checklist nghiệm thu)             
+       96 +## 6. Điều kiện hoàn thành                                    
+       97  
+       61 -- [ ] `createTextElement` và `createElement` có trong `mini-re
+          -act.js`                                                       
+       62 -- [ ] `renderToDOM` có trong `mini-react.js`                  
+       63 -- [ ] `console.assert` ở trên không báo lỗi                   
+       98 +- [ ] `createTextElement`, `createElement`, `renderToDOM` đều 
+          +có trong `mini-react.js`                                      
+       99 +- [ ] `npm test` pass, dán output thật                        
+      100 +- [ ] `console.assert` của Checkpoint 1 không báo lỗi         
+      101  - [ ] Không có `<div>` thừa; thẻ ngữ nghĩa đúng chỗ
+       65 -- [ ] `<script>alert(1)</script>` làm child: không có hộp thoạ
+          -i alert, không có thẻ `<script>` trong DOM                    
+      102 +- [ ] `<script>alert(1)</script>` làm child: không có alert, k
+          +hông có thẻ `<script>` trong DOM                              
+      103  - [ ] DevTools Elements: cây DOM khớp cây VNode, không node mồ
+            côi
+       67 -- [ ] Đúng 2 commit với đúng message ở §3                     
+       68 -- [ ] Prompt log của bài đã export vào `docs/prompt_logs/`    
+      104 +- [ ] Đúng 2 commit, đúng message và thứ tự ở §2              
+      105 +- [ ] Prompt log đã export vào `docs/prompt_logs/`            
+      106  
+       70 -## 6. Câu hỏi còn mở                                          
+      107 +## 7. Câu hỏi còn mở                                          
+      108  
+       72 -- Cấu trúc file của bài: để `mini-react.js` ở gốc `Exercise1_L
+          -ab02/` hay trong `src/`?                                      
+       73 -- Có dùng TypeScript cho bài này không? Slide dùng file `.js`.
+       74 -- `renderToDOM` trong bài này gắn `onClick` bằng `addEventList
+          -ener` trực tiếp (theo slide mẫu). Event delegation là bài sau,
+          - nên chấp nhận tạm ở Exercise 1?                              
+       75 -- Có cần lưu ảnh chụp DevTools làm bằng chứng không, và để ở đ
+          -âu?                                                           
+      109 +| Câu hỏi | Mặc định đang dùng | Trạng thái |                 
+      110 +|---|---|---|                                                 
+      111 +| Dùng JS hay TS | JS + JSDoc `@ts-check` | Đã chốt |         
+      112 +| Vị trí `mini-react.js` | Gốc `Exercise1_Lab02/` | Giả định, 
+          +chờ xác nhận |                                                
+      113 +| `addEventListener` trực tiếp ở bài này | Chấp nhận, delegati
+          +on để Exercise 2 | Giả định, chờ xác nhận |                   
+      114 +| Chỗ lưu ảnh DevTools | `Exercise1_Lab02/evidence/` | Giả địn
+          +h, chờ xác nhận |                                             
+      115 +| "Đúng 2 commit" có tính commit docs và setup không | Setup v
+          +ào commit 1; cập nhật tick WBS đi cùng commit 2 | Cần xác nhận
+          +, mâu thuẫn với Agents.md §5 (mỗi task một commit) |          
+
+● Mình đã ghi WBS vào Exercise1_Lab02/TASK_DECOMPOSITION.md. Mình chưa viết
+  code, chưa chạy test và chưa commit.
+
+  Nội dung file:
+  - Chọn công nghệ: JavaScript thuần, contract bằng JSDoc @ts-check, test bằng
+    Vitest + jsdom.
+  - Nhóm A (commit 1): task A0 đến A4. A1 là contract, A2 là createTextElement,
+    A3 là createElement.
+  - Nhóm B (commit 2): task B1 đến B8. Từ B1 đến B4 là renderToDOM, B5 là test
+    XSS, B6 chạy Checkpoint 1, B7 audit DevTools, B8 export prompt log rồi
+    commit.
+  - Quyết định thiết kế: className→class, tên event và nơi Object.freeze mỗi cái
+    nằm ở một chỗ, để sửa nhanh khi bảo vệ.
+
+  Cần bạn xác nhận (bảng §7 trong file):
+  - Vị trí file: mini-react.js để ở gốc Exercise1_Lab02/.
+  - Event: dùng addEventListener trực tiếp ở bài này, event delegation để
+    Exercise 2.
+  - Ảnh DevTools: lưu vào Exercise1_Lab02/evidence/.
+  - Đếm commit: đề ghi "đúng 2 commit", còn Agents.md §5 ghi mỗi task một
+    commit. Mình đang gộp setup vào commit 1 và cập nhật tick WBS vào commit 2.
+    Bạn xem cách đó ổn không.
+
+  Task A0 cần cài Vitest + jsdom, nên mình sẽ hỏi lại trước khi cài. Bạn trả lời
+  các mục trên rồi nói bắt đầu thì mình làm task A0.
+
+> <ide_opened_file>The user opened the file c:\Dev\Project\24520626_QuangPhuHun
+  g_MSIS207_Lab02\Exercise1_Lab02\TASK_DECOMPOSITION.md in the IDE. This may or
+  may not be related to the current task.</ide_opened_file>
+
+> Ok bắt đầu thực hiện cho commit 1 , không tự commit để mình kiểm tra, bài này
+  không cần làm trong 35p như thầy nói nên cứ làm cho hoàn thiện. Theo yêu cầu
+  của đề thì exercise này sẽ gồm 2 commit. lưu ảnh devtools ở evidence.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Write(Exercise1_Lab02\mini-react.test.js)
+  ⎿  Wrote 99 lines to Exercise1_Lab02\mini-react.test.js
+       1 import { describe, expect, it } from 'vitest';
+       2 import { TEXT_ELEMENT, createElement, createTextElement } from '
+         ./mini-react.js';
+       3
+       4 describe('createTextElement', () => {
+       6     const node = createTextElement('xin chào');
+       7     expect(node.type).toBe(TEXT_ELEMENT);
+       8     expect(node.props.nodeValue).toBe('xin chào');
+       9     expect(node.props.children).toEqual([]);
+      10   });
+     … +102 lines (ctrl+o to expand)
+
+● Write(Exercise1_Lab02\mini-react.js)
+  ⎿  Wrote 84 lines to Exercise1_Lab02\mini-react.js
+       1 // @ts-check
+       2
+       3 // ---------- Contract (A1) ----------
+       5 /** Loại VNode dành riêng cho text; mọi leaf luôn được chuẩn hoá
+          về loại này. */
+       6 export const TEXT_ELEMENT = 'TEXT_ELEMENT';
+       7
+       9  * `any` ở đây là chỗ duy nhất được phép (Context.md §3.2): prop
+         s của function
+      10  * component do từng component tự định nghĩa.
+     … +83 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(Exercise1_Lab02\mini-react.js)
+  ⎿  Added 2 lines, removed 1 line
+      69   * @returns {VNode}
+      70   */
+      71  export function createElement(type, props, ...children) {
+      72 -  const normalized = children                                  
+      72 +  // Ép về unknown[] vì kiểu đệ quy ChildInput làm TS không suy
+         + ra nổi kết quả của flat(Infinity).                            
+      73 +  const normalized = /** @type {unknown[]} */ (children)       
+      74      .flat(Infinity)
+      75      .filter(isRenderable)
+      76      .map((child) => toVNode(/** @type {VNode | string | number}
+           */ (child)));
+
+● Đang sửa lỗi typecheck của flat(Infinity), rồi chạy lại test và tsc.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Task A0 đến A3 của commit 1 đã xong. Mình chưa commit, để bạn kiểm tra.
+
+  Đã verify:
+  - npm test: 16/16 test pass.
+  - tsc --strict --checkJs trên mini-react.js: không còn lỗi. Lần đầu có lỗi
+    TS2589 ở flat(Infinity), mình sửa bằng cách ép children về unknown[] và có
+    comment giải thích.
+  - grep không thấy var, innerHTML hay keyCode.
+
+  File mới, đang untracked:
+  - mini-react.js (Exercise1_Lab02/mini-react.js) gồm contract JSDoc,
+    TEXT_ELEMENT, createTextElement, createElement.
+  - mini-react.test.js (Exercise1_Lab02/mini-react.test.js) có 16 test.
+  - package.json, package-lock.json, vitest.config.js (môi trường jsdom) và
+    .gitignore (bỏ node_modules/) đều nằm ở gốc repo, dùng chung cho các bài
+    sau. Vitest và jsdom là hai devDependency duy nhất.
+
+  Các quyết định, bạn nên đọc vì có thể bị hỏi khi bảo vệ:
+  1. Lọc mọi boolean: isRenderable lọc cả true chứ không chỉ false như
+     Context.md §3.3. Nếu không, cond && x hay cond || x có thể in chữ "true". 0
+     và chuỗi rỗng vẫn được giữ, có test riêng.
+  2. Children bị ghi đè: children truyền qua đối số luôn ghi đè props.children,
+     và createElement không sửa object props của người gọi (đều có test).
+  3. Frozen ba lớp: VNode, props và mảng children đều bị freeze.
+  4. Thứ tự TDD: mình viết test và implementation cùng lượt, không chạy bản red
+     trước. Nếu muốn thấy test fail trước, mình có thể tạm stub hàm để chạy lại.
+
+  Chưa verify: renderToDOM và Checkpoint 1 thuộc nhóm B.
+
+  Task A4 còn lại là bước của bạn. Bạn xem git diff rồi commit với message
+  feat(core): implement createElement factory. Cuối message cần dòng
+  Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>. Hiện
+  TASK_DECOMPOSITION.md đã tick A0 đến A3 và đang nằm trong diff.
+
+  Bạn commit xong thì báo mình, mình làm nhóm B.
+
+> <ide_opened_file>The user opened the file c:\Dev\Project\24520626_QuangPhuHun
+  g_MSIS207_Lab02\Exercise1_Lab02\mini-react.js in the IDE. This may or may not
+  be related to the current task.</ide_opened_file>
+
+> Ok thực hiện commit số 2, đồng thời kiểm tra lại flow hoạt động sau khi hoạn
+  thiện, kiểm tra lỗi và báo cáo các ưu và nhược có thể cải thiện hoặc chọn.
+
+  Read 1 file, ran 6 shell commands (ctrl+o to expand)
+
+● Code của commit 2 đã xong và đã verify. Mình chưa commit. B7 và B8 còn lại cho
+  bạn, vì cần chụp DevTools thật và export prompt log.
+
+  Đã verify (output thật)
+
+  - npm test: 31/31 pass, gồm 15 test mới cho renderToDOM. Mình viết test trước
+    và thấy 14 test fail với "renderToDOM is not a function" trước khi viết
+    code.
+  - tsc --strict --checkJs: 0 lỗi.
+  - Chạy index.html bằng Edge headless qua HTTP server:
+    - DOM đúng cây VNode: <main id="root-view" role="main"><header
+      class="hero"><h1>…</h1><p>&lt;img …&gt; Safe
+      Text</p><p>&lt;script&gt;…</p></header><button>Click</button></main>.
+    - Không có <img> hay <script> thật, và không có alert.
+    - Log trình duyệt không có lỗi console.assert.
+  - Thứ mình chưa kiểm tra: click nút ngoài trình duyệt thật (test jsdom thì có,
+    Ping được gọi một lần) và panel Elements của DevTools. Hai file ảnh và DOM
+    mình lưu ở evidence/ (Exercise1_Lab02/evidence/) chỉ là bằng chứng phụ.
+    page-render.png (Exercise1_Lab02/evidence/page-render.png) là ảnh trang,
+    không phải panel Elements.
+
+  Việc còn lại của bạn
+
+  1. B7: chạy python -m http.server trong Exercise1_Lab02, mở
+     http://localhost:8000, chụp panel Elements bằng DevTools rồi lưu vào
+     evidence/. Khi nhúng ảnh vào tài liệu phải có alt text.
+  2. B8: export prompt log vào docs/prompt_logs/.
+  3. Message commit: commit 1 của bạn là feat(core): implement createElement
+     factory. có dấu chấm cuối, lệch một ký tự so với đề. Commit 2 nên là
+     feat(core): implement renderToDOM không có dấu chấm. Nếu thầy chấm khắt
+     khe, bạn cân nhắc sửa commit 1 bằng amend.
+
+  Báo cáo ưu, nhược và lựa chọn
+
+  Ưu
+  - Chống XSS: renderToDOM không dùng innerHTML, nên mọi chuỗi trong VNode chỉ
+    là text.
+  - Chặn inline handler: prop bắt đầu bằng on chỉ nhận hàm. Chuỗi như
+    onclick="alert(1)" bị bỏ, không thành attribute.
+  - Mỗi quyết định ở một chỗ: isEventProp, eventNameOf và applyProp mỗi hàm một
+    việc.
+  - Typeguard: isVNode ném TypeError rõ ràng với null, chuỗi trần, {}, hoặc
+    component trả null.
+
+  Nhược và điểm có thể cải thiện
+
+  Vấn đề: Mọi prop đi qua setAttribute
+  Hậu quả: value/checked của <input> sẽ không cập nhật đúng sau khi người dùng
+  gõ
+  Hướng chọn: Exercise 2 cần gán property cho các prop này
+  ────────────────────────────────────────
+  Vấn đề: Không xử lý prop style dạng object
+  Hậu quả: style: {color:'red'} thành chuỗi [object Object]
+  Hướng chọn: Thêm nhánh Object.assign(dom.style, value) khi cần
+  ────────────────────────────────────────
+  Vấn đề: href="javascript:..." vẫn qua
+  Hậu quả: Không chống được XSS qua URL
+  Hướng chọn: Whitelist scheme cho href/src, ngoài scope bài này
+  ────────────────────────────────────────
+  Vấn đề: Không hỗ trợ SVG
+  Hậu quả: Thử thách A của live defense sẽ cần createElementNS
+  Hướng chọn: Sửa ở một chỗ: nhánh document.createElement trong renderToDOM
+  ────────────────────────────────────────
+  Vấn đề: Listener gắn từng node
+  Hậu quả: Tốn bộ nhớ khi có nhiều node
+  Hướng chọn: Đã dự kiến, thay bằng delegation hub ở Exercise 2
+  ────────────────────────────────────────
+  Vấn đề: createElement không phát hiện vòng lặp children
+  Hậu quả: Thử thách C của live defense
+  Hướng chọn: Thêm kiểm tra ở bước flatten nếu muốn chuẩn bị
+  ────────────────────────────────────────
+  Vấn đề: .map(renderToDOM) truyền thêm index làm tham số thứ hai
+  Hậu quả: Hiện vô hại vì hàm chỉ nhận một tham số
+  Hướng chọn: Đổi thành (child) => renderToDOM(child) nếu muốn tường minh
+  ────────────────────────────────────────
+  Vấn đề: index.html có một <div id="app">
+  Hậu quả: Là điểm mount duy nhất, đúng theo slide
+  Hướng chọn: Chấp nhận
+  ────────────────────────────────────────
+  Vấn đề: role="main" trên <main> là thừa
+  Hậu quả: Theo đề, ghi nhận trong audit
+  Hướng chọn: Giữ nguyên
+
+  Lựa chọn thiết kế bạn nên nắm để trả lời khi bảo vệ: prop on* là hàm thì gắn
+  listener, không phải hàm thì bỏ. Boolean true thành attribute rỗng, còn false,
+  null, undefined thì bỏ. Mình chọn cách này thay vì whitelist event cụ thể để
+  code gọn và an toàn theo mặc định, đổi lại là onFoo bất kỳ cũng tạo listener
+  tên foo.
+
+  Nếu bạn muốn, mình thêm hỗ trợ style object và SVG ngay bây giờ để chuẩn bị
+  cho live defense, mỗi cái là một task riêng.
