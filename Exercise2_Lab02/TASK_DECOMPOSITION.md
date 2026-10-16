@@ -53,12 +53,12 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm A — Commit 1: `feat(state): implement stateStore and resetCursor engine`
 
-- [ ] A0 Setup: sao chép `Exercise1_Lab02/mini-react.js` thành `Exercise2_Lab02/mini-react.js` (chưa sửa gì); kiểm tra `vitest.config.js` đã quét thư mục `Exercise2_Lab02`. Không cài thêm dependency.
-- [ ] A1 Contract trong `reactive-engine.js`: JSDoc cho `StateStore`, `Setter<T>`, `UseStateResult<T>`; khai báo `stateStore`, `cursor`; chữ ký `resetCursor`, `useState`, `setRenderer`, `renderApp` (chưa có thân hàm).
+- [x] A0 Setup: sao chép `Exercise1_Lab02/mini-react.js` thành `Exercise2_Lab02/mini-react.js` (chưa sửa gì); kiểm tra `vitest.config.js` đã quét thư mục `Exercise2_Lab02`. Không cài thêm dependency.
+- [x] A1 Contract trong `reactive-engine.js`: JSDoc cho `StateStore`, `Setter<T>`, `UseStateResult<T>`; khai báo `stateStore`, `cursor`; chữ ký `resetCursor`, `useState`, `setRenderer`, `renderApp` (chưa có thân hàm).
   - Invariant ghi trong comment: `0 <= cursor <= stateStore.length`; mỗi lần render bắt đầu với `cursor === 0`.
-- [ ] A2 `resetCursor()`: đặt `cursor = 0`, không xoá `stateStore`. Test: gọi sau khi cursor đã tăng thì về 0; `stateStore` giữ nguyên.
-- [ ] A3 Hàm nội bộ `claimSlot(initialValue)`: nếu `cursor >= stateStore.length` thì đẩy giá trị đầu, trả về `index` rồi tăng `cursor`. Test: lần gọi đầu khởi tạo, lần sau (sau `resetCursor`) giữ giá trị cũ, kể cả khi giá trị là `null` hoặc `undefined`.
-- [ ] A4 Verify và commit 1: chạy `npm test` và kiểm tra không còn `var`/biến global ngầm; xem `git diff`; tick WBS; commit đúng message.
+- [x] A2 `resetCursor()`: đặt `cursor = 0`, không xoá `stateStore`. Test: gọi sau khi cursor đã tăng thì về 0; `stateStore` giữ nguyên.
+- [x] A3 Hàm nội bộ `claimSlot(initialValue)`: nếu `cursor >= stateStore.length` thì đẩy giá trị đầu, trả về `index` rồi tăng `cursor`. Test: lần gọi đầu khởi tạo, lần sau (sau `resetCursor`) giữ giá trị cũ, kể cả khi giá trị là `null` hoặc `undefined`.
+- [x] A4 Verify và commit 1: chạy `npm test` và kiểm tra không còn `var`/biến global ngầm; xem `git diff`; tick WBS; commit đúng message.
 
 ### Nhóm B — Commit 2: `feat(state): implement reactive useState dispatcher`
 
