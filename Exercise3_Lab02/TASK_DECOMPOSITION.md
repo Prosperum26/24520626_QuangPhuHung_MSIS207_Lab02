@@ -94,7 +94,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: A0.
   - Nghiệm thu: không có giá trị thứ năm; `Object.isFrozen(STATUS)` và `Object.isFrozen(initialState)` là `true`; file có `// @ts-check` và VS Code không báo lỗi kiểu.
   - Test: `Object.values(STATUS)` bằng đúng `['IDLE','LOADING','SUCCESS','ERROR']`; `initialState.status === 'IDLE'`.
-- [ ] **A2 `transition` đường hợp lệ.** Bảng chuyển:
+- [x] **A2 `transition` đường hợp lệ.** Bảng chuyển:
 
   | Từ | `LOAD` | `RESOLVE` | `REJECT` |
   |---|---|---|---|
