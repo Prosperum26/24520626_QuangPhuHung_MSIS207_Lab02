@@ -144,10 +144,11 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
     6. **Lỗi cũ về sớm khi lần mới còn chờ:** lần 1 reject trong lúc lần 2 chưa xong → vẫn `LOADING`.
     7. **Retry:** lần 1 reject (`ERROR`), gọi `load` lại → `LOADING` rồi resolve → `SUCCESS`; không có bước nhảy thẳng từ `ERROR` sang `SUCCESS`.
     8. Hai loader độc lập: `latestId` của loader này không làm loader kia bỏ phản hồi.
-- [ ] **B6 Thử phá guard.** Tạm bỏ dòng so sánh `id !== latestId` rồi chạy `npm test`; các ca 3, 4, 5, 6 của B5 phải fail. Hoàn nguyên và chạy lại pass. Ghi kết quả vào mục 8.
+- [x] **B6 Thử phá guard.** Tạm bỏ dòng so sánh `id === latestId` rồi chạy `npm test`; các ca 3, 4, 6 của B5 phải fail. Hoàn nguyên và chạy lại pass.
+  - Kết quả thực tế: bỏ guard thì ca 3, 4, 6 fail (3 failed, 16 passed); hoàn nguyên thì 19 passed. Ca 5 và 8 không fail khi bỏ guard: ca 5 (lỗi cũ về muộn sau `SUCCESS`) đã bị bảng `transition` chặn (`REJECT` ở `SUCCESS` bị bỏ qua), đúng như quyết định thiết kế "chỉ `LOADING` mới cần guard"; ca 8 kiểm hai loader độc lập, không phụ thuộc guard. Ca 3 fail nhờ assertion đếm số lần `RESOLVE` được dispatch, không phải nhờ trạng thái cuối.
   - Phụ thuộc: B5.
   - Nghiệm thu: dán output fail rồi output pass; `git diff` sau khi hoàn nguyên không còn thay đổi ở `feed-loader.js` ngoài bản gốc của B5. Mục đích: chứng minh test thật sự bắt được race, và có kịch bản sửa-trực-tiếp sẵn cho buổi bảo vệ.
-- [ ] **B7 Verify nhóm B.** `npm test`; `grep` cấm; VS Code diagnostics sạch; tick WBS. Không commit.
+- [x] **B7 Verify nhóm B.** `npm test`; `grep` cấm; VS Code diagnostics sạch; tick WBS. Không commit.
   - Phụ thuộc: B6, B3.
 
 ### Nhóm C — UI: skeleton, success, error, Retry Connection
