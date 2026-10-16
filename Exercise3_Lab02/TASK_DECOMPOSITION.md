@@ -75,7 +75,7 @@ type Item = { id: string; title: string; summary: string };
 | Điểm bắt đầu của `IDLE` | Nút "Load feed" luôn hiện, không tự tải khi mount | `IDLE` quan sát và test được; không có hành vi bất ngờ khi vào trang |
 | Nút tải | Một nút `<button id="load-feed">` hiện ở mọi trạng thái; nhãn "Load feed" khi `IDLE`, "Reload feed" khi còn lại | Nút tồn tại trong `LOADING` nên bấm liên tiếp được; id ổn định để `writeFocus` giữ focus |
 | Nút Retry | `<button id="retry-feed">Retry Connection</button>` trong khối lỗi | Đúng nhãn của đề |
-| Focus khi nút bị gỡ | Sau khi bấm Retry, focus về `<h2 id="feed-heading" tabindex="-1">` | Retry bị xoá khi sang `LOADING`, focus rơi về `<body>` (WCAG 2.4.3). Cùng mẫu `recoverLostFocus` của `task-app.js` Exercise 2 |
+| Focus khi nút bị gỡ | Sau khi bấm Retry, focus về `<h1 id="feed-heading" tabindex="-1">` | Retry bị xoá khi sang `LOADING`, focus rơi về `<body>` (WCAG 2.4.3). Cùng mẫu `recoverLostFocus` của `task-app.js` Exercise 2 |
 | Vùng thông báo | `<p id="status" role="status">` trong `index.html`, ngoài `#app`; `announce()` ghi bằng `textContent` | Vùng live bị tạo lại mỗi render thường không được đọc ra (bài học từ Exercise 2) |
 | Render | Đồng bộ, `replaceChildren` cả cây, chưa diff | Diff thuộc phần sau của lab; không thêm vào bài này |
 | Key danh sách | `item.id` | Không dùng index |
@@ -153,7 +153,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm C — UI: skeleton, success, error, Retry Connection
 
-- [ ] **C1 Khung `createDataFeed` và trạng thái `IDLE`.** `createDataFeed({ fetchFeed })` tạo loader một lần rồi trả hàm component `DataFeed`. `DataFeed` gọi `useState(initialState)`, dựng `dispatch = (event) => setState(prev => transition(prev, event))`, trả `<section aria-labelledby="feed-heading">` gồm `<h2 id="feed-heading" tabindex="-1">`, nút `#load-feed`, và vùng nội dung theo trạng thái. `IDLE` hiện câu hướng dẫn "Press Load feed to start.". `onClick` của nút gọi `loader.load(dispatch)`.
+- [x] **C1 Khung `createDataFeed` và trạng thái `IDLE`.** `createDataFeed({ fetchFeed })` tạo loader một lần rồi trả hàm component `DataFeed`. `DataFeed` gọi `useState(initialState)`, dựng `dispatch = (event) => setState(prev => transition(prev, event))`, trả `<section aria-labelledby="feed-heading">` gồm `<h1 id="feed-heading" tabindex="-1">`, nút `#load-feed`, và vùng nội dung theo trạng thái. `IDLE` hiện câu hướng dẫn "Press Load feed to start.". `onClick` của nút gọi `loader.load(dispatch)`.
   - Phụ thuộc: A3, B5.
   - Nghiệm thu: render lần đầu là `IDLE`, chưa gọi `fetchFeed`; bấm nút gọi `fetchFeed` đúng một lần; không `addEventListener` trên nút (hub xử lý).
   - Test: dùng `setupEventDelegation`, `renderApp`, `createDeferredFeed`; `calls.length === 0` sau mount; sau click `calls.length === 1`; nút có nhãn "Load feed".
@@ -236,7 +236,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 | Tiêu chí | Cách kiểm dự kiến | Trạng thái |
 |---|---|---|
-| 1.3.1 Cấu trúc ngữ nghĩa | Test jsdom (`main > section > h2`, `ul > li`, `button`) và cây accessibility của Edge | Chưa kiểm |
+| 1.3.1 Cấu trúc ngữ nghĩa | Test jsdom (`main > section > h1`, `ul > li`, `button`) và cây accessibility của Edge | Chưa kiểm |
 | 1.4.1 Không chỉ dùng màu | Khối lỗi có tiêu đề, chữ và viền; xem ảnh chụp | Chưa kiểm |
 | 1.4.3 Tương phản 4.5:1 | Script từ `getComputedStyle` trong Edge (D2) | Chưa kiểm |
 | 1.4.11 Tương phản phi văn bản | Viền nút, vòng focus, khối skeleton so với nền, ≥ 3:1 (D2) | Chưa kiểm |
