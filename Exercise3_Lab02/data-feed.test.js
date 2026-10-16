@@ -188,3 +188,32 @@ describe('ERROR and Retry Connection (C4)', () => {
     expect(t.root.querySelector('[role="alert"]').textContent).toContain('Unknown error');
   });
 });
+
+describe('focus (C5)', () => {
+  it('keeps focus on the Load feed button through LOADING and SUCCESS', async () => {
+    const t = setup();
+    t.root.querySelector('#load-feed').focus();
+    t.root.querySelector('#load-feed').click();
+    expect(document.activeElement.id).toBe('load-feed');
+    t.calls[0].resolve(FEED_ITEMS);
+    await flush();
+    expect(document.activeElement.id).toBe('load-feed');
+  });
+
+  it('moves focus to the heading when the Retry button is removed', async () => {
+    const t = setup();
+    await failWith(t, new Error('Network down'));
+    t.root.querySelector('#retry-feed').focus();
+    t.root.querySelector('#retry-feed').click();
+    expect(t.root.querySelector('#retry-feed')).toBeNull();
+    expect(document.activeElement.id).toBe('feed-heading');
+  });
+
+  it('does not steal focus from a control the user is on', async () => {
+    const t = setup();
+    await failWith(t, new Error('Network down'));
+    t.root.querySelector('#load-feed').focus();
+    t.root.querySelector('#retry-feed').click();
+    expect(document.activeElement.id).toBe('load-feed');
+  });
+});

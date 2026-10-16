@@ -20,6 +20,15 @@ function announce(message) {
   if (region !== null) region.textContent = message;
 }
 
+/**
+ * Retry bị gỡ khỏi cây khi sang LOADING nên focus rơi về <body> (WCAG 2.4.3).
+ * Đưa về tiêu đề, và chỉ khi focus thật sự đã mất để không giật focus của control khác.
+ */
+function recoverLostFocus() {
+  const lost = document.activeElement === null || document.activeElement === document.body;
+  if (lost) document.getElementById(HEADING_ID)?.focus();
+}
+
 /** Khung xương thuần trang trí: không chữ, ẩn khỏi trình đọc màn hình. */
 function renderSkeleton() {
   const rows = Array.from({ length: SKELETON_ROWS }, () => createElement('div', { className: 'skeleton__row' }));
@@ -91,6 +100,10 @@ export function createDataFeed({ fetchFeed }) {
     const onLoad = () => {
       loader.load(dispatch);
     };
+    const onRetry = () => {
+      onLoad();
+      recoverLostFocus();
+    };
     const loadLabel = state.status === STATUS.IDLE ? 'Load feed' : 'Reload feed';
 
     return createElement(
@@ -106,7 +119,7 @@ export function createDataFeed({ fetchFeed }) {
       createElement(
         'div',
         { className: 'feed-region', 'aria-busy': state.status === STATUS.LOADING ? 'true' : null },
-        renderContent(state, { onRetry: onLoad }),
+        renderContent(state, { onRetry }),
       ),
     );
   };

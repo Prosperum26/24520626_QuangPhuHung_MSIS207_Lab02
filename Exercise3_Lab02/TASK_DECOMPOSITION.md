@@ -169,7 +169,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: C2.
   - Nghiệm thu: thông báo dễ hiểu và không chỉ dựa vào màu (có chữ và tiêu đề); Retry là `<button>`; Retry đưa trạng thái qua `LOADING` rồi mới tới `SUCCESS` hoặc `ERROR`; lỗi có HTML được hiển thị như chữ.
   - Test: reject bằng `Error('Network down')` → DOM có `[role="alert"]` chứa "Network down" và nút tên "Retry Connection"; click Retry → có skeleton, `calls.length === 2`; resolve lần 2 → hiện danh sách, hết `role="alert"`; retry rồi lỗi tiếp → quay lại `ERROR`; `error` chứa `<b>x</b>` không sinh thẻ `<b>`.
-- [ ] **C5 Quản lý focus.** (a) Nút `#load-feed` giữ focus qua các lần render nhờ `writeFocus` của engine. (b) Bấm `#retry-feed` làm nút biến mất; sau `load(dispatch)` đưa focus về `#feed-heading`. Hàm khôi phục focus đặt ở `data-feed.js`, không sửa engine (cùng mẫu `recoverLostFocus` của Exercise 2).
+- [x] **C5 Quản lý focus.** (a) Nút `#load-feed` giữ focus qua các lần render nhờ `writeFocus` của engine. (b) Bấm `#retry-feed` làm nút biến mất; sau `load(dispatch)` đưa focus về `#feed-heading`. Hàm khôi phục focus đặt ở `data-feed.js`, không sửa engine (cùng mẫu `recoverLostFocus` của Exercise 2).
   - Phụ thuộc: C4.
   - Nghiệm thu: sau mọi thao tác `document.activeElement` không bao giờ là `<body>`.
   - Test: focus `#load-feed`, bấm, kiểm tra `document.activeElement.id === 'load-feed'` qua `LOADING` và `SUCCESS`; focus `#retry-feed`, bấm, kiểm tra `activeElement.id === 'feed-heading'`; thử phá (bỏ hàm khôi phục) thì test (b) fail.
