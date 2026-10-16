@@ -62,13 +62,13 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm B — Commit 2: `feat(state): implement reactive useState dispatcher`
 
-- [ ] B1 `useState(initialValue)` bản đọc: dùng `claimSlot`, trả `[value, setter]` với `value` lấy từ `stateStore[index]`. Test: giữ giá trị qua nhiều lần render; hai hook trả đúng giá trị theo thứ tự gọi.
-- [ ] B2 Setter có closure trên `index` (không phải `cursor` lúc gọi): ghi `stateStore[index]`. Test: gọi setter sau khi cursor đã đổi vẫn ghi đúng ô.
-- [ ] B3 Setter nhận hàm: `typeof next === 'function' ? next(prev) : next`. Test: `setCount(c => c + 1)` hai lần liên tiếp cho kết quả cộng dồn.
-- [ ] B4 Bỏ qua khi không đổi: `Object.is(prev, next)` thì không gọi renderer. Test: renderer là `vi.fn()`, setter cùng giá trị gọi 0 lần; giá trị khác gọi 1 lần; `NaN` với `NaN` coi là không đổi.
-- [ ] B5 `setRenderer(fn)` và `renderApp(component, container)`: lưu component + container, gọi `resetCursor()`, dựng cây bằng `renderToDOM`, `container.replaceChildren(...)`. Setter gọi lại `renderApp`. Test: component đếm với nút giả, gọi setter thì DOM cập nhật.
-- [ ] B6 Test quy tắc Hooks (tài liệu hoá, không cố ngăn): component gọi hook trong `if` làm lệch cursor ở render thứ hai (mô phỏng `BuggyProfile` của Context 3.10). Mục đích là để giải thích khi bảo vệ.
-- [ ] B7 Verify và commit 2: `npm test`, xem `git diff`, kiểm tra không `var`/`innerHTML`, tick WBS, commit đúng message.
+- [x] B1 `useState(initialValue)` bản đọc: dùng `claimSlot`, trả `[value, setter]` với `value` lấy từ `stateStore[index]`. Test: giữ giá trị qua nhiều lần render; hai hook trả đúng giá trị theo thứ tự gọi.
+- [x] B2 Setter có closure trên `index` (không phải `cursor` lúc gọi): ghi `stateStore[index]`. Test: gọi setter sau khi cursor đã đổi vẫn ghi đúng ô.
+- [x] B3 Setter nhận hàm: `typeof next === 'function' ? next(prev) : next`. Test: `setCount(c => c + 1)` hai lần liên tiếp cho kết quả cộng dồn.
+- [x] B4 Bỏ qua khi không đổi: `Object.is(prev, next)` thì không gọi renderer. Test: renderer là `vi.fn()`, setter cùng giá trị gọi 0 lần; giá trị khác gọi 1 lần; `NaN` với `NaN` coi là không đổi.
+- [x] B5 `setRenderer(fn)` và `renderApp(component, container)`: lưu component + container, gọi `resetCursor()`, dựng cây bằng `renderToDOM`, `container.replaceChildren(...)`. Setter gọi lại `renderApp`. Test: component đếm với nút giả, gọi setter thì DOM cập nhật.
+- [x] B6 Test quy tắc Hooks (tài liệu hoá, không cố ngăn): component gọi hook trong `if` làm lệch cursor ở render thứ hai (mô phỏng `BuggyProfile` của Context 3.10). Mục đích là để giải thích khi bảo vệ.
+- [x] B7 Verify và commit 2: `npm test`, xem `git diff`, kiểm tra không `var`/`innerHTML`, tick WBS, commit đúng message.
 
 ### Nhóm C — Commit 3: `feat(events): attach root event delegation listener`
 
