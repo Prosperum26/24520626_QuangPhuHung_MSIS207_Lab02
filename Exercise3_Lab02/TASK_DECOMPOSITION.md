@@ -132,7 +132,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: A1.
   - Nghiệm thu: không bao giờ trả `undefined` hay chuỗi rỗng; không đọc `.message` trên giá trị chưa kiểm kiểu.
   - Test: `new Error('x')`, `'boom'`, `undefined`, `null`, `42`, `{ message: 'fake' }` (không phải `Error` nên ra mặc định), `new Error('')`.
-- [ ] **B5 `createFeedLoader(fetchFeed)` trong `feed-loader.js`.** `load(dispatch)`: tăng `latestId`, lấy `id`, `dispatch({ type: 'LOAD' })`, `await` (bọc để cả lỗi ném đồng bộ lẫn promise bị reject đều thành `REJECT`), nếu `id !== latestId` thì bỏ, ngược lại `dispatch(RESOLVE | REJECT)`.
+- [x] **B5 `createFeedLoader(fetchFeed)` trong `feed-loader.js`.** `load(dispatch)`: tăng `latestId`, lấy `id`, `dispatch({ type: 'LOAD' })`, `await` (bọc để cả lỗi ném đồng bộ lẫn promise bị reject đều thành `REJECT`), nếu `id !== latestId` thì bỏ, ngược lại `dispatch(RESOLVE | REJECT)`.
   - Phụ thuộc: A3, B2, B4.
   - Nghiệm thu: `latestId` ở đúng một chỗ, nằm trong closure của loader, hai loader không dùng chung; `dispatch` luôn nhận `LOAD` trước mọi `RESOLVE`/`REJECT`; loader không biết DOM hay `useState`.
   - Test (dùng B2 và `transition` thật để quan sát trạng thái cuối):
