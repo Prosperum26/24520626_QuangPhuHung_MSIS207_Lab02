@@ -193,7 +193,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Test: `main.test.js` (mẫu như Exercise 2): `main.js` gắn hub đúng một lần và render `IDLE`; `style.css` đọc ra chuỗi chứa `prefers-reduced-motion` và `@keyframes` (kiểm bằng chuỗi vì jsdom không chạy animation). Việc trang chạy thật trong trình duyệt chưa kiểm ở D1; xem D3.
 - [ ] **D2 Kiểm tra màu và kích thước.** Script tính tương phản theo công thức WCAG từ `getComputedStyle` trong Edge, như Exercise 2.
   - Phụ thuộc: D1.
-  - Nghiệm thu: chữ thường ≥ 4.5:1; viền nút, vòng focus, khối skeleton so với nền ≥ 3:1; mọi control ≥ 24×24 CSS px.
+  - Nghiệm thu: chữ thường ≥ 4.5:1; viền nút và vòng focus so với nền ≥ 3:1; mọi control ≥ 24×24 CSS px. Khối skeleton tính từ CSS chỉ đạt 1.88:1 nên được xử lý như phần trang trí (mục 6); bạn quyết định giữ hay làm đậm màu `--skeleton`.
   - Test: không có test tự động; kết quả ghi vào mục 6.
 - [ ] **D3 Checkpoint trong Edge thật.** Chụp ảnh và ghi lại:
   1. Skeleton đang nhấp nháy (`?plan=3000`): ảnh chụp có chú thích.
@@ -236,18 +236,18 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 | Tiêu chí | Cách kiểm dự kiến | Trạng thái |
 |---|---|---|
-| 1.3.1 Cấu trúc ngữ nghĩa | Test jsdom (`main > section > h1`, `ul > li`, `button`) và cây accessibility của Edge | Chưa kiểm |
-| 1.4.1 Không chỉ dùng màu | Khối lỗi có tiêu đề, chữ và viền; xem ảnh chụp | Chưa kiểm |
-| 1.4.3 Tương phản 4.5:1 | Script từ `getComputedStyle` trong Edge (D2) | Chưa kiểm |
-| 1.4.11 Tương phản phi văn bản | Viền nút, vòng focus, khối skeleton so với nền, ≥ 3:1 (D2) | Chưa kiểm |
-| 2.1.1 Bàn phím | Tab và Enter thật (D3 mục 5); phím Space chưa thử trước khi kiểm | Chưa kiểm |
-| 2.3.1 Không nhấp nháy quá 3 lần mỗi giây | Đọc chu kỳ `@keyframes` trong `style.css` | Chưa kiểm |
-| Tôn trọng `prefers-reduced-motion` (thực hành tốt; tiêu chí 2.3.3 gần nhất thuộc mức AAA, ngoài AA) | Test chuỗi CSS (D1) và Emulate trong DevTools (D3 mục 4) | Chưa kiểm |
-| 2.4.3 Thứ tự focus | Test C5 và Edge thật | Chưa kiểm |
-| 2.4.7 Focus nhìn thấy | `:focus-visible` sau mỗi lần Tab | Chưa kiểm |
-| 2.5.8 Vùng bấm 24×24 | Đo `getBoundingClientRect` (D2) | Chưa kiểm |
-| 4.1.2 Tên truy cập được | Cây accessibility: "Load feed", "Retry Connection" | Chưa kiểm |
-| 4.1.3 Thông báo trạng thái | Test: `#status` sống qua các lần render và đổi nội dung; `role="alert"` ở khối lỗi. Chưa nghe bằng trình đọc màn hình thật | Chưa kiểm |
+| 1.3.1 Cấu trúc ngữ nghĩa | Test jsdom (`main > section > h1`, `ul > li`, `button`) và cây accessibility của Edge | Một phần: test jsdom kiểm `h1`, `h2`, `ul > li`, `button`; cây accessibility của Edge chưa kiểm |
+| 1.4.1 Không chỉ dùng màu | Khối lỗi có tiêu đề, chữ và viền; xem ảnh chụp | Một phần: test kiểm khối lỗi có tiêu đề chữ "Couldn't load the feed"; chưa xem ảnh chụp |
+| 1.4.3 Tương phản 4.5:1 | Script từ `getComputedStyle` trong Edge (D2) | Một phần: tính từ giá trị CSS bằng công thức WCAG (chữ chính 17.40, chữ `#status` 8.86, chữ trong khối lỗi 16.27); chưa đo `getComputedStyle` trong Edge |
+| 1.4.11 Tương phản phi văn bản | Viền nút, vòng focus, khối skeleton so với nền, ≥ 3:1 (D2) | Một phần: tính từ CSS: viền nút 6.69, vòng focus 9.96, viền khối lỗi 8.67. Khối skeleton 1.88 (khoảng 1.31 ở độ mờ thấp nhất của chu kỳ), thấp hơn 3:1; coi là trang trí vì `aria-hidden` và trạng thái đã có chữ "Loading feed" trong `#status`. Cần bạn xác nhận lập luận này |
+| 2.1.1 Bàn phím | Tab và Enter thật (D3 mục 5); phím Space chưa thử trước khi kiểm | Chưa kiểm trong trình duyệt |
+| 2.3.1 Không nhấp nháy quá 3 lần mỗi giây | Đọc chu kỳ `@keyframes` trong `style.css` | Đã kiểm bằng đọc CSS: chu kỳ 1.6 giây (khoảng 0.6 lần mỗi giây); test kiểm có `@keyframes pulse` |
+| Tôn trọng `prefers-reduced-motion` (thực hành tốt; tiêu chí 2.3.3 gần nhất thuộc mức AAA, ngoài AA) | Test chuỗi CSS (D1) và Emulate trong DevTools (D3 mục 4) | Một phần: test chuỗi CSS pass; chưa Emulate trong DevTools |
+| 2.4.3 Thứ tự focus | Test C5 và Edge thật | Một phần: test jsdom C5 pass (focus về `#feed-heading` sau Retry); trình duyệt thật chưa kiểm |
+| 2.4.7 Focus nhìn thấy | `:focus-visible` sau mỗi lần Tab | Một phần: test kiểm CSS có `:focus-visible`; chưa xem trên trình duyệt |
+| 2.5.8 Vùng bấm 24×24 | Đo `getBoundingClientRect` (D2) | Một phần: CSS đặt `min-height` và `min-width` 2.5rem (40 px); chưa đo `getBoundingClientRect` |
+| 4.1.2 Tên truy cập được | Cây accessibility: "Load feed", "Retry Connection" | Một phần: test jsdom kiểm nhãn "Load feed", "Reload feed", "Retry Connection"; cây accessibility chưa kiểm |
+| 4.1.3 Thông báo trạng thái | Test: `#status` sống qua các lần render và đổi nội dung; `role="alert"` ở khối lỗi. Chưa nghe bằng trình đọc màn hình thật | Một phần: test kiểm `#status` đổi nội dung và khối lỗi có `role="alert"`; chưa nghe bằng trình đọc màn hình |
 
 Chưa làm: axe hoặc Lighthouse (project-rules 8.1 yêu cầu ít nhất một công cụ tự động), thử trình đọc màn hình, thử Firefox hoặc Safari.
 
@@ -280,3 +280,91 @@ Chưa làm: axe hoặc Lighthouse (project-rules 8.1 yêu cầu ít nhất một
 ## 9. Ghi chú nguồn
 
 Thông tin đề gốc nằm ở slide Sprint 3 (đã chép lại ở mục 2 và 3, kèm các sửa lỗi gõ liệt kê trong [Context mục 7](../docs/Context.md)). Ghi chú WCAG ở mục 6 kế thừa bản nháp trước và chuẩn trong [project-rules mục 8](../docs/project-rules.md).
+
+## 10. Hướng dẫn kiểm tra tay (D2, D3, D4)
+
+Phần này là việc của bạn: ảnh chụp bằng DevTools thật và Lighthouse không thể do AI tạo. Làm xong thì báo kết quả để cập nhật mục 6 và hoàn tất D4, D5, D6.
+
+### 10.1 Chuẩn bị
+
+Chạy từ thư mục gốc repo (ES module không chạy từ `file://`):
+
+```bash
+python -m http.server 8765
+```
+
+Mở Edge (hoặc Chrome) tại `http://127.0.0.1:8765/Exercise3_Lab02/index.html`, nhấn F12 để mở DevTools. Ảnh chụp lưu vào `Exercise3_Lab02/evidence/` (tạo thư mục nếu chưa có). Kế hoạch `plan` trong URL là danh sách bước, mỗi bước là độ trễ (ms) hoặc `fail`; yêu cầu thứ n dùng bước thứ n, hết thì lặp bước cuối.
+
+### 10.2 D3 — Năm kịch bản trong trình duyệt
+
+| # | URL (sau `index.html`) | Thao tác | Kết quả đúng | Ảnh/ghi chú |
+|---|---|---|---|---|
+| 1 | `?plan=3000` | Bấm **Load feed** | Khung xương nhấp nháy khoảng 3 giây, rồi hiện 3 mục "(request #1)". Trong Elements: `.skeleton` có `aria-hidden="true"`, `.feed-region` có `aria-busy="true"` khi đang tải | `evidence/skeleton-loading.png` |
+| 2 | `?plan=3000,500` | Xem 10.3, bấm **Load feed**, trong vòng 1 giây bấm **Reload feed** | Khoảng 1.5 giây: hiện "(request #2)". Chờ qua 3.5 giây: vẫn chỉ "(request #2)", không có "(request #1)" | `evidence/race-t1.png`, `evidence/race-t2.png`, ảnh Console |
+| 3 | `?plan=fail,500` | Bấm **Load feed**, rồi **Retry Connection** | Hiện khối lỗi có tiêu đề "Couldn't load the feed" và chữ "Network unreachable"; sau Retry: khung xương, rồi dữ liệu "(request #2)". Console: `document.activeElement.id` ngay sau khi bấm Retry trả về `feed-heading` | `evidence/error-state.png` |
+| 4 | `?plan=30000` | DevTools: ⋮ → More tools → Rendering → "Emulate CSS media feature prefers-reduced-motion" chọn `reduce`; bấm **Load feed** | Khung xương đứng yên. Tab Computed của `.skeleton` có `animation-name: none` | Ghi chú kết quả |
+| 5 | `?plan=fail,500` | Chỉ dùng bàn phím: Tab tới **Load feed**, Enter; Tab tới **Retry Connection**, Enter; thử cả phím Space | Vòng focus luôn thấy được; focus không rơi về `<body>` sau Retry | Ghi chú kết quả |
+
+### 10.3 Bằng chứng race bằng Console (kịch bản 2)
+
+Dán đoạn sau vào Console **trước** khi bấm, để ghi lại mọi danh sách từng hiện ra:
+
+```js
+const seen = [];
+new MutationObserver(() => {
+  const key = [...document.querySelectorAll('.feed-list h2')].map((n) => n.textContent).join(' | ');
+  if (key && seen.at(-1) !== key) seen.push(key);
+}).observe(document.querySelector('#app'), { childList: true, subtree: true });
+```
+
+Làm xong kịch bản 2, chờ qua 4 giây rồi chạy `console.log(seen)`. Kết quả đúng: mọi phần tử đều chứa "(request #2)", không phần tử nào chứa "(request #1)". Chụp cả đoạn mã và kết quả.
+
+Tùy chọn, để chuẩn bị bảo vệ: mở `Exercise3_Lab02/feed-loader.js`, tạm đổi `if (id === latestId) dispatch(event);` thành `dispatch(event);`, tải lại trang, lặp lại kịch bản 2. Khi đó `seen` sẽ có "(request #1)" xuất hiện muộn: đó là race. Sau đó hoàn nguyên bằng `git checkout -- Exercise3_Lab02/feed-loader.js` và không commit bản đã phá.
+
+### 10.4 D2 — Đo tương phản và vùng bấm
+
+Dán vào Console ở từng trạng thái (IDLE, LOADING, SUCCESS, ERROR); phần tử không có mặt ở trạng thái đó sẽ bị bỏ qua:
+
+```js
+const lum = ([r, g, b]) => {
+  const f = (c) => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+};
+const rgb = (s) => s.match(/[\d.]+/g).slice(0, 3).map(Number);
+const bgOf = (el) => {
+  for (let n = el; n; n = n.parentElement) {
+    const c = getComputedStyle(n).backgroundColor;
+    if (!/, 0\)$|transparent/.test(c)) return c;
+  }
+  return 'rgb(255, 255, 255)';
+};
+const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return +((x + 0.05) / (y + 0.05)).toFixed(2); };
+const rows = [];
+for (const sel of ['h1', '#load-feed', '#status', '.feed-list h2', '.feed-list p', '.feed-error h2', '.feed-error p', '#retry-feed']) {
+  const el = document.querySelector(sel);
+  if (!el) continue;
+  const cs = getComputedStyle(el);
+  const r = el.getBoundingClientRect();
+  rows.push({ sel, textContrast: ratio(rgb(cs.color), rgb(bgOf(el))), borderContrast: cs.borderTopWidth !== '0px' ? ratio(rgb(cs.borderTopColor), rgb(bgOf(el.parentElement))) : '-', size: `${Math.round(r.width)}x${Math.round(r.height)}` });
+}
+console.table(rows);
+```
+
+Giá trị kỳ vọng tính từ CSS: chữ chính 17.40, chữ `#status` 8.86, chữ trong khối lỗi 16.27, viền nút 6.69, viền khối lỗi 8.67 (so với nền của chính khối đó). Ngưỡng: chữ thường ≥ 4.5, viền và vòng focus ≥ 3, mọi control có cạnh nhỏ nhất ≥ 24 px. Vòng focus (`#1a3d8f`) so với trắng tính được 9.96. Bảng kết quả nào lệch kỳ vọng thì chụp lại và báo.
+
+### 10.5 D4 — Công cụ tự động và cây accessibility
+
+1. Tab **Lighthouse**, chỉ chọn Accessibility, Desktop. Chạy ở trạng thái IDLE (`?plan=300`, chưa bấm) và sau khi tải xong (bấm **Load feed**, chờ SUCCESS rồi chạy lại). Ghi điểm và từng mục không đạt. Điểm Lighthouse cao không đồng nghĩa đạt WCAG (project-rules mục 8.1).
+2. Elements → khung **Accessibility**: kiểm nút có tên "Load feed" / "Reload feed" / "Retry Connection", khối lỗi có role `alert`, `#status` có role `status`, `.skeleton` bị bỏ khỏi cây accessibility.
+3. Nếu có thể, nghe thử bằng Narrator (Windows + Ctrl + Enter) cho kịch bản 3: kiểm có đọc "Couldn't load the feed" khi lỗi xuất hiện không. Kết quả ghi thẳng vào mục 6, kể cả khi không đọc.
+
+### 10.6 Sau khi làm xong
+
+1. Báo kết quả từng kịch bản (kể cả cái không đạt), kèm tên file ảnh. Mình điền mục 6, tick D2 đến D4 và chạy lại D5 (`npm test`, `grep`, đối chiếu Exercise 1 và 2).
+2. Export prompt log của bài này vào `docs/prompt_logs/` (D6). Mình không xuất được phiên làm việc của chính mình.
+3. Commit mốc cuối cùng (mình sẽ làm khi bạn xác nhận), đúng message của đề:
+
+```bash
+git add Exercise3_Lab02 docs
+git commit -m "feat(ui): implement multi-state data component with skeleton feedback"
+```
