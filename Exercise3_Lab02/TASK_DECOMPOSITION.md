@@ -86,7 +86,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm A — FSM 4 trạng thái và `transition()`
 
-- [ ] **A0 Setup.** Sao chép nguyên văn `Exercise2_Lab02/mini-react.js`, `reactive-engine.js` và hai file test của chúng vào `Exercise3_Lab02/`. Không cài thêm dependency.
+- [x] **A0 Setup.** Sao chép nguyên văn `Exercise2_Lab02/mini-react.js`, `reactive-engine.js` và hai file test của chúng vào `Exercise3_Lab02/`. Không cài thêm dependency.
   - Phụ thuộc: không.
   - Nghiệm thu: `diff` từng file với bản Exercise 2 không có khác biệt; `npm test` quét được thư mục mới và các test sao chép pass; `git status` cho thấy không file nào trong `Exercise2_Lab02/` bị đổi.
   - Test: chính hai file test sao chép (chứng minh bản sao còn nguyên).
