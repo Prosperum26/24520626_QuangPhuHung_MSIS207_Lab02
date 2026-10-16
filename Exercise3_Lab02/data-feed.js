@@ -25,6 +25,23 @@ function renderSkeleton() {
   return createElement('div', { className: 'skeleton', 'aria-hidden': 'true' }, ...rows);
 }
 
+/** @param {readonly import('./state-machine.js').Item[]} items */
+function renderItems(items) {
+  if (items.length === 0) return createElement('p', null, 'No items to show.');
+  return createElement(
+    'ul',
+    { className: 'feed-list' },
+    ...items.map((item) =>
+      createElement(
+        'li',
+        { key: item.id },
+        createElement('h2', null, item.title),
+        createElement('p', null, item.summary),
+      ),
+    ),
+  );
+}
+
 /**
  * @param {import('./state-machine.js').ViewState} state
  */
@@ -33,6 +50,7 @@ function renderContent(state) {
     return createElement('p', null, 'Press Load feed to start.');
   }
   if (state.status === STATUS.LOADING) return renderSkeleton();
+  if (state.status === STATUS.SUCCESS) return renderItems(state.data);
   return null;
 }
 
@@ -50,6 +68,7 @@ export function createDataFeed({ fetchFeed }) {
     /** @param {import('./state-machine.js').FeedEvent} event */
     const dispatch = (event) => {
       if (event.type === 'LOAD') announce('Loading feed');
+      if (event.type === 'RESOLVE') announce(`Loaded ${event.data.length} ${event.data.length === 1 ? 'item' : 'items'}`);
       setState((prev) => transition(prev, event));
     };
     const onLoad = () => {

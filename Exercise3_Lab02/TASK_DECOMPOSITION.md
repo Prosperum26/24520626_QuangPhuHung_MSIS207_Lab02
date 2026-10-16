@@ -161,7 +161,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: C1.
   - Nghiệm thu: skeleton không chứa chữ, ẩn khỏi trình đọc màn hình; `aria-busy` là chuỗi `"true"` ở `LOADING` và không có (hoặc `"false"`) ở các trạng thái khác; không có `<li>` dữ liệu trong `LOADING`.
   - Test: sau click, DOM có `.skeleton[aria-hidden="true"]` và vùng có `aria-busy="true"`; `#status` chứa "Loading feed"; đi `SUCCESS → LOADING` thì tiêu đề các item cũ biến mất khỏi DOM.
-- [ ] **C3 `SUCCESS`.** `<ul>` với `<li key={item.id}>`, mỗi item hiện `title` và `summary` qua `createElement` (không `innerHTML`). Mảng rỗng hiện "No items to show." thay vì `<ul>` rỗng. `announce('Loaded N items')`.
+- [x] **C3 `SUCCESS`.** `<ul>` với `<li key={item.id}>`, mỗi item hiện `title` và `summary` qua `createElement` (không `innerHTML`). Mảng rỗng hiện "No items to show." thay vì `<ul>` rỗng. `announce('Loaded N items')`.
   - Phụ thuộc: C2.
   - Nghiệm thu: số `<li>` bằng số item; `key` của VNode là `item.id`; `aria-busy` không còn là `true`.
   - Test: resolve với `FEED_ITEMS` → đủ `<li>` đúng thứ tự; mảng rỗng → thông báo, không có `<ul>`; item có `title` là `<img src=x onerror=alert(1)>` hiển thị như chữ, không tạo `<img>`.
