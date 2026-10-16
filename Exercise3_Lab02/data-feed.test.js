@@ -217,3 +217,86 @@ describe('focus (C5)', () => {
     expect(document.activeElement.id).toBe('load-feed');
   });
 });
+
+const dataA = [{ id: 'a', title: 'From request 1', summary: '' }];
+const dataB = [{ id: 'b', title: 'From request 2', summary: '' }];
+const itemTitles = (root) => [...root.querySelectorAll('ul > li h2')].map((node) => node.textContent);
+
+/** Đúng một trong bốn vùng nội dung có mặt trong DOM. */
+function visibleRegions(root) {
+  return [
+    root.textContent.includes('Press Load feed'),
+    root.querySelector('.skeleton') !== null,
+    root.querySelector('ul') !== null || root.textContent.includes('No items to show.'),
+    root.querySelector('[role="alert"]') !== null,
+  ].filter(Boolean).length;
+}
+
+describe('lifecycle through the UI (C6)', () => {
+  it('1. a stale response arriving late never overwrites the newer one', async () => {
+    const t = setup();
+    t.root.querySelector('#load-feed').click();
+    t.root.querySelector('#load-feed').click();
+    t.calls[1].resolve(dataB);
+    await flush();
+    t.calls[0].resolve(dataA);
+    await flush();
+    expect(itemTitles(t.root)).toEqual(['From request 2']);
+  });
+
+  it('2. a stale response arriving early keeps the skeleton until the latest settles', async () => {
+    const t = setup();
+    t.root.querySelector('#load-feed').click();
+    t.root.querySelector('#load-feed').click();
+    t.calls[0].resolve(dataA);
+    await flush();
+    expect(t.root.querySelector('.skeleton')).not.toBeNull();
+    expect(itemTitles(t.root)).toEqual([]);
+    t.calls[1].resolve(dataB);
+    await flush();
+    expect(itemTitles(t.root)).toEqual(['From request 2']);
+  });
+
+  it('3. IDLE -> LOADING -> ERROR -> (Retry) LOADING -> SUCCESS', async () => {
+    const t = setup();
+    expect(visibleRegions(t.root)).toBe(1);
+    t.root.querySelector('#load-feed').click();
+    expect(t.root.querySelector('.skeleton')).not.toBeNull();
+    t.calls[0].reject(new Error('Network down'));
+    await flush();
+    expect(t.root.querySelector('[role="alert"]')).not.toBeNull();
+    t.root.querySelector('#retry-feed').click();
+    expect(t.root.querySelector('.skeleton')).not.toBeNull();
+    expect(t.root.querySelector('[role="alert"]')).toBeNull();
+    t.calls[1].resolve(dataA);
+    await flush();
+    expect(itemTitles(t.root)).toEqual(['From request 1']);
+  });
+
+  it('4. SUCCESS -> (Reload) LOADING -> ERROR drops the old list', async () => {
+    const t = setup();
+    await loadWith(t, dataA);
+    t.root.querySelector('#load-feed').click();
+    expect(itemTitles(t.root)).toEqual([]);
+    t.calls[1].reject(new Error('Network down'));
+    await flush();
+    expect(itemTitles(t.root)).toEqual([]);
+    expect(t.root.querySelector('[role="alert"]').textContent).toContain('Network down');
+  });
+
+  it('5. exactly one content region is visible at every step', async () => {
+    const t = setup();
+    const seen = [visibleRegions(t.root)];
+    t.root.querySelector('#load-feed').click();
+    seen.push(visibleRegions(t.root));
+    t.calls[0].reject(new Error('x'));
+    await flush();
+    seen.push(visibleRegions(t.root));
+    t.root.querySelector('#retry-feed').click();
+    seen.push(visibleRegions(t.root));
+    t.calls[1].resolve(dataA);
+    await flush();
+    seen.push(visibleRegions(t.root));
+    expect(seen).toEqual([1, 1, 1, 1, 1]);
+  });
+});

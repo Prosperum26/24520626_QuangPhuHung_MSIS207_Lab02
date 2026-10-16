@@ -173,7 +173,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: C4.
   - Nghiệm thu: sau mọi thao tác `document.activeElement` không bao giờ là `<body>`.
   - Test: focus `#load-feed`, bấm, kiểm tra `document.activeElement.id === 'load-feed'` qua `LOADING` và `SUCCESS`; focus `#retry-feed`, bấm, kiểm tra `activeElement.id === 'feed-heading'`; thử phá (bỏ hàm khôi phục) thì test (b) fail.
-- [ ] **C6 Kiểm thử vòng đời đầy đủ qua UI.** Gộp các kịch bản của B5 lên DOM thật.
+- [x] **C6 Kiểm thử vòng đời đầy đủ qua UI.** Gộp các kịch bản của B5 lên DOM thật.
   - Phụ thuộc: C5.
   - Nghiệm thu: không có kết hợp thao tác nào để lại UI ở trạng thái mâu thuẫn (ví dụ skeleton và danh sách cùng hiện).
   - Test:
@@ -182,7 +182,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
     3. `IDLE → LOADING → ERROR → (Retry) LOADING → SUCCESS`, kiểm DOM ở từng bước.
     4. `SUCCESS → (Reload) LOADING → ERROR`: danh sách cũ biến mất, hiện lỗi.
     5. Tại mọi bước, chỉ đúng một trong {gợi ý IDLE, skeleton, danh sách, khối lỗi} có trong DOM.
-- [ ] **C7 Verify nhóm C.** `npm test`; `grep` cấm (thêm: không `onclick=`, không `addEventListener` trong `data-feed.js`); VS Code diagnostics sạch; tick WBS. Không commit.
+- [x] **C7 Verify nhóm C.** `npm test`; `grep` cấm (thêm: không `onclick=`, không `addEventListener` trong `data-feed.js`); VS Code diagnostics sạch; tick WBS. Không commit.
   - Phụ thuộc: C6.
 
 ### Nhóm D — Accessibility, demo và verification
@@ -253,7 +253,7 @@ Chưa làm: axe hoặc Lighthouse (project-rules 8.1 yêu cầu ít nhất một
 
 ## 7. Rủi ro và điểm cần giải thích khi bảo vệ
 
-- **Loader phải sống ngoài hàm component.** Tạo `createFeedLoader` trong thân `DataFeed` sẽ reset `latestId` mỗi lần render, race quay lại mà test đơn lẻ của loader vẫn pass. Test C6 (1) bắt lỗi này vì chạy qua `renderApp`.
+- **Loader phải sống ngoài hàm component.** Tạo `createFeedLoader` trong thân `DataFeed` sẽ reset `latestId` mỗi lần render, race quay lại mà test đơn lẻ của loader vẫn pass. Đã thử phá (đưa loader vào thân `DataFeed`): test C6 ca 2 fail, ca 1 vẫn pass vì `SUCCESS` tự bỏ qua `RESOLVE` muộn. Test riêng của loader (B5) không thấy lỗi này; chỉ test chạy qua `renderApp` mới thấy.
 - **Request ID không huỷ yêu cầu mạng**, chỉ bỏ kết quả muộn. Với `fetch` thật, yêu cầu cũ vẫn tốn băng thông; `AbortController` (X1) giải quyết phần đó.
 - **`transition` không biết yêu cầu nào mới nhất.** Nếu thầy hỏi "đưa `requestId` vào `LOADING`", câu trả lời: làm vậy thêm trường vào contract mà đề giữ cố định 4 hình dạng; guard đặt ở loader là một chỗ duy nhất.
 - **Trả về cùng tham chiếu cho chuyển không hợp lệ** dựa vào `Object.is` trong setter của engine để khỏi render thừa. Nếu ai đó đổi `transition` trả về object mới, sẽ có re-render thừa nhưng không sai kết quả.
