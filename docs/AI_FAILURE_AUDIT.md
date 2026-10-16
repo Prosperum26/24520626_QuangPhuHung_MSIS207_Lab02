@@ -13,7 +13,7 @@
 | # | Bài | Lỗi | Loại bằng chứng | Trạng thái |
 |---|---|---|---|---|
 | 1 | Exercise 1 | Kiểu đệ quy làm `tsc` báo TS2589 ở `flat(Infinity)` | Output `tsc` (không phải DevTools) | Đã ghi, cần bạn bổ sung phần tự sửa |
-| 2 | Chưa có | Chưa ghi | Chưa có | Chưa ghi |
+| 2 | Cần bạn xác nhận | AI tự sửa WBS giữa chừng khi gặp khó, không hỏi trước | Chưa có (cần diff WBS hoặc trích prompt log) | Đã ghi mô tả, thiếu bằng chứng |
 | 3 | Chưa có | Chưa ghi | Chưa có | Chưa ghi |
 
 ## Lỗi 1 — Contract kiểu đệ quy không biên dịch được với `flat(Infinity)`
@@ -68,9 +68,19 @@ Sau sửa: `tsc` không báo lỗi và `npm test` vẫn 16/16 pass.
 
 - NOTE: PHẦN TRÊN ĐÃ ĐƯỢC AI REWRITE CHO CỤ THỂ.
 
-## Lỗi 2
+## Lỗi 2 — AI tự sửa WBS giữa chừng khi gặp khó, không dừng lại hỏi
 
-Chưa ghi.
+### Bối cảnh
+
+- **Task:** Thực hiện exercise 3.
+- **Điều AI cần làm theo [Agents.md](../Agents.md) mục 2 và 7:** gặp yêu cầu mơ hồ hoặc kế hoạch không khớp thì nói rõ và hỏi, không tự quyết lặng lẽ.
+
+### Lỗi
+
+Khi gặp khó trong lúc triển khai, AI tự sửa WBS để kế hoạch khớp với việc đang làm, thay vì dừng lại báo và hỏi bạn trước. Nguyên nhân gốc nằm ở WBS ban đầu: bản thiết kế đầu tiên đặt ở mức quá cao, nên đến khi phát triển mới lộ ra chỗ không phù hợp.
+
+### Bằng chứng
+
 
 ## Lỗi 3
 
