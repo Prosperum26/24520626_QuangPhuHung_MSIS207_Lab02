@@ -52,3 +52,39 @@ describe('transition, valid paths (A2)', () => {
     expect(Object.isFrozen(transition(initialState, { type: 'LOAD' }))).toBe(true);
   });
 });
+
+describe('transition, invalid paths (A3)', () => {
+  const states = { IDLE: initialState, LOADING: loading, SUCCESS: success, ERROR: error };
+  const events = {
+    RESOLVE: { type: 'RESOLVE', data: items },
+    REJECT: { type: 'REJECT', error: 'x' },
+  };
+  const ignored = [
+    ['IDLE', 'RESOLVE'], ['IDLE', 'REJECT'],
+    ['SUCCESS', 'RESOLVE'], ['SUCCESS', 'REJECT'],
+    ['ERROR', 'RESOLVE'], ['ERROR', 'REJECT'],
+  ];
+
+  it.each(ignored)('%s + %s returns the same reference', (from, eventType) => {
+    expect(transition(states[from], events[eventType])).toBe(states[from]);
+  });
+
+  it('returns the same reference for an unknown event type', () => {
+    expect(transition(loading, /** @type {any} */ ({ type: 'NOPE' }))).toBe(loading);
+  });
+
+  it('only ever yields one of the four statuses (12 combinations)', () => {
+    const allEvents = [{ type: 'LOAD' }, events.RESOLVE, events.REJECT];
+    for (const state of Object.values(states)) {
+      for (const event of allEvents) {
+        expect(Object.values(STATUS)).toContain(transition(state, event).status);
+      }
+    }
+  });
+
+  it('does not mutate its input', () => {
+    const before = JSON.stringify(loading);
+    transition(loading, events.RESOLVE);
+    expect(JSON.stringify(loading)).toBe(before);
+  });
+});

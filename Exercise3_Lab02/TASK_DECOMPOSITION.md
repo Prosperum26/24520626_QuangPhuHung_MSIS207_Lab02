@@ -106,11 +106,11 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: A1.
   - Nghiệm thu: trạng thái trả về là object đóng băng; `SUCCESS` mang đúng `data` của sự kiện; `ERROR` mang đúng `error`; `ERROR → LOADING` không giữ lại `error` cũ, `SUCCESS → LOADING` không giữ lại `data` cũ (không hiện dữ liệu cũ lẫn lộn).
   - Test: `IDLE→LOADING`, `LOADING→SUCCESS`, `LOADING→ERROR`, `SUCCESS→LOADING`, `ERROR→LOADING` (Retry không nhảy thẳng `SUCCESS`); object trả về không có khoá thừa.
-- [ ] **A3 `transition` đường không hợp lệ và tính đầy đủ.**
+- [x] **A3 `transition` đường không hợp lệ và tính đầy đủ.**
   - Phụ thuộc: A2.
   - Nghiệm thu: mọi cặp (trạng thái, sự kiện) không có trong bảng trả về **cùng tham chiếu** `state`; không trạng thái nào ngoài 4 giá trị xuất hiện; `transition` không sửa `state` đầu vào.
   - Test: bảng 4 × 3 = 12 ca theo dạng `it.each`; ca `RESOLVE` khi `IDLE` và `SUCCESS` trả về `toBe(state)`; sự kiện có `type` lạ trả về `toBe(state)`.
-- [ ] **A4 Verify nhóm A.** `npm test`; `grep` không có `var`, `innerHTML`, `keypress`, `keyCode`; VS Code diagnostics sạch cho `state-machine.js`; tick WBS. Không commit.
+- [x] **A4 Verify nhóm A.** `npm test`; `grep` không có `var`, `innerHTML`, `keypress`, `keyCode`; VS Code diagnostics sạch cho `state-machine.js`; tick WBS. Không commit.
   - Phụ thuộc: A3.
   - Nghiệm thu: dán output thật của `npm test` và `grep`.
 
