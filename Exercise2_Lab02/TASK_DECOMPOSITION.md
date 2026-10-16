@@ -44,8 +44,10 @@
 | Hub lưu VNode | `renderToDOM` gán `dom._vnode = vNode`; hub đi từ `event.target` lên root, gặp node có handler thì gọi và dừng | Context 3.11 |
 | `mini-react.js` | **Sao chép** từ Exercise 1 vào `Exercise2_Lab02/mini-react.js`, sửa bản sao ở commit 3 | Bỏ `addEventListener` trực tiếp sẽ làm hỏng test B3 của Exercise 1; giữ Exercise 1 nguyên trạng để nộp |
 | Hình dạng task | `{ id: string, title: string, done: boolean }`, `id` từ `crypto.randomUUID()` | `id` bền vững làm `key` cho `<li>`; không dùng index hay `Math.random()` |
-| Nhập tiêu đề | `<input>` không điều khiển (đọc `value` trong handler của nút), Enter gửi qua `keydown` + `e.key` | Tránh re-render mỗi phím gõ làm mất caret |
-| Giữ focus sau re-render | Đọc `document.activeElement.id` trước khi thay cây, gọi `.focus()` sau khi thay | `replaceChildren` huỷ nút đang focus; người dùng bàn phím mất vị trí (WCAG 2.4.3). Đọc DOM và ghi DOM tách pha |
+| Nhập tiêu đề | `<input>` không điều khiển (đọc `value` trong handler của nút), Enter gửi qua `keydown` + `e.key` và bỏ qua khi `isComposing` | Tránh re-render mỗi phím gõ: làm mất caret và phá bộ gõ IME (gõ tiếng Việt). Đổi lại, chữ đang gõ mất khi control khác gây re-render (có test ghi nhận) |
+| Giữ focus sau re-render | `readFocusedId` (pha đọc) trước và `writeFocus` (pha ghi) sau `replaceChildren`, trong `mount` của `reactive-engine.js` | `replaceChildren` huỷ nút đang focus; người dùng bàn phím mất vị trí (WCAG 2.4.3). Đọc DOM và ghi DOM tách pha |
+| Focus khi phần tử bị xoá | `recoverLostFocus` đưa focus về `<h2 id="task-count" tabindex="-1">` | Phát hiện bằng trình duyệt thật: sau Delete focus rơi về `<body>`. Không dùng ô nhập để khỏi bật bàn phím ảo |
+| Vị trí vùng status | `<p id="status" role="status">` trong `index.html`, ngoài `#app`; `announce()` ghi bằng `textContent` | Vùng live bị tạo lại mỗi render thường không được đọc ra |
 
 ## 4. WBS
 
@@ -82,18 +84,19 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm D — Commit 4: `feat(ui): assemble reactive todo application`
 
-- [ ] D1 `TaskApp` bản tối thiểu trong `task-app.js`: `useState` cho `tasks` (mảng object) và `filter` (`'ALL'`); `<main>`, `<header>`, `<h1>`, `<h2>Tasks: n</h2>`. Test: render lần đầu hiện số task đúng.
-- [ ] D2 Thêm task: `<input id="task-title">` (có `<label>`), nút "Add Task". Handler đọc `value`, bỏ qua nếu rỗng sau `trim`, gọi `setTasks(prev => [...prev, {id, title, done:false}])`. Enter trong input cũng thêm (qua `onKeydown` + `e.key`). Test: thêm task, rỗng bị bỏ qua, Enter hoạt động.
-- [ ] D3 Danh sách: `<ul>` với `<li key={task.id}>`; mỗi task có nút "Done"/"Undo" gọi `setTasks(prev => prev.map(...))`. Test: bấm nút đổi `done` đúng task, các task khác không đổi.
-- [ ] D4 Bộ lọc: ba `<button>` `ALL`/`ACTIVE`/`DONE`, `aria-pressed` cho nút đang chọn; danh sách hiển thị theo `filter` qua hàm thuần `visibleTasks(tasks, filter)`. Test: hàm thuần có test riêng; click nút đổi danh sách.
-- [ ] D5 Giữ focus sau re-render: trong `renderApp`, pha đọc lấy `document.activeElement?.id`, pha ghi sau `replaceChildren` gọi `getElementById(id)?.focus()`. Mọi nút/input tương tác cần `id` ổn định (ví dụ `filter-all`, `task-title`, `toggle-<task.id>`). Test: sau khi bấm nút lọc, `document.activeElement` vẫn là nút lọc đó.
-- [ ] D6 Thông báo cho trình đọc màn hình: vùng `role="status"` cập nhật khi thêm task ("Đã thêm: ..."). Đặt vùng này bên ngoài cây bị thay (trong `index.html`) vì vùng live bị tạo lại mỗi lần render thường không được đọc. Test: nội dung vùng đổi sau khi thêm. Việc có thật sự được đọc hay không cần kiểm tay với trình đọc màn hình, chưa thể khẳng định bằng test tự động.
-- [ ] D7 `index.html`: `<main id="app">` bọc bởi trang có `<h1>` duy nhất, gọi `setupEventDelegation(root)` rồi `renderApp(TaskApp, root)`; CSS tối thiểu cho focus nhìn thấy, vùng bấm ít nhất 24×24 CSS px, tương phản chữ 4.5:1. Chạy qua HTTP cục bộ vì ES module không chạy từ `file://`.
-- [ ] D8 Checkpoint 2 (chạy tay, ghi kết quả thật):
-  1. Bấm Add Task, danh sách và số đếm đổi ngay.
-  2. Console: `getEventListeners(document.querySelector('button'))` phải rỗng; Elements → Event Listeners chỉ thấy `click`, `input`, `keydown` ở root.
-  3. Lưu ảnh chụp vào `Exercise2_Lab02/evidence/` (nhúng kèm alt text).
-- [ ] D9 Export prompt log vào `docs/prompt_logs/`; `npm test` toàn bộ; xem `git diff`; tick WBS; commit 4 đúng message.
+- [x] D1 `TaskApp` trong `task-app.js`: `useState` cho `tasks` (mảng object, seed `seed-1`, `seed-2`) và `filter` (`'ALL'`); `<section>` + `<header>` + `<h1>` + `<h2>Tasks: n</h2>`. Test: render lần đầu hiện số task đúng.
+  - Lệch kế hoạch: `<main>` nằm trong `index.html` (bọc `#app` và vùng status), không nằm trong `TaskApp`, để tránh hai `<main>` lồng nhau.
+- [x] D2 Thêm task: `<input id="task-title">` (có `<label>`), nút "Add Task". Handler đọc `value`, bỏ qua nếu rỗng sau `trim` (và báo qua status), gọi `setTasks(prev => [...prev, {id: crypto.randomUUID(), title, done:false}])`. Enter trong input cũng thêm (qua `onKeydown` + `e.key`, bỏ qua `isComposing`). Test: thêm, rỗng, cắt khoảng trắng, Enter, IME, XSS.
+- [x] D3 Danh sách: `<ul>` với `<li key={task.id}>`; mỗi task có nút "Mark done"/"Mark not done" và "Delete" (xoá task thêm theo yêu cầu, không có trong bản kế hoạch đầu). Test: đổi `done` đúng task, xoá đúng task, danh sách trống hiện thông báo, `key` là `task.id`.
+- [x] D4 Bộ lọc: ba `<button>` `ALL`/`ACTIVE`/`DONE`, `aria-pressed` ("true"/"false" dạng chuỗi) cho nút đang chọn; danh sách hiển thị qua hàm thuần `visibleTasks(tasks, filter)`. Test: hàm thuần có test riêng; click nút đổi danh sách.
+- [x] D5 Giữ focus sau re-render: `mount` trong `reactive-engine.js` đọc id phần tử focus trước, trả focus sau `replaceChildren`. Mọi control có `id` ổn định (`filter-all`, `task-title`, `toggle-<task.id>`...). Nếu phần tử bị xoá khỏi cây thì `recoverLostFocus` đưa focus về `#task-count`. Test: nút lọc, ô nhập, nút toggle giữ focus; xoá và toggle-trong-bộ-lọc đưa focus về tiêu đề đếm. Đã thử phá (bỏ `writeFocus`): 3 test focus fail đúng như kỳ vọng.
+- [x] D6 Thông báo cho trình đọc màn hình: vùng `role="status"` nằm ngoài cây bị thay (trong `index.html`), cập nhật qua `announce()` khi thêm, xoá, toggle, lọc. Test: cùng một phần tử `#status` sống qua các lần render, nội dung đổi đúng. Việc trình đọc màn hình có đọc ra hay không chưa kiểm (xem mục 6).
+- [x] D7 `index.html`, `main.js`, `style.css`: `<main>` bọc `#app` và `#status`; `main.js` gọi `setupEventDelegation(root)` rồi `renderApp(TaskApp, root)`; CSS có `:focus-visible`, vùng bấm tối thiểu 2.5rem, tương phản đo ở mục 6. Chạy qua `python -m http.server` vì ES module không chạy từ `file://`. Test: `main.test.js`.
+- [ ] D8 Checkpoint 2 (kiểm trong Edge thật qua Chrome DevTools Protocol, sự kiện chuột và phím thật):
+  1. Bấm Add Task và Enter: danh sách, số đếm đổi ngay. Đã kiểm.
+  2. `DOMDebugger.getEventListeners` (cùng nguồn dữ liệu với `getEventListeners` trong Console): 12 nút, ô nhập và `<li>` đều rỗng; `#app` có đúng `click`, `input`, `keydown`; `document` và `<main>` rỗng. Đã kiểm. Kết quả lưu ở `evidence/browser-audit.json`.
+  3. Ảnh chụp trang lưu ở `evidence/task-manager.png`. Còn thiếu ảnh panel Elements > Event Listeners thật, cần tự chụp bằng DevTools (giống mục B7 của Exercise 1), nên chưa tick.
+- [ ] D9 Export prompt log vào `docs/prompt_logs/` (việc của bạn: AI không xuất được phiên làm việc của chính nó); `npm test` toàn bộ; xem `git diff`; tick WBS; commit 4 đúng message. Đã xong: `npm test`, `git diff`, commit. Chưa xong: prompt log.
 
 ### Phần mở rộng (chỉ làm khi cần, hoặc khi thầy yêu cầu lúc bảo vệ)
 
@@ -101,39 +104,45 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ## 5. Điều kiện hoàn thành (checklist nghiệm thu)
 
-- [ ] `stateStore` và `resetCursor` hoạt động; cursor reset trước mỗi lần render
-- [ ] `useState` giữ giá trị giữa các lần render, hỗ trợ `setX(prev => ...)`
-- [ ] Chỉ re-render khi giá trị đổi thật (`Object.is`)
-- [ ] Hub: một listener cho mỗi loại sự kiện ở root; `renderToDOM` lưu VNode vào DOM node
-- [ ] Task Manager thêm task, đánh dấu xong và lọc, cập nhật ngay
-- [ ] Mỗi `<li>` có `key` là `task.id`
-- [ ] DevTools: không có listener trên nút con (kèm ảnh)
-- [ ] `npm test` pass, dán output thật
-- [ ] Không có `var`, `innerHTML`, `keypress`, `keyCode`, inline handler (đã `grep`)
-- [ ] Đúng 4 commit, đúng message và thứ tự ở mục 2
+- [x] `stateStore` và `resetCursor` hoạt động; cursor reset trước mỗi lần render
+- [x] `useState` giữ giá trị giữa các lần render, hỗ trợ `setX(prev => ...)`
+- [x] Chỉ re-render khi giá trị đổi thật (`Object.is`)
+- [x] Hub: một listener cho mỗi loại sự kiện ở root; `renderToDOM` lưu VNode vào DOM node
+- [x] Task Manager thêm task, xoá, đánh dấu xong và lọc, cập nhật ngay (test jsdom và Edge thật)
+- [x] Mỗi `<li>` có `key` là `task.id`
+- [ ] DevTools: không có listener trên nút con (kèm ảnh): đã kiểm bằng CDP, còn thiếu ảnh panel thật (D8)
+- [x] `npm test` pass: 5 file, 137 test
+- [x] Không có `var`, `innerHTML` (ngoài việc đọc trong test), `keypress`, `keyCode`, inline handler (đã `grep`)
+- [ ] Đúng 4 commit, đúng message và thứ tự ở mục 2 (kiểm sau khi commit 4 được tạo)
 - [ ] Prompt log đã export vào `docs/prompt_logs/`
 
 ## 6. Kiểm tra WCAG 2.2 AA (ghi rõ đã kiểm gì, bằng cách nào)
 
 | Tiêu chí | Cách kiểm | Trạng thái |
 |---|---|---|
-| 1.3.1 Cấu trúc ngữ nghĩa | Test kiểm thẻ `main`, `header`, `ul`, `li`, `button`, `label`; không `div` | Chưa làm |
-| 1.4.1 Không chỉ dùng màu | `aria-pressed` trên nút lọc, nhìn bằng mắt thêm dấu hiệu không phải màu | Chưa làm |
-| 1.4.3 Tương phản 4.5:1 | Đo bằng DevTools hoặc công cụ tương phản | Chưa làm |
-| 2.1.1 Bàn phím | Đi hết app bằng Tab, Enter, Space, không dùng chuột | Chưa làm |
-| 2.4.3 Thứ tự focus | Test D5 + kiểm tay | Chưa làm |
-| 2.4.7 Focus nhìn thấy | Nhìn bằng mắt | Chưa làm |
-| 2.5.8 Vùng bấm 24×24 | Đo trong DevTools | Chưa làm |
-| 4.1.2 Tên truy cập được | Mọi nút/input có tên (nhìn Accessibility tree) | Chưa làm |
-| 4.1.3 Thông báo trạng thái | Test D6 + kiểm tay với trình đọc màn hình | Chưa làm |
+| 1.3.1 Cấu trúc ngữ nghĩa | Test jsdom (`section > header > h1`, `ul > li`, `label[for]`) và cây accessibility của Edge (main, heading mức 1 và 2, list, listitem, textbox, button, group). Hai `<div>` còn lại (`add-task`, `filters`) là khung bố cục; nhóm lọc có `role="group"` và `aria-label` | Đã kiểm |
+| 1.4.1 Không chỉ dùng màu | Nút lọc đang chọn có `aria-pressed`, chữ đậm và gạch chân; task xong có chữ "Completed", không chỉ gạch ngang. Xem ảnh chụp `evidence/task-manager.png` | Đã kiểm bằng mắt |
+| 1.4.3 Tương phản 4.5:1 | Script tính theo công thức WCAG từ `getComputedStyle` trong Edge: thấp nhất 8.86:1 (chữ trạng thái và nhãn Completed), chữ chính 17.4:1, nút đang chọn 9.96:1 | Đã kiểm (không dùng công cụ ngoài) |
+| 1.4.11 Tương phản phi văn bản | Viền nút 6.69:1 so với nền; vòng focus (`#1a3d8f`) 9.96:1 so với nền trắng | Đã kiểm |
+| 2.1.1 Bàn phím | Phím Tab thật qua CDP đi qua cả 12 nút theo thứ tự hợp lý; Enter trên nút lọc hoạt động; Enter trong ô nhập thêm task. Phím Space chưa thử | Một phần |
+| 2.4.3 Thứ tự focus | Test D5 và Edge thật: focus giữ nguyên sau bấm chuột, thêm bằng Enter, toggle, lọc; sau Delete focus về `#task-count` | Đã kiểm |
+| 2.4.7 Focus nhìn thấy | Sau mỗi lần Tab, `:focus-visible` khớp và outline là `solid 3px rgb(26, 61, 143)` | Đã kiểm |
+| 2.5.3 Nhãn trong tên | Test: `aria-label` của nút trong danh sách chứa chữ hiển thị | Đã kiểm |
+| 2.5.8 Vùng bấm 24×24 | Đo `getBoundingClientRect` mọi nút và ô nhập trong Edge: không có control nào nhỏ hơn 24 px | Đã kiểm |
+| 4.1.2 Tên truy cập được | Cây accessibility của Edge: mọi nút có tên (ví dụ "Mark done: Browser task"), ô nhập tên "New task" | Đã kiểm |
+| 4.1.3 Thông báo trạng thái | Test D6 và cây accessibility có phần tử `status`; chưa nghe bằng trình đọc màn hình thật | Một phần |
 
-Không ghi "đạt WCAG" cho tới khi cột trạng thái chuyển sang "Đã kiểm" kèm cách kiểm.
+Chưa làm: chạy axe hoặc Lighthouse (project-rules mục 8.1 yêu cầu ít nhất một công cụ tự động; chưa cài), thử trên trình đọc màn hình, thử trên Firefox hoặc Safari.
+
+Không ghi "đạt WCAG" cho tới khi các dòng "Một phần" và mục "Chưa làm" ở trên được xử lý.
 
 ## 7. Rủi ro và điểm cần giải thích khi bảo vệ
 
 - **Closure trên `index`, không phải `cursor`:** setter chạy sau khi cursor đã đổi; nếu closure đọc `cursor` lúc gọi thì ghi nhầm ô. Đây là câu hỏi dễ bị hỏi.
 - **Gọi hook có điều kiện làm lệch state:** B6 là ví dụ sống.
-- **Thay cả cây mất focus và trạng thái cục bộ của DOM:** D5 xử lý focus; trạng thái khác (vị trí cuộn, vùng chọn) chưa xử lý, thuộc lý do cần diff ở Exercise 3.
+- **Thay cả cây mất focus và trạng thái cục bộ của DOM:** D5 xử lý focus; trạng thái khác chưa xử lý, thuộc lý do cần diff ở Exercise 3. Hai giới hạn đã biết: chữ đang gõ trong ô nhập mất khi control khác gây re-render (có test ghi nhận), và vị trí cuộn, vùng chọn văn bản không được giữ.
+- **`recoverLostFocus` đoán "mất focus" bằng `activeElement === body`:** trên trình duyệt không focus nút khi bấm chuột (chưa thử trên Safari hoặc Firefox macOS) có thể chuyển focus về tiêu đề đếm sau mỗi toggle. Chưa kiểm.
+- **`crypto.randomUUID()` chỉ có trong secure context:** `localhost` và HTTPS đều được; `http://<IP>` thì không.
 - **Bỏ `addEventListener` làm Exercise 1 và Exercise 2 khác nhau:** vì vậy dùng bản sao `mini-react.js`.
 - **Test jsdom không có `getEventListeners`:** C6 dùng spy làm bằng chứng thay thế; vẫn phải kiểm tay bằng DevTools ở D8.
 
@@ -141,8 +150,8 @@ Không ghi "đạt WCAG" cho tới khi cột trạng thái chuyển sang "Đã k
 
 | Câu hỏi | Mặc định đang dùng | Trạng thái |
 |---|---|---|
-| Sao chép `mini-react.js` hay sửa chung với Exercise 1 | Sao chép vào `Exercise2_Lab02/` | Giả định, chờ xác nhận |
-| Cách chạy HTTP cục bộ cho `index.html` | Một server tĩnh sẵn có (chưa chọn); không cài dependency mới nếu chưa hỏi | Cần chọn |
+| Sao chép `mini-react.js` hay sửa chung với Exercise 1 | Sao chép vào `Exercise2_Lab02/` (kèm bản sao test) | Đã thực hiện; chờ bạn xác nhận |
+| Cách chạy HTTP cục bộ cho `index.html` | `python -m http.server 8765` từ thư mục gốc repo, mở `http://127.0.0.1:8765/Exercise2_Lab02/index.html`; không cài dependency | Đã dùng khi kiểm D8 |
 | "Đúng 4 commit" có tính commit setup (A0) và export prompt log (D9) không | Setup vào commit 1, prompt log vào commit 4 | Giả định, mâu thuẫn nhẹ với Agents.md mục 5 |
 | Batch render | Đồng bộ, batch là phần mở rộng | Giả định |
 | Kiểm tay với trình đọc màn hình (D6) | Bạn tự kiểm; mình không khẳng định thay | Cần bạn thực hiện |

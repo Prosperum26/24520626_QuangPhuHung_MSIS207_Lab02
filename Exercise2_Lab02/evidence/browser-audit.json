@@ -1,0 +1,414 @@
+{
+  "initial": {
+    "h2": "Tasks: 2",
+    "titles": [
+      "Review PR",
+      "Verify AST"
+    ],
+    "badges": 0,
+    "pressed": [
+      "All:true",
+      "Active:false",
+      "Done:false"
+    ],
+    "activeId": "BODY",
+    "status": ""
+  },
+  "afterEnterAdd": {
+    "h2": "Tasks: 3",
+    "titles": [
+      "Review PR",
+      "Verify AST",
+      "Browser task"
+    ],
+    "badges": 0,
+    "pressed": [
+      "All:true",
+      "Active:false",
+      "Done:false"
+    ],
+    "activeId": "task-title",
+    "status": "Added: Browser task"
+  },
+  "afterButtonAdd": {
+    "h2": "Tasks: 4",
+    "titles": [
+      "Review PR",
+      "Verify AST",
+      "Browser task",
+      "Via button"
+    ],
+    "badges": 0,
+    "pressed": [
+      "All:true",
+      "Active:false",
+      "Done:false"
+    ],
+    "activeId": "add-task",
+    "status": "Added: Via button"
+  },
+  "afterToggle": {
+    "h2": "Tasks: 4",
+    "titles": [
+      "Review PR",
+      "Verify AST",
+      "Browser task",
+      "Via button"
+    ],
+    "badges": 1,
+    "pressed": [
+      "All:true",
+      "Active:false",
+      "Done:false"
+    ],
+    "activeId": "toggle-seed-1",
+    "status": "Marked done: Review PR"
+  },
+  "filterDone": {
+    "h2": "Tasks: 4",
+    "titles": [
+      "Review PR"
+    ],
+    "badges": 1,
+    "pressed": [
+      "All:false",
+      "Active:false",
+      "Done:true"
+    ],
+    "activeId": "filter-done",
+    "status": "Showing done tasks: 1"
+  },
+  "filterActive": {
+    "h2": "Tasks: 4",
+    "titles": [
+      "Verify AST",
+      "Browser task",
+      "Via button"
+    ],
+    "badges": 0,
+    "pressed": [
+      "All:false",
+      "Active:true",
+      "Done:false"
+    ],
+    "activeId": "filter-active",
+    "status": "Showing active tasks: 3"
+  },
+  "filterAll": {
+    "h2": "Tasks: 4",
+    "titles": [
+      "Review PR",
+      "Verify AST",
+      "Browser task",
+      "Via button"
+    ],
+    "badges": 1,
+    "pressed": [
+      "All:true",
+      "Active:false",
+      "Done:false"
+    ],
+    "activeId": "filter-all",
+    "status": "Showing all tasks: 4"
+  },
+  "afterDelete": {
+    "h2": "Tasks: 3",
+    "titles": [
+      "Review PR",
+      "Browser task",
+      "Via button"
+    ],
+    "badges": 1,
+    "pressed": [
+      "All:true",
+      "Active:false",
+      "Done:false"
+    ],
+    "activeId": "task-count",
+    "status": "Deleted: Verify AST"
+  },
+  "xss": {
+    "h2": "Tasks: 4",
+    "titles": [
+      "Review PR",
+      "Browser task",
+      "Via button",
+      "<img src=x onerror=document.title=\"PWNED\">"
+    ],
+    "badges": 1,
+    "pressed": [
+      "All:true",
+      "Active:false",
+      "Done:false"
+    ],
+    "activeId": "task-title",
+    "status": "Added: <img src=x onerror=document.title=\"PWNED\">",
+    "imgCount": 0,
+    "pageTitle": "Exercise 2 - Reactive Task Manager"
+  },
+  "listeners": {
+    "buttonCount": 12,
+    "buttonsWithListeners": [],
+    "input": [],
+    "listItems": [],
+    "root": [
+      "click",
+      "input",
+      "keydown"
+    ],
+    "document": [],
+    "mainElement": []
+  },
+  "focusRingsAfterTab": [
+    {
+      "id": "add-task",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "filter-all",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "filter-active",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "filter-done",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "toggle-seed-1",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "delete-seed-1",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "toggle-7b8d129f-848d-4b84-b43b-ba81902995d8",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "delete-7b8d129f-848d-4b84-b43b-ba81902995d8",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "toggle-766980d3-ad64-421d-a384-5b1c9425cdf9",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "delete-766980d3-ad64-421d-a384-5b1c9425cdf9",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "toggle-bd34775f-bd71-4a23-b32f-5d06fb6727f2",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "delete-bd34775f-bd71-4a23-b32f-5d06fb6727f2",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 61, 143)",
+      "matchesFocusVisible": true
+    },
+    {
+      "id": "",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(26, 26, 26)",
+      "matchesFocusVisible": false
+    }
+  ],
+  "tabOrder": [
+    "add-task",
+    "filter-all",
+    "filter-active",
+    "filter-done",
+    "toggle-seed-1",
+    "delete-seed-1",
+    "toggle-7b8d129f-848d-4b84-b43b-ba81902995d8",
+    "delete-7b8d129f-848d-4b84-b43b-ba81902995d8",
+    "toggle-766980d3-ad64-421d-a384-5b1c9425cdf9",
+    "delete-766980d3-ad64-421d-a384-5b1c9425cdf9",
+    "toggle-bd34775f-bd71-4a23-b32f-5d06fb6727f2",
+    "delete-bd34775f-bd71-4a23-b32f-5d06fb6727f2",
+    ""
+  ],
+  "focusableCount": 13,
+  "keyboardFilter": {
+    "h2": "Tasks: 4",
+    "titles": [
+      "Browser task",
+      "Via button",
+      "<img src=x onerror=document.title=\"PWNED\">"
+    ],
+    "badges": 0,
+    "pressed": [
+      "All:false",
+      "Active:true",
+      "Done:false"
+    ],
+    "activeId": "filter-active",
+    "status": "Showing active tasks: 3"
+  },
+  "accessibility": [
+    {
+      "role": "main",
+      "name": ""
+    },
+    {
+      "role": "status",
+      "name": ""
+    },
+    {
+      "role": "region",
+      "name": "Task Manager"
+    },
+    {
+      "role": "textbox",
+      "name": "New task"
+    },
+    {
+      "role": "button",
+      "name": "Add Task"
+    },
+    {
+      "role": "group",
+      "name": "Filter tasks"
+    },
+    {
+      "role": "list",
+      "name": ""
+    },
+    {
+      "role": "heading",
+      "name": "Task Manager",
+      "level": 1
+    },
+    {
+      "role": "heading",
+      "name": "Tasks: 4",
+      "level": 2
+    },
+    {
+      "role": "button",
+      "name": "All"
+    },
+    {
+      "role": "button",
+      "name": "Active"
+    },
+    {
+      "role": "button",
+      "name": "Done"
+    },
+    {
+      "role": "listitem",
+      "name": "",
+      "level": 1
+    },
+    {
+      "role": "listitem",
+      "name": "",
+      "level": 1
+    },
+    {
+      "role": "listitem",
+      "name": "",
+      "level": 1
+    },
+    {
+      "role": "button",
+      "name": "Mark done: Browser task"
+    },
+    {
+      "role": "button",
+      "name": "Delete: Browser task"
+    },
+    {
+      "role": "button",
+      "name": "Mark done: Via button"
+    },
+    {
+      "role": "button",
+      "name": "Delete: Via button"
+    },
+    {
+      "role": "button",
+      "name": "Mark done: <img src=x onerror=document.title=\"PWNED\">"
+    },
+    {
+      "role": "button",
+      "name": "Delete: <img src=x onerror=document.title=\"PWNED\">"
+    }
+  ],
+  "measure": {
+    "contrast": [
+      {
+        "label": "task title on page",
+        "text": 17.4,
+        "border": 17.4
+      },
+      {
+        "label": "filter button (pressed)",
+        "text": 9.96,
+        "border": 9.96
+      },
+      {
+        "label": "filter button (not pressed)",
+        "text": 17.4,
+        "border": 6.69
+      },
+      {
+        "label": "Completed badge",
+        "text": 8.86,
+        "border": 8.86
+      },
+      {
+        "label": "status text",
+        "text": 8.86,
+        "border": 8.86
+      },
+      {
+        "label": "Add Task button",
+        "text": 17.4,
+        "border": 6.69
+      }
+    ],
+    "controlsSmallerThan24": []
+  },
+  "consoleProblems": []
+}

@@ -103,13 +103,40 @@ export function useState(initialValue) {
 // ---------- Render loop (B5) ----------
 
 /**
+ * Pha đọc: id của phần tử đang focus nếu nó nằm trong container. `replaceChildren`
+ * huỷ phần tử đó, nên phải ghi nhớ trước khi thay cây (WCAG 2.4.3).
+ * @param {Element} container
+ * @returns {string | null}
+ */
+function readFocusedId(container) {
+  const active = document.activeElement;
+  const isInside = active instanceof HTMLElement && active.id !== '' && container.contains(active);
+  return isInside ? active.id : null;
+}
+
+/**
+ * Pha ghi: trả focus cho phần tử cùng id trong cây mới. Duyệt thay vì ghép id vào
+ * selector để id lạ không thể phá selector. Nếu phần tử không còn (vd. task vừa
+ * bị lọc mất) thì không focus gì; xem mục rủi ro trong TASK_DECOMPOSITION.
+ * @param {Element} container
+ * @param {string | null} id
+ */
+function writeFocus(container, id) {
+  if (id === null) return;
+  const target = [...container.querySelectorAll('[id]')].find((element) => element.id === id);
+  if (target instanceof HTMLElement) target.focus();
+}
+
+/**
  * Chỗ duy nhất gọi `resetCursor()` (project-rules: cursor reset trước mỗi lần render).
  * @param {Component} component
  * @param {Element} container
  */
 function mount(component, container) {
+  const focusedId = readFocusedId(container);
   resetCursor();
   container.replaceChildren(renderToDOM(component()));
+  writeFocus(container, focusedId);
 }
 
 /**
