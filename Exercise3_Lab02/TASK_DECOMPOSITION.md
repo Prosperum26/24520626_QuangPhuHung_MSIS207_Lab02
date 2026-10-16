@@ -187,10 +187,10 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm D — Accessibility, demo và verification
 
-- [ ] **D1 `index.html`, `main.js`, `style.css`.** `<html lang="en">`, `<title>` có nghĩa, `<main>` bọc `#app` và `<p id="status" role="status">`. `main.js`: `setupEventDelegation(root)`, `renderApp(createDataFeed({ fetchFeed }), root)` với `fetchFeed` là `createTimedFeed(parsePlan(location.search))`. CSS: `.skeleton` có `@keyframes` đổi `opacity` chu kỳ không ngắn hơn 1 giây; `@media (prefers-reduced-motion: reduce)` tắt animation; `:focus-visible` rõ; vùng bấm tối thiểu 2.5rem; khối lỗi có viền và biểu tượng chữ, không chỉ màu đỏ. Chạy qua `python -m http.server` vì ES module không chạy từ `file://`.
+- [x] **D1 `index.html`, `main.js`, `style.css`.** `<html lang="en">`, `<title>` có nghĩa, `<main>` bọc `#app` và `<p id="status" role="status">`. `main.js`: `setupEventDelegation(root)`, `renderApp(createDataFeed({ fetchFeed }), root)` với `fetchFeed` là `createTimedFeed(parsePlan(location.search))`. CSS: `.skeleton` có `@keyframes` đổi `opacity` chu kỳ không ngắn hơn 1 giây; `@media (prefers-reduced-motion: reduce)` tắt animation; `:focus-visible` rõ; vùng bấm tối thiểu 2.5rem; khối lỗi có viền và biểu tượng chữ, không chỉ màu đỏ. Chạy qua `python -m http.server` vì ES module không chạy từ `file://`.
   - Phụ thuộc: C7, B3.
   - Nghiệm thu: trang chạy, nút Load feed hoạt động; mở `?plan=3000,500` hiển thị skeleton rồi dữ liệu.
-  - Test: `main.test.js` (mẫu như Exercise 2): `main.js` gắn hub đúng một lần và render `IDLE`; `style.css` đọc ra chuỗi chứa `prefers-reduced-motion` và `@keyframes` (kiểm bằng chuỗi vì jsdom không chạy animation).
+  - Test: `main.test.js` (mẫu như Exercise 2): `main.js` gắn hub đúng một lần và render `IDLE`; `style.css` đọc ra chuỗi chứa `prefers-reduced-motion` và `@keyframes` (kiểm bằng chuỗi vì jsdom không chạy animation). Việc trang chạy thật trong trình duyệt chưa kiểm ở D1; xem D3.
 - [ ] **D2 Kiểm tra màu và kích thước.** Script tính tương phản theo công thức WCAG từ `getComputedStyle` trong Edge, như Exercise 2.
   - Phụ thuộc: D1.
   - Nghiệm thu: chữ thường ≥ 4.5:1; viền nút, vòng focus, khối skeleton so với nền ≥ 3:1; mọi control ≥ 24×24 CSS px.

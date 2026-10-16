@@ -1,0 +1,114 @@
+:root {
+  --text: #1a1a1a;
+  --muted: #4a4a4a;
+  --surface: #ffffff;
+  --border: #5c5c5c;
+  --accent: #1a3d8f;
+  --skeleton: #bdbdbd;
+  --error-border: #8a1c1c;
+  --error-surface: #fff5f5;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+  font: 1rem/1.5 system-ui, sans-serif;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+button {
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.feed-region {
+  margin-block: 1rem;
+}
+
+.feed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.feed-list li {
+  padding-block: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.feed-list h2,
+.feed-error h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.feed-list p {
+  margin: 0.25rem 0 0;
+}
+
+.skeleton__row {
+  height: 3.5rem;
+  margin-block: 0.75rem;
+  border-radius: 0.25rem;
+  background: var(--skeleton);
+}
+
+/* Chu kỳ 1.6 giây (khoảng 0.6 lần mỗi giây): xa ngưỡng 3 lần mỗi giây của WCAG 2.3.1. */
+.skeleton {
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* Viền dày và tiêu đề chữ: lỗi không chỉ dựa vào màu đỏ. */
+.feed-error {
+  padding: 1rem;
+  border: 3px solid var(--error-border);
+  border-radius: 0.25rem;
+  background: var(--error-surface);
+}
+
+.feed-error p {
+  margin-block: 0.5rem 1rem;
+}
+
+#status {
+  min-height: 1.5rem;
+  color: var(--muted);
+}
