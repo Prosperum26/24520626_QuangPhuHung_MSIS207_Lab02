@@ -116,7 +116,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm B — `fetchFeed` mock, retry, chống race bằng request ID
 
-- [ ] **B1 Contract.** Trong `feed-mock.js`: JSDoc `FetchFeed = () => Promise<Item[]>`, `PlanStep = number | 'fail'`; hằng `FEED_ITEMS` (3 `Item`, `id` ổn định, đóng băng).
+- [x] **B1 Contract.** Trong `feed-mock.js`: JSDoc `FetchFeed = () => Promise<Item[]>`, `PlanStep = number | 'fail'`; hằng `FEED_ITEMS` (3 `Item`, `id` ổn định, đóng băng).
   - Phụ thuộc: A1.
   - Nghiệm thu: `FEED_ITEMS` đóng băng, `id` không trùng.
   - Test: `new Set(FEED_ITEMS.map(i => i.id)).size === FEED_ITEMS.length`.
