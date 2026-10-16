@@ -41,10 +41,10 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
 
 ### Nhóm A — Commit 1: `feat(core): implement createElement factory`
 
-- [ ] A0 Setup: `package.json`, Vitest + jsdom, script `test`. **Hỏi trước khi cài dependency.**
-- [ ] A1 Contract: JSDoc typedef `VNode`, `VNodeProps`, hằng `TEXT_ELEMENT`, chữ ký ba hàm (chưa có thân hàm).
-- [ ] A2 `createTextElement(text)`: trả VNode `TEXT_ELEMENT`, `nodeValue` là chuỗi, `children: []`, frozen. Test: số được ép thành chuỗi, kết quả frozen.
-- [ ] A3 `createElement(type, props, ...children)`:
+- [x] A0 Setup: `package.json`, Vitest + jsdom, script `test`. **Hỏi trước khi cài dependency.**
+- [x] A1 Contract: JSDoc typedef `VNode`, `VNodeProps`, hằng `TEXT_ELEMENT`, chữ ký ba hàm (chưa có thân hàm).
+- [x] A2 `createTextElement(text)`: trả VNode `TEXT_ELEMENT`, `nodeValue` là chuỗi, `children: []`, frozen. Test: số được ép thành chuỗi, kết quả frozen.
+- [x] A3 `createElement(type, props, ...children)`:
   - bọc `string`/`number` thành text VNode
   - lọc `null`, `undefined`, `false`
   - `flat(Infinity)` cho children lồng nhau
