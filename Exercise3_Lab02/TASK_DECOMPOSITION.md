@@ -90,7 +90,7 @@ Mỗi task là một lượt làm riêng (Slice → Contract → Generate → Ve
   - Phụ thuộc: không.
   - Nghiệm thu: `diff` từng file với bản Exercise 2 không có khác biệt; `npm test` quét được thư mục mới và các test sao chép pass; `git status` cho thấy không file nào trong `Exercise2_Lab02/` bị đổi.
   - Test: chính hai file test sao chép (chứng minh bản sao còn nguyên).
-- [ ] **A1 Contract trong `state-machine.js`.** JSDoc cho `Item`, `ViewState`, `FeedEvent`; hằng `STATUS` đóng băng gồm đúng 4 giá trị; `initialState` là `{ status: 'IDLE' }` đóng băng. Chữ ký `transition` chưa có thân.
+- [x] **A1 Contract trong `state-machine.js`.** JSDoc cho `Item`, `ViewState`, `FeedEvent`; hằng `STATUS` đóng băng gồm đúng 4 giá trị; `initialState` là `{ status: 'IDLE' }` đóng băng. Chữ ký `transition` chưa có thân.
   - Phụ thuộc: A0.
   - Nghiệm thu: không có giá trị thứ năm; `Object.isFrozen(STATUS)` và `Object.isFrozen(initialState)` là `true`; file có `// @ts-check` và VS Code không báo lỗi kiểu.
   - Test: `Object.values(STATUS)` bằng đúng `['IDLE','LOADING','SUCCESS','ERROR']`; `initialState.status === 'IDLE'`.
