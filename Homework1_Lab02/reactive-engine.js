@@ -103,15 +103,32 @@ export function useState(initialValue) {
 // ---------- Render loop (B5) ----------
 
 /**
- * Pha đọc: id của phần tử đang focus nếu nó nằm trong container. `replaceChildren`
- * huỷ phần tử đó, nên phải ghi nhớ trước khi thay cây (WCAG 2.4.3).
- * @param {Element} container
- * @returns {string | null}
+ * @typedef {object} FocusSnapshot
+ * @property {string} id
+ * @property {{ start: number, end: number, direction: 'forward' | 'backward' | 'none' } | null} selection
+ * Chỉ có khi phần tử focus là <input> hỗ trợ selection (text, search...).
  */
-function readFocusedId(container) {
+
+/**
+ * Pha đọc: id (và caret nếu là ô nhập) của phần tử đang focus nếu nó nằm trong container.
+ * `replaceChildren` huỷ phần tử đó, nên phải ghi nhớ trước khi thay cây (WCAG 2.4.3).
+ * Ô nhập mới tạo có caret ở đầu; không khôi phục thì gõ tiếp sẽ chèn ngược chữ.
+ * @param {Element} container
+ * @returns {FocusSnapshot | null}
+ */
+function readFocus(container) {
   const active = document.activeElement;
   const isInside = active instanceof HTMLElement && active.id !== '' && container.contains(active);
-  return isInside ? active.id : null;
+  if (!isInside) return null;
+
+  // selectionStart là null với input không hỗ trợ selection (number, email...).
+  const hasSelection = active instanceof HTMLInputElement && active.selectionStart !== null && active.selectionEnd !== null;
+  return {
+    id: active.id,
+    selection: hasSelection
+      ? { start: active.selectionStart ?? 0, end: active.selectionEnd ?? 0, direction: active.selectionDirection ?? 'none' }
+      : null,
+  };
 }
 
 /**
@@ -119,12 +136,17 @@ function readFocusedId(container) {
  * selector để id lạ không thể phá selector. Nếu phần tử không còn (vd. task vừa
  * bị lọc mất) thì không focus gì; xem mục rủi ro trong TASK_DECOMPOSITION.
  * @param {Element} container
- * @param {string | null} id
+ * @param {FocusSnapshot | null} snapshot
  */
-function writeFocus(container, id) {
-  if (id === null) return;
-  const target = [...container.querySelectorAll('[id]')].find((element) => element.id === id);
-  if (target instanceof HTMLElement) target.focus();
+function writeFocus(container, snapshot) {
+  if (snapshot === null) return;
+  const target = [...container.querySelectorAll('[id]')].find((element) => element.id === snapshot.id);
+  if (!(target instanceof HTMLElement)) return;
+
+  target.focus();
+  if (snapshot.selection !== null && target instanceof HTMLInputElement) {
+    target.setSelectionRange(snapshot.selection.start, snapshot.selection.end, snapshot.selection.direction);
+  }
 }
 
 /**
@@ -133,10 +155,10 @@ function writeFocus(container, id) {
  * @param {Element} container
  */
 function mount(component, container) {
-  const focusedId = readFocusedId(container);
+  const focus = readFocus(container);
   resetCursor();
   container.replaceChildren(renderToDOM(component()));
-  writeFocus(container, focusedId);
+  writeFocus(container, focus);
 }
 
 /**
