@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cellId, nextCell, parseCellId } from './grid-nav.js';
+import { cellId, clampCell, nextCell, parseCellId } from './grid-nav.js';
 
 const dims = { rows: 4, cols: 3 };
 
@@ -58,5 +58,24 @@ describe('cellId and parseCellId (B4)', () => {
   it('does not treat the grid id as a pattern', () => {
     expect(parseCellId('a.c', 'abc-r1-c1')).toBeNull();
     expect(parseCellId('a.c', 'a.c-r1-c1')).toEqual({ row: 1, col: 1 });
+  });
+});
+
+describe('clampCell (D5)', () => {
+  it('returns the same cell when it is already inside the grid', () => {
+    const cell = { row: 2, col: 1 };
+    expect(clampCell(cell, dims)).toBe(cell);
+  });
+
+  it('pulls a row that no longer exists back to the last row', () => {
+    expect(clampCell({ row: 10, col: 1 }, dims)).toEqual({ row: 3, col: 1 });
+  });
+
+  it('pulls a column that no longer exists back to the last column', () => {
+    expect(clampCell({ row: 1, col: 9 }, dims)).toEqual({ row: 1, col: 2 });
+  });
+
+  it('collapses to the header when there are no data rows', () => {
+    expect(clampCell({ row: 5, col: 0 }, { rows: 1, cols: 3 })).toEqual({ row: 0, col: 0 });
   });
 });

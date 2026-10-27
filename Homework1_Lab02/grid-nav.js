@@ -33,6 +33,19 @@ export function nextCell(cell, key, dims, ctrlKey = false) {
 }
 
 /**
+ * Kéo ô đang active về trong lưới: sau khi lọc hoặc đổi trang, số dòng có thể co lại và
+ * `activeCell` cũ không còn tồn tại; không kẹp thì không phần tử nào có tabindex 0.
+ * @param {import('./grid-contract.js').CellCoord} cell
+ * @param {GridDims} dims
+ * @returns {import('./grid-contract.js').CellCoord}
+ */
+export function clampCell(cell, dims) {
+  const row = Math.min(Math.max(cell.row, 0), dims.rows - 1);
+  const col = Math.min(Math.max(cell.col, 0), dims.cols - 1);
+  return row === cell.row && col === cell.col ? cell : Object.freeze({ row, col });
+}
+
+/**
  * Engine chỉ khôi phục focus theo `id`, nên id suy ra từ **vị trí** (không phải nội dung):
  * sau khi sort, focus vẫn ở cùng vị trí dù dữ liệu trong ô đã đổi.
  * @param {string} gridId
