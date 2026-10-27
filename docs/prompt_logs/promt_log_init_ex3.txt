@@ -1,0 +1,1659 @@
+  ⎿  SessionStart:startup hook error
+  ⎿  [bash C:\Users\Phu Hung\.claude\plugins\cache\anthropic-plugin-directory\cl
+     aude-memory\1.0.0-0afb7b2da7cc/hooks/scripts/memory-context.sh]:
+     C:/Users/Phu: line 1: syntax error near unexpected token `('
+
+> <ide_opened_file>The user opened the file
+  c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\docs\AI_FAILURE_AUDIT.md
+  in the IDE. This may or may not be related to the current
+  task.</ide_opened_file>
+
+> ok giờ tới
+  IN-CLASS SPRINT 3 | 35 MINUTES
+  Exercise 3: Resilient State Machine & Skeleton Loader
+  Deliverable: Robust 4-state lifecycle handling (IDLE, LOADING, SUCCESS,
+  ERROR).
+  Task Specifications & Constraints
+  Objective: Eliminate race conditions and inconsistent Ul states during async
+  data operations.
+  Finite State Machine: Component state strictly restricted to: 'IDLE' |
+  'LOADING' | 'SUCCESS' | 'ERROR'.
+  Skeleton Screen: Render animated pulsing CSS placeholder skeleton during
+  'LOADING' state.
+  Error Boundary & Retry: Render human-readable error with 'Retry Connection'
+  button.
+  Git Milestone Commit: 'feat(ui): implement multi-state data component with
+  skeleton feedback'.
+  state-machine.ts
+  type ViewState<T>
+  | { status: 'IDLE' }
+  | { status: 'LOADING" }
+  | { status: 'SUCCESS'; data: T}
+  | { status: 'ERROR'; error: string };
+  // Verified Component State Transition:
+  function DataFeed() {
+  const [state, setState] = useState<ViewState<Item[]>>({ status: 'IDLE' });
+  const loadData async () => { setState({ status: 'LOADING' });
+  };
+  try {
+  const items await fetchFeed();
+  setState({ status: 'SUCCESS', data: items }); } setState({ status: 'ERROR',
+  error: err.message });
+  } catch (err) {
+  // Render: Skeleton on LOADING, Data on SUCCESS, Alert on ERROR
+  }
+  brainstorm mình và tạo task decompistion đi
+
+● Skill(superpowers:brainstorming)
+  ⎿  Successfully loaded skill
+
+● Mình đang dùng skill brainstorming. Bước đầu là đọc cấu trúc repo, Context.md
+  và TASK_DECOMPOSITION của Ex1/Ex2 để bám đúng format.
+
+  Searched for 1 pattern, read 4 files, ran 1 shell command (ctrl+o to expand)
+
+● Mình đã đọc xong Context.md, Ex2 TASK_DECOMPOSITION, reactive-engine.js và bản
+  nháp Ex3. Bài này chưa có code nào để sửa, nên mình xếp vào kiểu
+  architectural. Spec chính là Exercise3_Lab02/TASK_DECOMPOSITION.md, nên mình
+  không tạo thêm file spec riêng. Mình chưa viết code. Anh/chị có thể sửa phân
+  loại này nếu thấy không hợp.
+
+  Mình hiểu đề thế này (anh/chị sửa giúp nếu sai):
+
+  - Mục tiêu: component DataFeed có FSM 4 trạng thái. Trạng thái chỉ đi theo các
+    chuyển tiếp hợp lệ. Phản hồi cũ đến muộn không được ghi đè phản hồi mới.
+  - Engine: dùng engine của Ex2, sao chép sang Exercise3_Lab02/ như cách Ex2 đã
+    làm với Ex1. Viết bằng JS và JSDoc @ts-check, gọi createElement trực tiếp,
+    không React và không JSX. Việc này đã chốt từ Ex2 và Agents.md cấm thư viện
+    UI ở Tier 1.
+  - Race condition: dùng request id đặt ở một chỗ duy nhất. Mỗi lần loadData
+    tăng id, và phản hồi nào mang id cũ thì bị bỏ. AbortController chỉ là phần
+    mở rộng. Lý do chọn id là nó dễ giải thích khi bảo vệ và dễ test, vì không
+    phụ thuộc fetch thật.
+  - Chuyển tiếp hợp lệ: IDLE→LOADING, LOADING→SUCCESS|ERROR, SUCCESS→LOADING
+    (tải lại), ERROR→LOADING (Retry). Mình sẽ viết một hàm thuần
+    transition(state, event) để test riêng.
+  - Hai điểm mà slide bỏ qua, mình đưa vào WBS:
+    - Nút Retry bị xoá khi sang LOADING, nên focus sẽ rơi về <body>. Cần đưa
+      focus về một tiêu đề có tabindex="-1", giống recoverLostFocus của Ex2
+      (WCAG 2.4.3).
+    - Engine chưa có useRef, nên request id nằm ở biến module trong file feed.
+  - Chia nhóm WBS:
+    - A: contract (ViewState, transition).
+    - B: fetchFeed mock cùng logic loadData chống race.
+    - C: UI gồm skeleton, lỗi, nút Retry.
+    - D: a11y, CSS và verify.
+    - Chỉ có một commit mốc, đúng message của đề.
+
+  Một câu hỏi quyết định cách test, trả lời xong là mình viết WBS: fetchFeed nên
+  là gì?
+
+  1. Mock có điều khiển (mình đề xuất): fetchFeed nhận độ trễ và cờ lỗi qua tham
+     số hoặc hàm inject. Test dùng promise tự resolve/reject bằng tay để dựng
+     đúng kịch bản "phản hồi 1 đến sau phản hồi 2". Test chạy ổn định và không
+     cần mạng.
+  2. API thật (ví dụ jsonplaceholder): nhìn giống thật hơn, nhưng test không ổn
+     định. Muốn chứng minh race thì phải giả lập độ trễ trong DevTools.
+  3. Mock cho test, và trên trang demo cho phép bấm "giả lập lỗi / chậm" để chụp
+     bằng chứng DevTools. Cách này tốn thêm một task nhỏ.
+
+> Đọc Agents.md, Context.md, WBS Ex2 và reactive-engine.js, sau đó tạo
+  Exercise3_Lab02/TASK_DECOMPOSITION.md làm spec chính cho Exercise 3. Chỉ viết
+  WBS, chưa code hoặc commit. Chia task theo A–D: FSM 4 trạng thái và
+  transition(); fetchFeed mock có điều khiển, retry và request ID chống race
+  condition; UI skeleton pulse, success/error và Retry Connection;
+  accessibility, demo và verification. Mỗi task cần có dependency, tiêu chí
+  nghiệm thu và test tương ứng. Dùng JS + JSDoc + // @ts-check, tái sử dụng
+  engine Ex2 theo project rules, không sửa Ex2. Đảm bảo test được trường hợp
+  response cũ về muộn, retry và lỗi; chỉ tick task khi đã verify. Cuối cùng báo
+  cáo WBS và rủi ro còn lại.
+
+● Mình đọc nốt project-rules.md và API của mini-react.js trong Ex2 trước khi
+  viết.
+
+  Searched for 2 patterns, read 3 files (ctrl+o to expand)
+
+● Mình đã có đủ thông tin. Bây giờ mình ghi WBS.
+
+● Write(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 247 lines, removed 42 lines
+      1 -# Exercise 3 — Task Decomposition (bản nháp ghi chú)            
+      1 +# Exercise 3 — Task Decomposition                               
+      2  
+      3 -> Trạng thái: **mới ghi lại thông tin đề bài**. Chưa chia WBS. K
+        -hi bắt đầu làm, chia task theo [project-rules](../docs/project-r
+        -ules.md): mỗi task một sub-task, có bước verify.                
+      4 -> Kiến thức nền xem [Context](../docs/Context.md).              
+      3 +> Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rul
+        +es](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS
+        +: [Exercise 2](../Exercise2_Lab02/TASK_DECOMPOSITION.md).       
+      4 +> Quy ước: tick `[x]` chỉ khi task đã chạy lệnh kiểm chứng và th
+        +ấy output thật. Mỗi lượt làm đúng một task. Tài liệu này là spec
+        + chính của bài; chưa có dòng code nào được viết.                
+      5  
+      6  ## 1. Thông tin chung
+      7  
+     ...
+      11  | Hình thức | In-class Sprint 3, 35 phút |
+      12  | Mục tiêu | Loại bỏ race condition và trạng thái UI không nhất
+           quán khi tải dữ liệu bất đồng bộ |
+      13  | Deliverable | Vòng đời 4 trạng thái bền vững: `IDLE`, `LOADIN
+          G`, `SUCCESS`, `ERROR` |
+      14 +| Ngôn ngữ | JavaScript thuần, contract bằng JSDoc, bật `// @ts
+         +-check` (giữ như Exercise 1 và 2) |                            
+      15 +| Engine | Sao chép `mini-react.js` và `reactive-engine.js` từ 
+         +Exercise 2 vào `Exercise3_Lab02/`, không sửa bản gốc |         
+      16 +| File mới | `state-machine.js`, `feed-mock.js`, `feed-loader.j
+         +s`, `data-feed.js`, `main.js`, `index.html`, `style.css` |     
+      17 +| Test | Vitest + jsdom, mỗi module một file `*.test.js` cạnh n
+         +ó |                                                            
+      18 +| Luồng dữ liệu | click → hub → `loader.load(dispatch)` → `disp
+         +atch(event)` → `setState(prev => transition(prev, event))` → re
+         +-render |                                                      
+      19  
+      15 -## 2. Ràng buộc                                                
+      20 +## 2. Ràng buộc từ đề                                          
+      21  
+      17 -1. **Máy trạng thái hữu hạn (FSM):** state của component chỉ đư
+         -ợc là `'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'`.              
+      22 +1. **Máy trạng thái hữu hạn (FSM):** `status` chỉ là một trong 
+         +`'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'`.                    
+      23  2. **Skeleton screen:** khi `LOADING`, hiển thị khung xương CSS
+           có hiệu ứng nhấp nháy (pulsing).
+      24  3. **Error boundary và thử lại:** khi `ERROR`, hiển thị thông b
+          áo lỗi dễ hiểu kèm nút **Retry Connection**.
+      25  4. **Git:** một commit mốc: `feat(ui): implement multi-state da
+          ta component with skeleton feedback`.
+     ...
+       32    | { status: 'LOADING' }
+       33    | { status: 'SUCCESS'; data: T }
+       34    | { status: 'ERROR'; error: string };
+       35 +```                                                           
+       36  
+       31 -function DataFeed() {                                         
+       32 -  const [state, setState] = useState<ViewState<Item[]>>({ stat
+          -us: 'IDLE' });                                                
+       37 +Contract này giữ nguyên, **không thêm trường** (kể cả `request
+          +Id`). Lý do: đề yêu cầu đúng 4 trạng thái, và chống race là vi
+          +ệc của lớp tải dữ liệu, không phải của FSM.                   
+       38  
+       34 -  const loadData = async () => {                              
+       35 -    setState({ status: 'LOADING' });                          
+       36 -    try {                                                     
+       37 -      const items = await fetchFeed();                        
+       38 -      setState({ status: 'SUCCESS', data: items });           
+       39 -    } catch (err) {                                           
+       40 -      setState({ status: 'ERROR', error: err.message });      
+       41 -    }                                                         
+       42 -  };                                                          
+       43 -  // Render: Skeleton khi LOADING, dữ liệu khi SUCCESS, cảnh b
+          -áo khi ERROR                                                  
+       44 -}                                                             
+       39 +Sự kiện đưa vào `transition` (do mình đặt, slide không có):   
+       40 +                                                              
+       41 +```ts                                                         
+       42 +type FeedEvent =                                              
+       43 +  | { type: 'LOAD' }                                          
+       44 +  | { type: 'RESOLVE'; data: Item[] }                         
+       45 +  | { type: 'REJECT'; error: string };                        
+       46 +                                                              
+       47 +type Item = { id: string; title: string; summary: string };   
+       48  ```
+       49  
+       47 -Điểm cần xử lý thêm (slide chưa làm):                         
+       48 -- **Race condition:** mẫu chưa chặn. Nếu bấm tải liên tiếp, ph
+          -ản hồi cũ đến muộn có thể ghi đè phản hồi mới. Cần `AbortContr
+          -oller` hoặc mã số yêu cầu (request id) để bỏ qua phản hồi lỗi 
+          -thời.                                                         
+       49 -- Trong TypeScript, `err` trong `catch` có kiểu `unknown`; phả
+          -i kiểm `err instanceof Error` trước khi đọc `message`.        
+       50 -- Chuyển trạng thái hợp lệ nên được kiểm soát (ví dụ không nhậ
+          -n `SUCCESS` khi đang `IDLE`).                                 
+       51 -- Retry quay lại `LOADING`, không nhảy thẳng sang `SUCCESS`.  
+       50 +Điểm slide chưa xử lý và cách WBS này xử lý:                  
+       51  
+       53 -## 4. Điều kiện hoàn thành (checklist nghiệm thu)             
+       52 +| Vấn đề của slide | Cách xử lý | Task |                      
+       53 +|---|---|---|                                                 
+       54 +| Không chặn race condition | Request ID trong `createFeedLoad
+          +er` | B5 |                                                    
+       55 +| `err.message` sai kiểu (`err` là `unknown`) | `errorMessageO
+          +f(err)` kiểm `instanceof Error` | B4 |                        
+       56 +| Chuyển trạng thái không kiểm soát | `transition` là hàm thuầ
+          +n, bảng chuyển hợp lệ | A2, A3 |                              
+       57 +| Retry không rõ đi đâu | Retry là `LOAD`, đi qua `LOADING`, k
+          +hông nhảy thẳng `SUCCESS` | A2, C4 |                          
+       58 +| `catch` thiếu `try` đúng chỗ, dấu nháy `'LOADING"` | Viết lạ
+          +i từ đầu | A1, B5 |                                           
+       59  
+       55 -- [ ] Kiểu `ViewState` đúng như hợp đồng, không có trạng thái 
+          -thứ năm                                                       
+       56 -- [ ] `IDLE`: có điểm khởi đầu rõ ràng (nút hoặc tự tải)      
+       57 -- [ ] `LOADING`: hiện skeleton, không hiện dữ liệu cũ lẫn lộn 
+       58 -- [ ] `SUCCESS`: hiện dữ liệu                                 
+       59 -- [ ] `ERROR`: hiện thông báo dễ hiểu và nút **Retry Connectio
+          -n** hoạt động                                                 
+       60 -- [ ] Bấm tải nhiều lần liên tiếp không tạo race condition (ch
+          -ứng minh bằng test hoặc DevTools Network)                     
+       61 -- [ ] 1 commit mốc đúng message                               
+       62 -- [ ] Prompt log của bài đã export vào `docs/prompt_logs/`    
+       60 +## 4. Quyết định thiết kế (mỗi quyết định ở một chỗ)          
+       61  
+       64 -## 5. Ghi chú WCAG 2.2 AA                                     
+       62 +| Quyết định | Chốt | Lý do |                                 
+       63 +|---|---|---|                                                 
+       64 +| Viết app bằng gì | Gọi `createElement` trực tiếp, không JSX,
+          + không React | Agents.md cấm thư viện UI ở Tier 1; giống Exerc
+          +ise 2 |                                                       
+       65 +| Nơi chứa luật chuyển trạng thái | Hàm thuần `transition(stat
+          +e, event)` trong `state-machine.js` | Test không cần DOM; sửa 
+          +luật ở một chỗ |                                              
+       66 +| Chuyển trạng thái không hợp lệ | Trả về **cùng tham chiếu** 
+          +`state` (không ném lỗi) | Setter bỏ qua khi `Object.is` bằng n
+          +hau nên không re-render thừa; phản hồi muộn vô hại thay vì làm
+          + app sập |                                                    
+       67 +| `LOAD` khi đang `LOADING` | Cho phép, ra `LOADING` mới và bắ
+          +t đầu yêu cầu mới ("bản mới nhất thắng") | Đây là đường duy nh
+          +ất tạo race thật qua UI, nên phải test được |                 
+       68 +| Nơi chống race | `createFeedLoader(fetchFeed)` giữ `latestId
+          +` trong closure; phản hồi có `id !== latestId` bị bỏ | `transi
+          +tion` không biết yêu cầu nào là mới nhất. Chỉ `RESOLVE` vào `L
+          +OADING` mới cần guard này: ở `SUCCESS` hoặc `ERROR`, bảng chuy
+          +ển đã bỏ qua `RESOLVE` |                                      
+       69 +| Vì sao không dùng `AbortController` | Chỉ là phần mở rộng (m
+          +ục 7) | Request ID dễ giải thích khi bảo vệ và test được không
+          + cần `fetch` thật. Hạn chế: không huỷ yêu cầu mạng, chỉ bỏ qua
+          + kết quả |                                                    
+       70 +| Loader sống bao lâu | Tạo **một lần** trong `createDataFeed(
+          +{ fetchFeed })`, ngoài hàm component | Component chạy lại mỗi 
+          +lần render; tạo loader trong thân component sẽ reset `latestId
+          +` và mất bảo vệ. Đây là câu hỏi dễ bị hỏi khi bảo vệ |        
+       71 +| Cách loader gọi ngược về state | `loader.load(dispatch)` nhậ
+          +n `dispatch` mỗi lần gọi | Setter của `useState` ổn định theo 
+          +`index` (đóng trên `index`, không phải `cursor`), nên `dispatc
+          +h` của bất kỳ lần render nào cũng đúng |                      
+       72 +| `fetchFeed` | Mock có điều khiển, không gọi mạng thật | Test
+          + tất định; dựng đúng kịch bản "phản hồi 1 về sau phản hồi 2" |
+       73 +| Hai kiểu mock | `createDeferredFeed()` cho test (resolve/rej
+          +ect bằng tay); `createTimedFeed(plan)` cho demo (độ trễ và lỗi
+          + theo kế hoạch) | Test không phụ thuộc đồng hồ; demo có bằng c
+          +hứng nhìn thấy được |                                         
+       74 +| Kế hoạch demo | Query string `?plan=3000,500,fail`, đọc tron
+          +g `main.js` | Không cần thêm UI điều khiển. Mỗi phần tử là độ 
+          +trễ (ms) hoặc `fail`; yêu cầu thứ n dùng phần tử thứ n, hết th
+          +ì lặp phần tử cuối |                                          
+       75 +| Điểm bắt đầu của `IDLE` | Nút "Load feed" luôn hiện, không t
+          +ự tải khi mount | `IDLE` quan sát và test được; không có hành 
+          +vi bất ngờ khi vào trang |                                    
+       76 +| Nút tải | Một nút `<button id="load-feed">` hiện ở mọi trạng
+          + thái; nhãn "Load feed" khi `IDLE`, "Reload feed" khi còn lại 
+          +| Nút tồn tại trong `LOADING` nên bấm liên tiếp được; id ổn đị
+          +nh để `writeFocus` giữ focus |                                
+       77 +| Nút Retry | `<button id="retry-feed">Retry Connection</butto
+          +n>` trong khối lỗi | Đúng nhãn của đề |                       
+       78 +| Focus khi nút bị gỡ | Sau khi bấm Retry, focus về `<h2 id="f
+          +eed-heading" tabindex="-1">` | Retry bị xoá khi sang `LOADING`
+          +, focus rơi về `<body>` (WCAG 2.4.3). Cùng mẫu `recoverLostFoc
+          +us` của `task-app.js` Exercise 2 |                            
+       79 +| Vùng thông báo | `<p id="status" role="status">` trong `inde
+          +x.html`, ngoài `#app`; `announce()` ghi bằng `textContent` | V
+          +ùng live bị tạo lại mỗi render thường không được đọc ra (bài h
+          +ọc từ Exercise 2) |                                           
+       80 +| Render | Đồng bộ, `replaceChildren` cả cây, chưa diff | Diff
+          + thuộc phần sau của lab; không thêm vào bài này |             
+       81 +| Key danh sách | `item.id` | Không dùng index |              
+       82  
+       66 -- Khi `LOADING`, đặt `aria-busy="true"` trên vùng nội dung và 
+          -thông báo "Đang tải" qua `role="status"`.                     
+       67 -- Khi `ERROR`, dùng `role="alert"` để trình đọc màn hình đọc n
+          -gay; nút Retry là `<button>`, dùng được bằng bàn phím, sau khi
+          - bấm focus không bị mất.                                      
+       68 -- Skeleton nhấp nháy: tôn trọng `prefers-reduced-motion` (tắt 
+          -hoặc giảm hiệu ứng); không nhấp nháy quá 3 lần mỗi giây (2.3.1
+          -).                                                            
+       69 -- Màu và độ tương phản của khung xương, thông báo lỗi phải đạt
+          - 4.5:1 cho chữ, 3:1 cho thành phần giao diện; lỗi không chỉ dự
+          -a vào màu đỏ.                                                 
+       70 -- Skeleton là trang trí thuần túy: ẩn khỏi trình đọc màn hình 
+          -(`aria-hidden="true"`).                                       
+       83 +## 5. WBS                                                     
+       84  
+       72 -## 6. Câu hỏi còn mở                                          
+       85 +Mỗi task là một lượt làm riêng (Slice → Contract → Generate → 
+          +Verify). Test đi cùng module của nó. Cột "Phụ thuộc" cho biết 
+          +task phải xong trước.                                         
+       86  
+       74 -- `fetchFeed` là API thật hay hàm giả lập (mock có độ trễ, có 
+          -thể lỗi ngẫu nhiên)? Slide chưa nói.                          
+       75 -- Dùng engine từ Exercise 2 hay `useState` của React? Slide dù
+          -ng cú pháp TypeScript, có thể là bản `.tsx`.                  
+       76 -- Cách chứng minh "không race condition" mà thầy chấp nhận là 
+          -gì?                                                           
+       87 +### Nhóm A — FSM 4 trạng thái và `transition()`               
+       88 +                                                              
+       89 +- [ ] **A0 Setup.** Sao chép nguyên văn `Exercise2_Lab02/mini-
+          +react.js`, `reactive-engine.js` và hai file test của chúng vào
+          + `Exercise3_Lab02/`. Không cài thêm dependency.               
+       90 +  - Phụ thuộc: không.                                         
+       91 +  - Nghiệm thu: `diff` từng file với bản Exercise 2 không có k
+          +hác biệt; `npm test` quét được thư mục mới và các test sao ché
+          +p pass; `git status` cho thấy không file nào trong `Exercise2_
+          +Lab02/` bị đổi.                                               
+       92 +  - Test: chính hai file test sao chép (chứng minh bản sao còn
+          + nguyên).                                                     
+       93 +- [ ] **A1 Contract trong `state-machine.js`.** JSDoc cho `Ite
+          +m`, `ViewState`, `FeedEvent`; hằng `STATUS` đóng băng gồm đúng
+          + 4 giá trị; `initialState` là `{ status: 'IDLE' }` đóng băng. 
+          +Chữ ký `transition` chưa có thân.                             
+       94 +  - Phụ thuộc: A0.                                            
+       95 +  - Nghiệm thu: không có giá trị thứ năm; `Object.isFrozen(STA
+          +TUS)` và `Object.isFrozen(initialState)` là `true`; file có `/
+          +/ @ts-check` và VS Code không báo lỗi kiểu.                   
+       96 +  - Test: `Object.values(STATUS)` bằng đúng `['IDLE','LOADING'
+          +,'SUCCESS','ERROR']`; `initialState.status === 'IDLE'`.       
+       97 +- [ ] **A2 `transition` đường hợp lệ.** Bảng chuyển:          
+       98 +                                                              
+       99 +  | Từ | `LOAD` | `RESOLVE` | `REJECT` |                      
+      100 +  |---|---|---|---|                                           
+      101 +  | `IDLE` | `LOADING` | không đổi | không đổi |              
+      102 +  | `LOADING` | `LOADING` (yêu cầu mới) | `SUCCESS` | `ERROR` 
+          +|                                                             
+      103 +  | `SUCCESS` | `LOADING` | không đổi | không đổi |           
+      104 +  | `ERROR` | `LOADING` | không đổi | không đổi |             
+      105 +                                                              
+      106 +  - Phụ thuộc: A1.                                            
+      107 +  - Nghiệm thu: trạng thái trả về là object đóng băng; `SUCCES
+          +S` mang đúng `data` của sự kiện; `ERROR` mang đúng `error`; `E
+          +RROR → LOADING` không giữ lại `error` cũ, `SUCCESS → LOADING` 
+          +không giữ lại `data` cũ (không hiện dữ liệu cũ lẫn lộn).      
+      108 +  - Test: `IDLE→LOADING`, `LOADING→SUCCESS`, `LOADING→ERROR`, 
+          +`SUCCESS→LOADING`, `ERROR→LOADING` (Retry không nhảy thẳng `SU
+          +CCESS`); object trả về không có khoá thừa.                    
+      109 +- [ ] **A3 `transition` đường không hợp lệ và tính đầy đủ.**  
+      110 +  - Phụ thuộc: A2.                                            
+      111 +  - Nghiệm thu: mọi cặp (trạng thái, sự kiện) không có trong b
+          +ảng trả về **cùng tham chiếu** `state`; không trạng thái nào n
+          +goài 4 giá trị xuất hiện; `transition` không sửa `state` đầu v
+          +ào.                                                           
+      112 +  - Test: bảng 4 × 3 = 12 ca theo dạng `it.each`; ca `RESOLVE`
+          + khi `IDLE` và `SUCCESS` trả về `toBe(state)`; sự kiện có `typ
+          +e` lạ trả về `toBe(state)`.                                   
+      113 +- [ ] **A4 Verify nhóm A.** `npm test`; `grep` không có `var`,
+          + `innerHTML`, `keypress`, `keyCode`; VS Code diagnostics sạch 
+          +cho `state-machine.js`; tick WBS. Không commit.               
+      114 +  - Phụ thuộc: A3.                                            
+      115 +  - Nghiệm thu: dán output thật của `npm test` và `grep`.     
+      116 +                                                              
+      117 +### Nhóm B — `fetchFeed` mock, retry, chống race bằng request 
+          +ID                                                            
+      118 +                                                              
+      119 +- [ ] **B1 Contract.** Trong `feed-mock.js`: JSDoc `FetchFeed 
+          += () => Promise<Item[]>`, `PlanStep = number | 'fail'`; hằng `
+          +FEED_ITEMS` (3 `Item`, `id` ổn định, đóng băng).              
+      120 +  - Phụ thuộc: A1.                                            
+      121 +  - Nghiệm thu: `FEED_ITEMS` đóng băng, `id` không trùng.     
+      122 +  - Test: `new Set(FEED_ITEMS.map(i => i.id)).size === FEED_IT
+          +EMS.length`.                                                  
+      123 +- [ ] **B2 `createDeferredFeed()` (mock cho test).** Trả `{ fe
+          +tchFeed, calls }`; mỗi lần gọi `fetchFeed()` tạo một promise t
+          +reo và đẩy `{ resolve(items), reject(error) }` vào `calls`.   
+      124 +  - Phụ thuộc: B1.                                            
+      125 +  - Nghiệm thu: `fetchFeed` không tự settle; `calls[n]` điều k
+          +hiển đúng lần gọi thứ n; thứ tự settle do test quyết định.    
+      126 +  - Test: gọi hai lần được hai phần tử trong `calls`; resolve 
+          +lần 2 trước lần 1 thì promise 2 settle trước.                 
+      127 +- [ ] **B3 `createTimedFeed(plan)` và `parsePlan(search)` (moc
+          +k cho demo).** `parsePlan('?plan=3000,500,fail')` trả `[3000, 
+          +500, 'fail']`; `createTimedFeed` dùng `setTimeout`, tên mục tr
+          +ong kết quả ghi số thứ tự yêu cầu (ví dụ "Item A (request #2)"
+          +) để thấy ngay phản hồi của yêu cầu nào đang hiển thị.        
+      128 +  - Phụ thuộc: B1.                                            
+      129 +  - Nghiệm thu: `plan` rỗng hoặc sai định dạng cho kế hoạch mặ
+          +c định (một bước nhanh, không lỗi) thay vì ném lỗi; bước `'fai
+          +l'` reject bằng `Error` có thông điệp đọc được; hết kế hoạch t
+          +hì lặp bước cuối.                                             
+      130 +  - Test: dùng `vi.useFakeTimers()`; `parsePlan` với đầu vào r
+          +ỗng, có khoảng trắng, giá trị âm hoặc chữ lạ; `createTimedFeed
+          +([100,'fail'])` resolve sau 100 ms, lần hai reject, lần ba rej
+          +ect (lặp bước cuối).                                          
+      131 +- [ ] **B4 `errorMessageOf(err)`.** Nhận `unknown`, trả `strin
+          +g`: `Error` thì `err.message`; `string` thì chính nó; còn lại 
+          +thì thông điệp mặc định "Unknown error"; chuỗi rỗng cũng thành
+          + mặc định.                                                    
+      132 +  - Phụ thuộc: A1.                                            
+      133 +  - Nghiệm thu: không bao giờ trả `undefined` hay chuỗi rỗng; 
+          +không đọc `.message` trên giá trị chưa kiểm kiểu.             
+      134 +  - Test: `new Error('x')`, `'boom'`, `undefined`, `null`, `42
+          +`, `{ message: 'fake' }` (không phải `Error` nên ra mặc định),
+          + `new Error('')`.                                             
+      135 +- [ ] **B5 `createFeedLoader(fetchFeed)` trong `feed-loader.js
+          +`.** `load(dispatch)`: tăng `latestId`, lấy `id`, `dispatch({ 
+          +type: 'LOAD' })`, `await` (bọc để cả lỗi ném đồng bộ lẫn promi
+          +se bị reject đều thành `REJECT`), nếu `id !== latestId` thì bỏ
+          +, ngược lại `dispatch(RESOLVE | REJECT)`.                     
+      136 +  - Phụ thuộc: A3, B2, B4.                                    
+      137 +  - Nghiệm thu: `latestId` ở đúng một chỗ, nằm trong closure c
+          +ủa loader, hai loader không dùng chung; `dispatch` luôn nhận `
+          +LOAD` trước mọi `RESOLVE`/`REJECT`; loader không biết DOM hay 
+          +`useState`.                                                   
+      138 +  - Test (dùng B2 và `transition` thật để quan sát trạng thái 
+          +cuối):                                                        
+      139 +    1. Đường vui: `RESOLVE` → trạng thái `SUCCESS` với đúng `d
+          +ata`.                                                         
+      140 +    2. Lỗi: reject bằng `Error('Network down')` → `ERROR` với 
+          +`error === 'Network down'`; reject bằng giá trị không phải `Er
+          +ror` → `ERROR` với thông điệp mặc định; `fetchFeed` ném đồng b
+          +ộ → vẫn `ERROR`.                                              
+      141 +    3. **Phản hồi cũ về muộn:** gọi `load` hai lần; resolve lầ
+          +n 2 (`SUCCESS`, dữ liệu B), rồi resolve lần 1 (dữ liệu A) → tr
+          +ạng thái vẫn là `SUCCESS` với dữ liệu B, `dispatch` không nhận
+          + `RESOLVE` của lần 1.                                         
+      142 +    4. **Phản hồi cũ về sớm:** gọi hai lần; resolve lần 1 trướ
+          +c → trạng thái vẫn `LOADING`; resolve lần 2 → `SUCCESS` với dữ
+          + liệu lần 2.                                                  
+      143 +    5. **Lỗi cũ về muộn:** lần 2 thành công, lần 1 reject sau 
+          +→ vẫn `SUCCESS`, không chuyển `ERROR`.                        
+      144 +    6. **Lỗi cũ về sớm khi lần mới còn chờ:** lần 1 reject tro
+          +ng lúc lần 2 chưa xong → vẫn `LOADING`.                       
+      145 +    7. **Retry:** lần 1 reject (`ERROR`), gọi `load` lại → `LO
+          +ADING` rồi resolve → `SUCCESS`; không có bước nhảy thẳng từ `E
+          +RROR` sang `SUCCESS`.                                         
+      146 +    8. Hai loader độc lập: `latestId` của loader này không làm
+          + loader kia bỏ phản hồi.                                      
+      147 +- [ ] **B6 Thử phá guard.** Tạm bỏ dòng so sánh `id !== latest
+          +Id` rồi chạy `npm test`; các ca 3, 4, 5, 6 của B5 phải fail. H
+          +oàn nguyên và chạy lại pass. Ghi kết quả vào mục 8.           
+      148 +  - Phụ thuộc: B5.                                            
+      149 +  - Nghiệm thu: dán output fail rồi output pass; `git diff` sa
+          +u khi hoàn nguyên không còn thay đổi ở `feed-loader.js` ngoài 
+          +bản gốc của B5. Mục đích: chứng minh test thật sự bắt được rac
+          +e, và có kịch bản sửa-trực-tiếp sẵn cho buổi bảo vệ.          
+      150 +- [ ] **B7 Verify nhóm B.** `npm test`; `grep` cấm; VS Code di
+          +agnostics sạch; tick WBS. Không commit.                       
+      151 +  - Phụ thuộc: B6, B3.                                        
+      152 +                                                              
+      153 +### Nhóm C — UI: skeleton, success, error, Retry Connection   
+      154 +                                                              
+      155 +- [ ] **C1 Khung `createDataFeed` và trạng thái `IDLE`.** `cre
+          +ateDataFeed({ fetchFeed })` tạo loader một lần rồi trả hàm com
+          +ponent `DataFeed`. `DataFeed` gọi `useState(initialState)`, dự
+          +ng `dispatch = (event) => setState(prev => transition(prev, ev
+          +ent))`, trả `<section aria-labelledby="feed-heading">` gồm `<h
+          +2 id="feed-heading" tabindex="-1">`, nút `#load-feed`, và vùng
+          + nội dung theo trạng thái. `IDLE` hiện câu hướng dẫn "Press Lo
+          +ad feed to start.". `onClick` của nút gọi `loader.load(dispatc
+          +h)`.                                                          
+      156 +  - Phụ thuộc: A3, B5.                                        
+      157 +  - Nghiệm thu: render lần đầu là `IDLE`, chưa gọi `fetchFeed`
+          +; bấm nút gọi `fetchFeed` đúng một lần; không `addEventListene
+          +r` trên nút (hub xử lý).                                      
+      158 +  - Test: dùng `setupEventDelegation`, `renderApp`, `createDef
+          +erredFeed`; `calls.length === 0` sau mount; sau click `calls.l
+          +ength === 1`; nút có nhãn "Load feed".                        
+      159 +- [ ] **C2 `LOADING` và skeleton.** Vùng nội dung có `aria-bus
+          +y="true"`; hiện khối `<div class="skeleton" aria-hidden="true"
+          +>` gồm 3 hàng giữ chỗ; `announce('Loading feed')` ghi vào `#st
+          +atus`. Nhãn nút đổi thành "Reload feed". Không còn dữ liệu cũ 
+          +khi vào `LOADING` từ `SUCCESS`.                               
+      160 +  - Phụ thuộc: C1.                                            
+      161 +  - Nghiệm thu: skeleton không chứa chữ, ẩn khỏi trình đọc màn
+          + hình; `aria-busy` là chuỗi `"true"` ở `LOADING` và không có (
+          +hoặc `"false"`) ở các trạng thái khác; không có `<li>` dữ liệu
+          + trong `LOADING`.                                             
+      162 +  - Test: sau click, DOM có `.skeleton[aria-hidden="true"]` và
+          + vùng có `aria-busy="true"`; `#status` chứa "Loading feed"; đi
+          + `SUCCESS → LOADING` thì tiêu đề các item cũ biến mất khỏi DOM
+          +.                                                             
+      163 +- [ ] **C3 `SUCCESS`.** `<ul>` với `<li key={item.id}>`, mỗi i
+          +tem hiện `title` và `summary` qua `createElement` (không `inne
+          +rHTML`). Mảng rỗng hiện "No items to show." thay vì `<ul>` rỗn
+          +g. `announce('Loaded N items')`.                              
+      164 +  - Phụ thuộc: C2.                                            
+      165 +  - Nghiệm thu: số `<li>` bằng số item; `key` của VNode là `it
+          +em.id`; `aria-busy` không còn là `true`.                      
+      166 +  - Test: resolve với `FEED_ITEMS` → đủ `<li>` đúng thứ tự; mả
+          +ng rỗng → thông báo, không có `<ul>`; item có `title` là `<img
+          + src=x onerror=alert(1)>` hiển thị như chữ, không tạo `<img>`.
+      167 +- [ ] **C4 `ERROR` và Retry Connection.** Khối `<div role="ale
+          +rt">` gồm `<h3>` "Couldn't load the feed", đoạn chữ lỗi (`text
+          +Content` từ `state.error`) và `<button id="retry-feed">Retry C
+          +onnection</button>`. Bấm Retry gọi `loader.load(dispatch)`.   
+      168 +  - Phụ thuộc: C2.                                            
+      169 +  - Nghiệm thu: thông báo dễ hiểu và không chỉ dựa vào màu (có
+          + chữ và tiêu đề); Retry là `<button>`; Retry đưa trạng thái qu
+          +a `LOADING` rồi mới tới `SUCCESS` hoặc `ERROR`; lỗi có HTML đư
+          +ợc hiển thị như chữ.                                          
+      170 +  - Test: reject bằng `Error('Network down')` → DOM có `[role=
+          +"alert"]` chứa "Network down" và nút tên "Retry Connection"; c
+          +lick Retry → có skeleton, `calls.length === 2`; resolve lần 2 
+          +→ hiện danh sách, hết `role="alert"`; retry rồi lỗi tiếp → qua
+          +y lại `ERROR`; `error` chứa `<b>x</b>` không sinh thẻ `<b>`.  
+      171 +- [ ] **C5 Quản lý focus.** (a) Nút `#load-feed` giữ focus qua
+          + các lần render nhờ `writeFocus` của engine. (b) Bấm `#retry-f
+          +eed` làm nút biến mất; sau `load(dispatch)` đưa focus về `#fee
+          +d-heading`. Hàm khôi phục focus đặt ở `data-feed.js`, không sử
+          +a engine (cùng mẫu `recoverLostFocus` của Exercise 2).        
+      172 +  - Phụ thuộc: C4.                                            
+      173 +  - Nghiệm thu: sau mọi thao tác `document.activeElement` khôn
+          +g bao giờ là `<body>`.                                        
+      174 +  - Test: focus `#load-feed`, bấm, kiểm tra `document.activeEl
+          +ement.id === 'load-feed'` qua `LOADING` và `SUCCESS`; focus `#
+          +retry-feed`, bấm, kiểm tra `activeElement.id === 'feed-heading
+          +'`; thử phá (bỏ hàm khôi phục) thì test (b) fail.             
+      175 +- [ ] **C6 Kiểm thử vòng đời đầy đủ qua UI.** Gộp các kịch bản
+          + của B5 lên DOM thật.                                         
+      176 +  - Phụ thuộc: C5.                                            
+      177 +  - Nghiệm thu: không có kết hợp thao tác nào để lại UI ở trạn
+          +g thái mâu thuẫn (ví dụ skeleton và danh sách cùng hiện).     
+      178 +  - Test:                                                     
+      179 +    1. **Race qua UI:** bấm `#load-feed` hai lần; resolve lần 
+          +2 (dữ liệu B), rồi resolve lần 1 (dữ liệu A) → DOM hiện dữ liệ
+          +u B, không có dữ liệu A.                                      
+      180 +    2. Bấm hai lần; resolve lần 1 trước → vẫn skeleton; resolv
+          +e lần 2 → dữ liệu của lần 2.                                  
+      181 +    3. `IDLE → LOADING → ERROR → (Retry) LOADING → SUCCESS`, k
+          +iểm DOM ở từng bước.                                          
+      182 +    4. `SUCCESS → (Reload) LOADING → ERROR`: danh sách cũ biến
+          + mất, hiện lỗi.                                               
+      183 +    5. Tại mọi bước, chỉ đúng một trong {gợi ý IDLE, skeleton,
+          + danh sách, khối lỗi} có trong DOM.                           
+      184 +- [ ] **C7 Verify nhóm C.** `npm test`; `grep` cấm (thêm: khôn
+          +g `onclick=`, không `addEventListener` trong `data-feed.js`); 
+          +VS Code diagnostics sạch; tick WBS. Không commit.             
+      185 +  - Phụ thuộc: C6.                                            
+      186 +                                                              
+      187 +### Nhóm D — Accessibility, demo và verification              
+      188 +                                                              
+      189 +- [ ] **D1 `index.html`, `main.js`, `style.css`.** `<html lang
+          +="en">`, `<title>` có nghĩa, `<main>` bọc `#app` và `<p id="st
+          +atus" role="status">`. `main.js`: `setupEventDelegation(root)`
+          +, `renderApp(createDataFeed({ fetchFeed }), root)` với `fetchF
+          +eed` là `createTimedFeed(parsePlan(location.search))`. CSS: `.
+          +skeleton` có `@keyframes` đổi `opacity` chu kỳ không ngắn hơn 
+          +1 giây; `@media (prefers-reduced-motion: reduce)` tắt animatio
+          +n; `:focus-visible` rõ; vùng bấm tối thiểu 2.5rem; khối lỗi có
+          + viền và biểu tượng chữ, không chỉ màu đỏ. Chạy qua `python -m
+          + http.server` vì ES module không chạy từ `file://`.           
+      190 +  - Phụ thuộc: C7, B3.                                        
+      191 +  - Nghiệm thu: trang chạy, nút Load feed hoạt động; mở `?plan
+          +=3000,500` hiển thị skeleton rồi dữ liệu.                     
+      192 +  - Test: `main.test.js` (mẫu như Exercise 2): `main.js` gắn h
+          +ub đúng một lần và render `IDLE`; `style.css` đọc ra chuỗi chứ
+          +a `prefers-reduced-motion` và `@keyframes` (kiểm bằng chuỗi vì
+          + jsdom không chạy animation).                                 
+      193 +- [ ] **D2 Kiểm tra màu và kích thước.** Script tính tương phả
+          +n theo công thức WCAG từ `getComputedStyle` trong Edge, như Ex
+          +ercise 2.                                                     
+      194 +  - Phụ thuộc: D1.                                            
+      195 +  - Nghiệm thu: chữ thường ≥ 4.5:1; viền nút, vòng focus, khối
+          + skeleton so với nền ≥ 3:1; mọi control ≥ 24×24 CSS px.       
+      196 +  - Test: không có test tự động; kết quả ghi vào mục 6.       
+      197 +- [ ] **D3 Checkpoint trong Edge thật.** Chụp ảnh và ghi lại: 
+      198 +  1. Skeleton đang nhấp nháy (`?plan=3000`): ảnh chụp có chú t
+          +hích.                                                         
+      199 +  2. **Race:** `?plan=3000,500`; bấm Load, rồi trong 1 giây bấ
+          +m Reload. Sau 0.5 giây hiện "(request #2)". Chờ qua 3 giây: da
+          +nh sách vẫn là "(request #2)", không bị ghi đè bởi "(request #
+          +1)". Chụp ảnh ở hai mốc.                                      
+      200 +  3. Lỗi và Retry: `?plan=fail,500`; hiện lỗi, bấm Retry, hiện
+          + dữ liệu.                                                     
+      201 +  4. Emulate `prefers-reduced-motion: reduce` trong DevTools (
+          +Rendering) và xác nhận skeleton đứng yên.                     
+      202 +  5. Chỉ dùng bàn phím: Tab tới Load feed, Enter, tới Retry, E
+          +nter; focus không rơi về `<body>`.                            
+      203 +  - Phụ thuộc: D1.                                            
+      204 +  - Nghiệm thu: có ảnh cho các mục 1, 2, 3 trong `Exercise3_La
+          +b02/evidence/`; mục 4 và 5 có ghi chú kết quả.                
+      205 +  - Việc của bạn: ảnh chụp bằng DevTools thật và chạy Lighthou
+          +se hoặc axe (chưa cài; Lighthouse có sẵn trong DevTools của Ed
+          +ge và Chrome). Mình không khẳng định thay.                    
+      206 +- [ ] **D4 Bảng kiểm WCAG 2.2 AA.** Điền mục 6 với đúng cột "C
+          +ách kiểm" và "Trạng thái" như Exercise 2. Không ghi "đạt WCAG"
+          + khi còn dòng "Một phần" hoặc "Chưa làm".                     
+      207 +  - Phụ thuộc: D2, D3.                                        
+      208 +- [ ] **D5 Verify cuối.** `npm test` toàn bộ repo; `grep` cấm 
+          +trên các file mới; `git status` và `git diff --stat -- Exercis
+          +e1_Lab02 Exercise2_Lab02` rỗng (không sửa bài cũ); VS Code dia
+          +gnostics sạch cho mọi file `.js` mới; xem `git diff`; tick mục
+          + 5 (checklist) với bằng chứng thật.                           
+      209 +  - Phụ thuộc: D4.                                            
+      210 +- [ ] **D6 Prompt log và commit mốc.** Bạn export prompt log v
+          +ào `docs/prompt_logs/` (AI không xuất được phiên làm việc của 
+          +chính nó). Khi bạn yêu cầu: một commit `feat(ui): implement mu
+          +lti-state data component with skeleton feedback`, kèm dòng `Co
+          +-Authored-By` theo Agents.md.                                 
+      211 +  - Phụ thuộc: D5.                                            
+      212 +                                                              
+      213 +### Phần mở rộng (chỉ khi cần hoặc khi thầy yêu cầu lúc bảo vệ
+          +)                                                             
+      214 +                                                              
+      215 +- [ ] X1 `AbortController`: `createFeedLoader` truyền `signal`
+          + cho `fetchFeed` và `abort()` yêu cầu cũ khi có yêu cầu mới. T
+          +est: mock tôn trọng `signal`, yêu cầu cũ nhận `AbortError` và 
+          +loader không dispatch `REJECT`.                               
+      216 +- [ ] X2 Chặn bấm liên tiếp: nút Reload `disabled` khi `LOADIN
+          +G` (thay cho "bản mới nhất thắng"). Lưu ý `disabled` làm nút m
+          +ất khỏi thứ tự Tab; cần cân nhắc `aria-disabled`.             
+      217 +                                                              
+      218 +## 5. Điều kiện hoàn thành (checklist nghiệm thu)             
+      219 +                                                              
+      220 +- [ ] Kiểu `ViewState` đúng như hợp đồng, không có trạng thái 
+          +thứ năm (A1, A3)                                              
+      221 +- [ ] `IDLE`: có điểm khởi đầu rõ ràng là nút "Load feed" (C1)
+      222 +- [ ] `LOADING`: hiện skeleton, không hiện dữ liệu cũ lẫn lộn 
+          +(A2, C2, C6)                                                  
+      223 +- [ ] `SUCCESS`: hiện dữ liệu, an toàn XSS (C3)               
+      224 +- [ ] `ERROR`: thông báo dễ hiểu và nút **Retry Connection** h
+          +oạt động (C4)                                                 
+      225 +- [ ] Bấm tải nhiều lần liên tiếp không tạo race condition: te
+          +st B5 (3 đến 6) và C6 (1, 2), bằng chứng DevTools ở D3 mục 2 (
+          +B5, B6, C6, D3)                                               
+      226 +- [ ] Retry đi qua `LOADING`, không nhảy thẳng `SUCCESS` (A2, 
+          +B5 ca 7, C4)                                                  
+      227 +- [ ] Skeleton tôn trọng `prefers-reduced-motion`, không nhấp 
+          +nháy quá 3 lần mỗi giây (D1, D3)                              
+      228 +- [ ] Focus không rơi về `<body>` sau Retry (C5, D3)          
+      229 +- [ ] `npm test` pass toàn bộ, không sửa Exercise 1 và 2 (D5) 
+      230 +- [ ] Không có `var`, `innerHTML`, `keypress`, `keyCode`, inli
+          +ne handler (đã `grep`) (D5)                                   
+      231 +- [ ] 1 commit mốc đúng message (D6)                          
+      232 +- [ ] Prompt log đã export vào `docs/prompt_logs/` (D6)       
+      233 +                                                              
+      234 +## 6. Kiểm tra WCAG 2.2 AA (điền ở D4; ghi rõ đã kiểm gì, bằng
+          + cách nào)                                                    
+      235 +                                                              
+      236 +| Tiêu chí | Cách kiểm dự kiến | Trạng thái |                 
+      237 +|---|---|---|                                                 
+      238 +| 1.3.1 Cấu trúc ngữ nghĩa | Test jsdom (`main > section > h2`
+          +, `ul > li`, `button`) và cây accessibility của Edge | Chưa ki
+          +ểm |                                                          
+      239 +| 1.4.1 Không chỉ dùng màu | Khối lỗi có tiêu đề, chữ và viền;
+          + xem ảnh chụp | Chưa kiểm |                                   
+      240 +| 1.4.3 Tương phản 4.5:1 | Script từ `getComputedStyle` trong 
+          +Edge (D2) | Chưa kiểm |                                       
+      241 +| 1.4.11 Tương phản phi văn bản | Viền nút, vòng focus, khối s
+          +keleton so với nền, ≥ 3:1 (D2) | Chưa kiểm |                  
+      242 +| 2.1.1 Bàn phím | Tab và Enter thật (D3 mục 5); phím Space ch
+          +ưa thử trước khi kiểm | Chưa kiểm |                           
+      243 +| 2.3.1 Không nhấp nháy quá 3 lần mỗi giây | Đọc chu kỳ `@keyf
+          +rames` trong `style.css` | Chưa kiểm |                        
+      244 +| 2.3.3 Animation from Interactions / `prefers-reduced-motion`
+          + | Test chuỗi CSS (D1) và Emulate trong DevTools (D3 mục 4) | 
+          +Chưa kiểm |                                                   
+      245 +| 2.4.3 Thứ tự focus | Test C5 và Edge thật | Chưa kiểm |     
+      246 +| 2.4.7 Focus nhìn thấy | `:focus-visible` sau mỗi lần Tab | C
+          +hưa kiểm |                                                    
+      247 +| 2.5.8 Vùng bấm 24×24 | Đo `getBoundingClientRect` (D2) | Chư
+          +a kiểm |                                                      
+      248 +| 4.1.2 Tên truy cập được | Cây accessibility: "Load feed", "R
+          +etry Connection" | Chưa kiểm |                                
+      249 +| 4.1.3 Thông báo trạng thái | Test: `#status` sống qua các lầ
+          +n render và đổi nội dung; `role="alert"` ở khối lỗi. Chưa nghe
+          + bằng trình đọc màn hình thật | Chưa kiểm |                   
+      250 +                                                              
+      251 +Chưa làm: axe hoặc Lighthouse (project-rules 8.1 yêu cầu ít nh
+          +ất một công cụ tự động), thử trình đọc màn hình, thử Firefox h
+          +oặc Safari.                                                   
+      252 +                                                              
+      253 +## 7. Rủi ro và điểm cần giải thích khi bảo vệ                
+      254 +                                                              
+      255 +- **Loader phải sống ngoài hàm component.** Tạo `createFeedLoa
+          +der` trong thân `DataFeed` sẽ reset `latestId` mỗi lần render,
+          + race quay lại mà test đơn lẻ của loader vẫn pass. Test C6 (1)
+          + bắt lỗi này vì chạy qua `renderApp`.                         
+      256 +- **Request ID không huỷ yêu cầu mạng**, chỉ bỏ kết quả muộn. 
+          +Với `fetch` thật, yêu cầu cũ vẫn tốn băng thông; `AbortControl
+          +ler` (X1) giải quyết phần đó.                                 
+      257 +- **`transition` không biết yêu cầu nào mới nhất.** Nếu thầy h
+          +ỏi "đưa `requestId` vào `LOADING`", câu trả lời: làm vậy thêm 
+          +trường vào contract mà đề giữ cố định 4 hình dạng; guard đặt ở
+          + loader là một chỗ duy nhất.                                  
+      258 +- **Trả về cùng tham chiếu cho chuyển không hợp lệ** dựa vào `
+          +Object.is` trong setter của engine để khỏi render thừa. Nếu ai
+          + đó đổi `transition` trả về object mới, sẽ có re-render thừa n
+          +hưng không sai kết quả.                                       
+      259 +- **`aria-busy` nằm trong cây bị thay mỗi lần render.** Phần t
+          +ử mới tạo mang sẵn thuộc tính nên hiệu quả với trình đọc màn h
+          +ình có thể yếu hơn mong đợi; thông báo thật sự dựa vào `#statu
+          +s` ngoài cây. Chưa kiểm với trình đọc màn hình.               
+      260 +- **`role="alert"` trên node mới chèn** thường được đọc ngay, 
+          +nhưng hành vi khác nhau giữa trình đọc màn hình; chưa kiểm.   
+      261 +- **Mất state cục bộ khi thay cả cây:** Exercise 3 không có ô 
+          +nhập nên không gặp lỗi mất chữ đang gõ của Exercise 2. Vị trí 
+          +cuộn và vùng chọn văn bản vẫn không được giữ.                 
+      262 +- **`createTimedFeed` dùng `setTimeout`:** tab nền có thể bị t
+          +rình duyệt làm chậm timer; không ảnh hưởng đúng sai nhưng làm 
+          +số giây trong ảnh chụp D3 lệch.                               
+      263 +- **Kiểm kiểu chỉ qua editor:** `// @ts-check` chỉ có tác dụng
+          + trong VS Code; repo chưa có `tsc` nên không có lệnh typecheck
+          + trong terminal (xem mục 8).                                  
+      264 +- **`crypto.randomUUID()` không dùng ở bài này**; `id` của ite
+          +m là hằng cố định nên không dính giới hạn secure context của E
+          +xercise 2.                                                    
+      265 +                                                              
+      266 +## 8. Câu hỏi còn mở và giả định                              
+      267 +                                                              
+      268 +| Câu hỏi | Mặc định đang dùng | Trạng thái |                 
+      269 +|---|---|---|                                                 
+      270 +| `fetchFeed` là API thật hay giả lập | Mock có điều khiển (B2
+          + cho test, B3 cho demo) | Giả định, chờ bạn xác nhận |        
+      271 +| Dùng engine Exercise 2 hay React | Sao chép engine Exercise 
+          +2, không React | Đã chốt theo Agents.md |                     
+      272 +| Cách chứng minh "không race" mà thầy chấp nhận | Test B5 và 
+          +C6 cộng bằng chứng DevTools ở D3 mục 2 (kịch bản `?plan=3000,5
+          +00`) | Giả định, chưa rõ thầy muốn gì |                       
+      273 +| "1 commit mốc" so với "mỗi task xong một commit" (Agents.md 
+          +mục 5) | Một commit mốc đúng message của đề, gộp cả nhóm A đến
+          + D | Mâu thuẫn nhẹ; chờ bạn xác nhận |                        
+      274 +| Lệnh typecheck | Chỉ dựa vào VS Code diagnostics. Cài `types
+          +cript` để chạy `tsc --noEmit` là thêm dependency | Cần bạn quy
+          +ết (hỏi trước khi cài) |                                      
+      275 +| `IDLE` tự tải hay bấm nút | Bấm nút "Load feed" | Giả định |
+      276 +| Nút Reload khi `LOADING`: cho bấm hay khoá | Cho bấm ("bản m
+          +ới nhất thắng"); khoá là X2 | Giả định |                      
+      277 +| Có sao chép hai file test của engine vào Exercise 3 không | 
+          +Có, để chứng minh bản sao còn nguyên (A0) | Giả định, làm repo
+          + thêm test trùng lặp |                                        
+      278 +                                                              
+      279 +## 9. Ghi chú nguồn                                           
+      280 +                                                              
+      281 +Thông tin đề gốc nằm ở slide Sprint 3 (đã chép lại ở mục 2 và 
+          +3, kèm các sửa lỗi gõ liệt kê trong [Context mục 7](../docs/Co
+          +ntext.md)). Ghi chú WCAG ở mục 6 kế thừa bản nháp trước và chu
+          +ẩn trong [project-rules mục 8](../docs/project-rules.md).     
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      241  | 1.4.11 Tương phản phi văn bản | Viền nút, vòng focus, khối s
+           keleton so với nền, ≥ 3:1 (D2) | Chưa kiểm |
+      242  | 2.1.1 Bàn phím | Tab và Enter thật (D3 mục 5); phím Space ch
+           ưa thử trước khi kiểm | Chưa kiểm |
+      243  | 2.3.1 Không nhấp nháy quá 3 lần mỗi giây | Đọc chu kỳ `@keyf
+           rames` trong `style.css` | Chưa kiểm |
+      244 -| 2.3.3 Animation from Interactions / `prefers-reduced-motion`
+          - | Test chuỗi CSS (D1) và Emulate trong DevTools (D3 mục 4) | 
+          -Chưa kiểm |                                                   
+      244 +| Tôn trọng `prefers-reduced-motion` (thực hành tốt; tiêu chí 
+          +2.3.3 gần nhất thuộc mức AAA, ngoài AA) | Test chuỗi CSS (D1) 
+          +và Emulate trong DevTools (D3 mục 4) | Chưa kiểm |            
+      245  | 2.4.3 Thứ tự focus | Test C5 và Edge thật | Chưa kiểm |
+      246  | 2.4.7 Focus nhìn thấy | `:focus-visible` sau mỗi lần Tab | C
+           hưa kiểm |
+      247  | 2.5.8 Vùng bấm 24×24 | Đo `getBoundingClientRect` (D2) | Chư
+           a kiểm |
+
+● Written for: chính anh/chị, để làm và bảo vệ Exercise 3 (không phải tài liệu
+  gửi người khác).
+
+  Mình đã ghi WBS vào Exercise3_Lab02/TASK_DECOMPOSITION.md. Chưa có code, chưa
+  commit, chưa tick task nào, và không file nào ngoài file này bị đổi. Mình chưa
+  chạy lệnh nào, vì đây chỉ là tài liệu. Mình đã đọc project-rules.md và
+  mini-react.js của Ex2 trước khi viết.
+
+  Cấu trúc WBS
+
+  Mỗi task có phụ thuộc, tiêu chí nghiệm thu và test.
+
+  Nhóm: A
+  Task: A0–A4
+  Nội dung: Sao chép engine Ex2 nguyên văn. ViewState giữ đúng 4 hình dạng của
+  đề. transition(state, event) là hàm thuần. Trạng thái không hợp lệ trả về
+  cùng tham chiếu, và test bảng 4 trạng thái × 3 sự kiện.
+  ────────────────────────────────────────
+  Nhóm: B
+  Task: B1–B7
+  Nội dung: createDeferredFeed cho test (resolve/reject bằng tay) và
+  createTimedFeed + parsePlan cho demo (?plan=3000,500,fail). errorMessageOf xử
+   lý unknown. createFeedLoader chống race bằng latestId. B6 là bước tạm bỏ
+  guard để chứng minh test bắt được race.
+  ────────────────────────────────────────
+  Nhóm: C
+  Task: C1–C7
+  Nội dung: Component DataFeed, skeleton, danh sách, khối lỗi có nút Retry
+  Connection, quản lý focus, và test vòng đời đầy đủ qua DOM.
+  ────────────────────────────────────────
+  Nhóm: D
+  Task: D1–D6
+  Nội dung: index.html, main.js, style.css, đo tương phản, kiểm trong Edge thật,
+
+  bảng WCAG, verify cuối, prompt log và commit mốc.
+
+  Các ca test bạn yêu cầu
+
+  - Response cũ về muộn: B5 ca 3 và 5, C6 ca 1.
+  - Response cũ về sớm: B5 ca 4 và 6, C6 ca 2.
+  - Retry: B5 ca 7, C4, C6 ca 3. Retry luôn đi qua LOADING.
+  - Lỗi: B5 ca 2, C4. Gồm lỗi không phải Error và lỗi ném đồng bộ.
+  - Lỗi chứa HTML: C3 và C4, kiểm hiển thị như chữ chứ không tạo thẻ.
+
+  Các quyết định do mình đặt, cần bạn xác nhận hoặc sửa (bảng đầy đủ ở mục 8 của
+  file)
+
+  - createFeedLoader phải được tạo một lần ngoài hàm component. Nếu tạo trong
+    thân component, latestId bị reset mỗi lần render và race quay lại, trong khi
+    test riêng của loader vẫn pass. C6 bắt lỗi này vì chạy qua renderApp.
+  - IDLE bắt đầu bằng nút "Load feed", không tự tải khi mount.
+  - Nút tải hiện ở mọi trạng thái, kể cả LOADING. Nhờ vậy bấm liên tiếp qua UI
+    tạo được race thật, theo kiểu "bản mới nhất thắng". Chặn bấm khi đang tải để
+    ở phần mở rộng X2.
+  - Đề nói "1 commit mốc", còn Agents.md mục 5 nói "mỗi task một commit". Mình
+    chọn một commit mốc duy nhất cho cả bài.
+
+  Rủi ro còn lại (chi tiết ở mục 7)
+
+  - Typecheck: repo chưa có tsc. // @ts-check chỉ có tác dụng trong VS Code, nên
+    chưa có lệnh typecheck trong terminal. Cài typescript là thêm dependency
+    nên mình chưa làm.
+  - Request ID chỉ bỏ kết quả muộn, không huỷ yêu cầu mạng. Phần huỷ nằm ở
+    AbortController (X1).
+  - aria-busy và role="alert" nằm trong cây bị thay mỗi lần render. Hiệu quả với
+    trình đọc màn hình chưa kiểm. Thông báo thật dựa vào #status nằm ngoài cây.
+  - Animation: jsdom không chạy animation. Test chỉ kiểm chuỗi CSS (@keyframes,
+    prefers-reduced-motion), phần còn lại phải xem trong Edge thật.
+  - Việc của bạn (D3, D6): ảnh chụp DevTools, chạy Lighthouse hoặc axe, và
+    export prompt log. Mình sẽ không khẳng định "đạt WCAG" khi chưa có các bước
+    này.
+
+  Task kế tiếp là A0. Bạn gật hoặc sửa các quyết định ở trên rồi mình bắt đầu.
+
+> <ide_opened_file>The user opened the file c:\Dev\Project\24520626_QuangPhuHun
+  g_MSIS207_Lab02\Exercise3_Lab02\TASK_DECOMPOSITION.md in the IDE. This may or
+  may not be related to the current task.</ide_opened_file>
+
+> Ok bạn thực hiện chuỗi task và comment nhỏ đi, task decompistion ok rồi, mỗi
+  cái commit nhỏ 1 cái cuối cùng commmit milestone cuối theo đề như thầy ghi
+  trong đề • Git Milestone Commit: 'feat(ui): implement multi-state data
+  component
+  with skeleton feedback'. lưu ý khi gặp vấn đề cần mình quyết định hãy ngừng
+  và hỏi, mình thấy task đang đi vào sâu nặng
+
+● Skill(superpowers:test-driven-development)
+  ⎿  Successfully loaded skill
+
+● Bắt đầu A0: sao chép engine từ Ex2 sang Ex3 và chạy test.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      86  
+      87  ### Nhóm A — FSM 4 trạng thái và `transition()`
+      88  
+      89 -- [ ] **A0 Setup.** Sao chép nguyên văn `Exercise2_Lab02/mini-r
+         -eact.js`, `reactive-engine.js` và hai file test của chúng vào `
+         -Exercise3_Lab02/`. Không cài thêm dependency.                  
+      89 +- [x] **A0 Setup.** Sao chép nguyên văn `Exercise2_Lab02/mini-r
+         +eact.js`, `reactive-engine.js` và hai file test của chúng vào `
+         +Exercise3_Lab02/`. Không cài thêm dependency.                  
+      90    - Phụ thuộc: không.
+      91    - Nghiệm thu: `diff` từng file với bản Exercise 2 không có kh
+          ác biệt; `npm test` quét được thư mục mới và các test sao chép 
+          pass; `git status` cho thấy không file nào trong `Exercise2_Lab
+          02/` bị đổi.
+      92    - Test: chính hai file test sao chép (chứng minh bản sao còn 
+          nguyên).
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● A1: viết test cho contract trước, chạy để thấy fail, rồi mới viết
+  state-machine.js.
+
+● Write(Exercise3_Lab02\state-machine.test.js)
+  ⎿  Wrote 17 lines to Exercise3_Lab02\state-machine.test.js
+       1 import { describe, expect, it } from 'vitest';
+       2 import { STATUS, initialState } from './state-machine.js';
+       3
+       4 describe('contract (A1)', () => {
+       5   it('has exactly four statuses', () => {
+         UCCESS', 'ERROR']);
+       7   });
+       8
+       9   it('freezes STATUS and initialState', () => {
+      10     expect(Object.isFrozen(STATUS)).toBe(true);
+     … +8 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Fail đúng lý do (module chưa tồn tại). Viết contract.
+
+● Write(Exercise3_Lab02\state-machine.js)
+  ⎿  Wrote 32 lines to Exercise3_Lab02\state-machine.js
+       1 // @ts-check
+       2
+       3 /**
+       4  * @typedef {object} Item
+       5  * @property {string} id
+       6  * @property {string} title
+       7  * @property {string} summary
+       8  */
+       9
+      10 /**
+     … +23 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      90    - Phụ thuộc: không.
+      91    - Nghiệm thu: `diff` từng file với bản Exercise 2 không có kh
+          ác biệt; `npm test` quét được thư mục mới và các test sao chép 
+          pass; `git status` cho thấy không file nào trong `Exercise2_Lab
+          02/` bị đổi.
+      92    - Test: chính hai file test sao chép (chứng minh bản sao còn 
+          nguyên).
+      93 -- [ ] **A1 Contract trong `state-machine.js`.** JSDoc cho `Item
+         -`, `ViewState`, `FeedEvent`; hằng `STATUS` đóng băng gồm đúng 4
+         - giá trị; `initialState` là `{ status: 'IDLE' }` đóng băng. Chữ
+         - ký `transition` chưa có thân.                                 
+      93 +- [x] **A1 Contract trong `state-machine.js`.** JSDoc cho `Item
+         +`, `ViewState`, `FeedEvent`; hằng `STATUS` đóng băng gồm đúng 4
+         + giá trị; `initialState` là `{ status: 'IDLE' }` đóng băng. Chữ
+         + ký `transition` chưa có thân.                                 
+      94    - Phụ thuộc: A0.
+      95    - Nghiệm thu: không có giá trị thứ năm; `Object.isFrozen(STAT
+          US)` và `Object.isFrozen(initialState)` là `true`; file có `// 
+          @ts-check` và VS Code không báo lỗi kiểu.
+      96    - Test: `Object.values(STATUS)` bằng đúng `['IDLE','LOADING',
+          'SUCCESS','ERROR']`; `initialState.status === 'IDLE'`.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● A2: test các đường chuyển hợp lệ trước.
+● Update(Exercise3_Lab02\state-machine.test.js)
+  ⎿  Added 6 lines, removed 1 line
+       1  import { describe, expect, it } from 'vitest';
+       2 -import { STATUS, initialState } from './state-machine.js';     
+       2 +import { STATUS, initialState, transition } from './state-machi
+         +ne.js';                                                        
+       3  
+       4 +const items = [{ id: 'a', title: 'A', summary: 'a' }];         
+       5 +const loading = { status: 'LOADING' };                         
+       6 +const success = { status: 'SUCCESS', data: items };            
+       7 +const error = { status: 'ERROR', error: 'Network down' };      
+       8 +                                                               
+       9  describe('contract (A1)', () => {
+      10    it('has exactly four statuses', () => {
+      11      expect(Object.values(STATUS)).toEqual(['IDLE', 'LOADING', '
+          SUCCESS', 'ERROR']);
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+       94    - Phụ thuộc: A0.
+       95    - Nghiệm thu: không có giá trị thứ năm; `Object.isFrozen(STA
+           TUS)` và `Object.isFrozen(initialState)` là `true`; file có `/
+           / @ts-check` và VS Code không báo lỗi kiểu.
+       96    - Test: `Object.values(STATUS)` bằng đúng `['IDLE','LOADING'
+           ,'SUCCESS','ERROR']`; `initialState.status === 'IDLE'`.
+       97 -- [ ] **A2 `transition` đường hợp lệ.** Bảng chuyển:          
+       97 +- [x] **A2 `transition` đường hợp lệ.** Bảng chuyển:          
+       98  
+       99    | Từ | `LOAD` | `RESOLVE` | `REJECT` |
+      100    |---|---|---|---|
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Test A3 pass ngay vì A2 đã bao phủ. Để chắc test có bắt lỗi, mình thử phá
+  guard rồi hoàn nguyên.
+
+  Called claude-vscode, ran 1 shell command (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      106    - Phụ thuộc: A1.
+      107    - Nghiệm thu: trạng thái trả về là object đóng băng; `SUCCES
+           S` mang đúng `data` của sự kiện; `ERROR` mang đúng `error`; `E
+           RROR → LOADING` không giữ lại `error` cũ, `SUCCESS → LOADING` 
+           không giữ lại `data` cũ (không hiện dữ liệu cũ lẫn lộn).
+      108    - Test: `IDLE→LOADING`, `LOADING→SUCCESS`, `LOADING→ERROR`, 
+           `SUCCESS→LOADING`, `ERROR→LOADING` (Retry không nhảy thẳng `SU
+           CCESS`); object trả về không có khoá thừa.
+      109 -- [ ] **A3 `transition` đường không hợp lệ và tính đầy đủ.**  
+      109 +- [x] **A3 `transition` đường không hợp lệ và tính đầy đủ.**  
+      110    - Phụ thuộc: A2.
+      111    - Nghiệm thu: mọi cặp (trạng thái, sự kiện) không có trong b
+           ảng trả về **cùng tham chiếu** `state`; không trạng thái nào n
+           goài 4 giá trị xuất hiện; `transition` không sửa `state` đầu v
+           ào.
+      112    - Test: bảng 4 × 3 = 12 ca theo dạng `it.each`; ca `RESOLVE`
+            khi `IDLE` và `SUCCESS` trả về `toBe(state)`; sự kiện có `typ
+           e` lạ trả về `toBe(state)`.
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      110    - Phụ thuộc: A2.
+      111    - Nghiệm thu: mọi cặp (trạng thái, sự kiện) không có trong b
+           ảng trả về **cùng tham chiếu** `state`; không trạng thái nào n
+           goài 4 giá trị xuất hiện; `transition` không sửa `state` đầu v
+           ào.
+      112    - Test: bảng 4 × 3 = 12 ca theo dạng `it.each`; ca `RESOLVE`
+            khi `IDLE` và `SUCCESS` trả về `toBe(state)`; sự kiện có `typ
+           e` lạ trả về `toBe(state)`.
+      113 -- [ ] **A4 Verify nhóm A.** `npm test`; `grep` không có `var`,
+          - `innerHTML`, `keypress`, `keyCode`; VS Code diagnostics sạch 
+          -cho `state-machine.js`; tick WBS. Không commit.               
+      113 +- [x] **A4 Verify nhóm A.** `npm test`; `grep` không có `var`,
+          + `innerHTML`, `keypress`, `keyCode`; VS Code diagnostics sạch 
+          +cho `state-machine.js`; tick WBS. Không commit.               
+      114    - Phụ thuộc: A3.
+      115    - Nghiệm thu: dán output thật của `npm test` và `grep`.
+      116  
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Nhóm A xong (19 test A, toàn repo 227 pass). Sang B1: FEED_ITEMS.
+
+● Write(Exercise3_Lab02\feed-mock.test.js)
+  ⎿  Wrote 13 lines to Exercise3_Lab02\feed-mock.test.js
+       1 import { describe, expect, it } from 'vitest';
+       2 import { FEED_ITEMS } from './feed-mock.js';
+       3
+       4 describe('FEED_ITEMS (B1)', () => {
+       5   it('has unique ids', () => {
+         (FEED_ITEMS.length);
+       7   });
+       8
+       9   it('is frozen, items included', () => {
+      10     expect(Object.isFrozen(FEED_ITEMS)).toBe(true);
+     … +5 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(Exercise3_Lab02\feed-mock.js)
+  ⎿  Wrote 12 lines to Exercise3_Lab02\feed-mock.js
+       1 // @ts-check
+       2
+       3 /** @typedef {import('./state-machine.js').Item} Item */
+       5 /** @typedef {number | 'fail'} PlanStep */
+       6
+       7 /** @type {readonly Item[]} */
+       8 export const FEED_ITEMS = Object.freeze([
+          'What changed in this version.' }),
+      10   Object.freeze({ id: 'feed-2', title: 'Maintenance window', sum
+         mary: 'Planned downtime on Sunday.' }),
+     … +5 lines (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      116  
+      117  ### Nhóm B — `fetchFeed` mock, retry, chống race bằng request 
+           ID
+      118  
+      119 -- [ ] **B1 Contract.** Trong `feed-mock.js`: JSDoc `FetchFeed 
+          -= () => Promise<Item[]>`, `PlanStep = number | 'fail'`; hằng `
+          -FEED_ITEMS` (3 `Item`, `id` ổn định, đóng băng).              
+      119 +- [x] **B1 Contract.** Trong `feed-mock.js`: JSDoc `FetchFeed 
+          += () => Promise<Item[]>`, `PlanStep = number | 'fail'`; hằng `
+          +FEED_ITEMS` (3 `Item`, `id` ổn định, đóng băng).              
+      120    - Phụ thuộc: A1.
+      121    - Nghiệm thu: `FEED_ITEMS` đóng băng, `id` không trùng.
+      122    - Test: `new Set(FEED_ITEMS.map(i => i.id)).size === FEED_IT
+           EMS.length`.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● B2: createDeferredFeed. Test trước.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      120    - Phụ thuộc: A1.
+      121    - Nghiệm thu: `FEED_ITEMS` đóng băng, `id` không trùng.
+      122    - Test: `new Set(FEED_ITEMS.map(i => i.id)).size === FEED_IT
+           EMS.length`.
+      123 -- [ ] **B2 `createDeferredFeed()` (mock cho test).** Trả `{ fe
+          -tchFeed, calls }`; mỗi lần gọi `fetchFeed()` tạo một promise t
+          -reo và đẩy `{ resolve(items), reject(error) }` vào `calls`.   
+      123 +- [x] **B2 `createDeferredFeed()` (mock cho test).** Trả `{ fe
+          +tchFeed, calls }`; mỗi lần gọi `fetchFeed()` tạo một promise t
+          +reo và đẩy `{ resolve(items), reject(error) }` vào `calls`.   
+      124    - Phụ thuộc: B1.
+      125    - Nghiệm thu: `fetchFeed` không tự settle; `calls[n]` điều k
+           hiển đúng lần gọi thứ n; thứ tự settle do test quyết định.
+      126    - Test: gọi hai lần được hai phần tử trong `calls`; resolve 
+           lần 2 trước lần 1 thì promise 2 settle trước.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● B3: parsePlan và createTimedFeed. Test trước.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      124    - Phụ thuộc: B1.
+      125    - Nghiệm thu: `fetchFeed` không tự settle; `calls[n]` điều k
+           hiển đúng lần gọi thứ n; thứ tự settle do test quyết định.
+      126    - Test: gọi hai lần được hai phần tử trong `calls`; resolve 
+           lần 2 trước lần 1 thì promise 2 settle trước.
+      127 -- [ ] **B3 `createTimedFeed(plan)` và `parsePlan(search)` (moc
+          -k cho demo).** `parsePlan('?plan=3000,500,fail')` trả `[3000, 
+          -500, 'fail']`; `createTimedFeed` dùng `setTimeout`, tên mục tr
+          -ong kết quả ghi số thứ tự yêu cầu (ví dụ "Item A (request #2)"
+          -) để thấy ngay phản hồi của yêu cầu nào đang hiển thị.        
+      127 +- [x] **B3 `createTimedFeed(plan)` và `parsePlan(search)` (moc
+          +k cho demo).** `parsePlan('?plan=3000,500,fail')` trả `[3000, 
+          +500, 'fail']`; `createTimedFeed` dùng `setTimeout`, tên mục tr
+          +ong kết quả ghi số thứ tự yêu cầu (ví dụ "Item A (request #2)"
+          +) để thấy ngay phản hồi của yêu cầu nào đang hiển thị.        
+      128    - Phụ thuộc: B1.
+      129    - Nghiệm thu: `plan` rỗng hoặc sai định dạng cho kế hoạch mặ
+           c định (một bước nhanh, không lỗi) thay vì ném lỗi; bước `'fai
+           l'` reject bằng `Error` có thông điệp đọc được; hết kế hoạch t
+           hì lặp bước cuối.
+      130    - Test: dùng `vi.useFakeTimers()`; `parsePlan` với đầu vào r
+           ỗng, có khoảng trắng, giá trị âm hoặc chữ lạ; `createTimedFeed
+           ([100,'fail'])` resolve sau 100 ms, lần hai reject, lần ba rej
+           ect (lặp bước cuối).
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      128    - Phụ thuộc: B1.
+      129    - Nghiệm thu: `plan` rỗng hoặc sai định dạng cho kế hoạch mặ
+           c định (một bước nhanh, không lỗi) thay vì ném lỗi; bước `'fai
+           l'` reject bằng `Error` có thông điệp đọc được; hết kế hoạch t
+           hì lặp bước cuối.
+      130    - Test: dùng `vi.useFakeTimers()`; `parsePlan` với đầu vào r
+           ỗng, có khoảng trắng, giá trị âm hoặc chữ lạ; `createTimedFeed
+           ([100,'fail'])` resolve sau 100 ms, lần hai reject, lần ba rej
+           ect (lặp bước cuối).
+      131 -- [ ] **B4 `errorMessageOf(err)`.** Nhận `unknown`, trả `strin
+          -g`: `Error` thì `err.message`; `string` thì chính nó; còn lại 
+          -thì thông điệp mặc định "Unknown error"; chuỗi rỗng cũng thành
+          - mặc định.                                                    
+      131 +- [x] **B4 `errorMessageOf(err)`.** Nhận `unknown`, trả `strin
+          +g`: `Error` thì `err.message`; `string` thì chính nó; còn lại 
+          +thì thông điệp mặc định "Unknown error"; chuỗi rỗng cũng thành
+          + mặc định.                                                    
+      132    - Phụ thuộc: A1.
+      133    - Nghiệm thu: không bao giờ trả `undefined` hay chuỗi rỗng; 
+           không đọc `.message` trên giá trị chưa kiểm kiểu.
+      134    - Test: `new Error('x')`, `'boom'`, `undefined`, `null`, `42
+           `, `{ message: 'fake' }` (không phải `Error` nên ra mặc định),
+            `new Error('')`.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● B5: viết 8 ca test cho loader (gồm các kịch bản race) trước.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● B6: thử phá guard để chứng minh test bắt được race.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Kết quả B6 lệch WBS: bỏ guard chỉ khiến ca 3, 4, 6 fail, còn ca 5 (vốn đã bị
+  bảng transition chặn theo thiết kế) và ca 8 không fail. Mình sẽ cập nhật WBS
+  cho khớp thực tế, nhưng commit B5 trước. · summary
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      132    - Phụ thuộc: A1.
+      133    - Nghiệm thu: không bao giờ trả `undefined` hay chuỗi rỗng; 
+           không đọc `.message` trên giá trị chưa kiểm kiểu.
+      134    - Test: `new Error('x')`, `'boom'`, `undefined`, `null`, `42
+           `, `{ message: 'fake' }` (không phải `Error` nên ra mặc định),
+            `new Error('')`.
+      135 -- [ ] **B5 `createFeedLoader(fetchFeed)` trong `feed-loader.js
+          -`.** `load(dispatch)`: tăng `latestId`, lấy `id`, `dispatch({ 
+          -type: 'LOAD' })`, `await` (bọc để cả lỗi ném đồng bộ lẫn promi
+          -se bị reject đều thành `REJECT`), nếu `id !== latestId` thì bỏ
+          -, ngược lại `dispatch(RESOLVE | REJECT)`.                     
+      135 +- [x] **B5 `createFeedLoader(fetchFeed)` trong `feed-loader.js
+          +`.** `load(dispatch)`: tăng `latestId`, lấy `id`, `dispatch({ 
+          +type: 'LOAD' })`, `await` (bọc để cả lỗi ném đồng bộ lẫn promi
+          +se bị reject đều thành `REJECT`), nếu `id !== latestId` thì bỏ
+          +, ngược lại `dispatch(RESOLVE | REJECT)`.                     
+      136    - Phụ thuộc: A3, B2, B4.
+      137    - Nghiệm thu: `latestId` ở đúng một chỗ, nằm trong closure c
+           ủa loader, hai loader không dùng chung; `dispatch` luôn nhận `
+           LOAD` trước mọi `RESOLVE`/`REJECT`; loader không biết DOM hay 
+           `useState`.
+      138    - Test (dùng B2 và `transition` thật để quan sát trạng thái 
+           cuối):
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 2 lines, removed 1 line
+      144      6. **Lỗi cũ về sớm khi lần mới còn chờ:** lần 1 reject tro
+           ng lúc lần 2 chưa xong → vẫn `LOADING`.
+      145      7. **Retry:** lần 1 reject (`ERROR`), gọi `load` lại → `LO
+           ADING` rồi resolve → `SUCCESS`; không có bước nhảy thẳng từ `E
+           RROR` sang `SUCCESS`.
+      146      8. Hai loader độc lập: `latestId` của loader này không làm
+            loader kia bỏ phản hồi.
+      147 -- [ ] **B6 Thử phá guard.** Tạm bỏ dòng so sánh `id !== latest
+          -Id` rồi chạy `npm test`; các ca 3, 4, 5, 6 của B5 phải fail. H
+          -oàn nguyên và chạy lại pass. Ghi kết quả vào mục 8.           
+      147 +- [x] **B6 Thử phá guard.** Tạm bỏ dòng so sánh `id === latest
+          +Id` rồi chạy `npm test`; các ca 3, 4, 6 của B5 phải fail. Hoàn
+          + nguyên và chạy lại pass.                                     
+      148 +  - Kết quả thực tế: bỏ guard thì ca 3, 4, 6 fail (3 failed, 1
+          +6 passed); hoàn nguyên thì 19 passed. Ca 5 và 8 không fail khi
+          + bỏ guard: ca 5 (lỗi cũ về muộn sau `SUCCESS`) đã bị bảng `tra
+          +nsition` chặn (`REJECT` ở `SUCCESS` bị bỏ qua), đúng như quyết
+          + định thiết kế "chỉ `LOADING` mới cần guard"; ca 8 kiểm hai lo
+          +ader độc lập, không phụ thuộc guard. Ca 3 fail nhờ assertion đ
+          +ếm số lần `RESOLVE` được dispatch, không phải nhờ trạng thái c
+          +uối.                                                          
+      149    - Phụ thuộc: B5.
+      150    - Nghiệm thu: dán output fail rồi output pass; `git diff` sa
+           u khi hoàn nguyên không còn thay đổi ở `feed-loader.js` ngoài 
+           bản gốc của B5. Mục đích: chứng minh test thật sự bắt được rac
+           e, và có kịch bản sửa-trực-tiếp sẵn cho buổi bảo vệ.
+      151  - [ ] **B7 Verify nhóm B.** `npm test`; `grep` cấm; VS Code di
+           agnostics sạch; tick WBS. Không commit.
+
+● B7: verify nhóm B (full suite, grep, diagnostics).
+
+  Called claude-vscode 2 times, ran 1 shell command (ctrl+o to expand)
+
+● Update(Exercise3_Lab02\TASK_DECOMPOSITION.md)
+  ⎿  Added 1 line, removed 1 line
+      148    - Kết quả thực tế: bỏ guard thì ca 3, 4, 6 fail (3 failed, 1
+           6 passed); hoàn nguyên thì 19 passed. Ca 5 và 8 không fail khi
+            bỏ guard: ca 5 (lỗi cũ về muộn sau `SUCCESS`) đã bị bảng `tra
+           nsition` chặn (`REJECT` ở `SUCCESS` bị bỏ qua), đúng như quyết
+            định thiết kế "chỉ `LOADING` mới cần guard"; ca 8 kiểm hai lo
+           ader độc lập, không phụ thuộc guard. Ca 3 fail nhờ assertion đ
+           ếm số lần `RESOLVE` được dispatch, không phải nhờ trạng thái c
+           uối.
+      149    - Phụ thuộc: B5.
+      150    - Nghiệm thu: dán output fail rồi output pass; `git diff` sa
+           u khi hoàn nguyên không còn thay đổi ở `feed-loader.js` ngoài 
+           bản gốc của B5. Mục đích: chứng minh test thật sự bắt được rac
+           e, và có kịch bản sửa-trực-tiếp sẵn cho buổi bảo vệ.
+      151 -- [ ] **B7 Verify nhóm B.** `npm test`; `grep` cấm; VS Code di
+          -agnostics sạch; tick WBS. Không commit.                       
+      151 +- [x] **B7 Verify nhóm B.** `npm test`; `grep` cấm; VS Code di
+          +agnostics sạch; tick WBS. Không commit.                       
+      152    - Phụ thuộc: B6, B3.
+      153  
+      154  ### Nhóm C — UI: skeleton, success, error, Retry Connection
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Nhóm C: xem lại mẫu announce/recoverLostFocus và cách test của Ex2 để dùng
+  cùng phong cách.
+
+  Read 3 files (ctrl+o to expand)
+
+● C1: createDataFeed với trạng thái IDLE. Test trước.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(Exercise3_Lab02\data-feed.js)
+  ⎿  Wrote 50 lines to Exercise3_Lab02\data-feed.js
+       1 // @ts-check
+       2 import { createFeedLoader } from './feed-loader.js';
+       3 import { createElement } from './mini-react.js';
+       4 import { useState } from './reactive-engine.js';
+       5 import { STATUS, initialState, transition } from './state-machin
+       6
+       7 const HEADING_ID = 'feed-heading';
+       8 const LOAD_BUTTON_ID = 'load-feed';
+       9
+      10 /**
+     … +47 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● C2: LOADING và skeleton. Test trước.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Mình vừa dùng index làm key cho hàng skeleton, trái quy tắc. Skeleton không
+  cần key nên bỏ đi, và tách dòng nút cho gọn.
+
+● Update(Exercise3_Lab02\data-feed.js)
+  ⎿  Added 1 line, removed 3 lines
+      21  
+      22  /** Khung xương thuần trang trí: không chữ, ẩn khỏi trình đọc m
+          àn hình. */
+      23  function renderSkeleton() {
+      24 -  const rows = Array.from({ length: SKELETON_ROWS }, (_, index)
+         - =>                                                            
+      25 -    createElement('div', { className: 'skeleton__row', key: `sk
+         -eleton-${index}` }),                                           
+      26 -  );                                                           
+      24 +  const rows = Array.from({ length: SKELETON_ROWS }, () => crea
+         +teElement('div', { className: 'skeleton__row' }));             
+      25    return createElement('div', { className: 'skeleton', 'aria-hi
+          dden': 'true' }, ...rows);
+      26  }
+      27  
+
+● Update(Exercise3_Lab02\data-feed.js)
+  ⎿  Added 1 line, removed 1 line
+      64          null,
+      65          // tabindex -1: focus được bằng script khi nút Retry bị
+           gỡ, nhưng không nằm trong thứ tự Tab.
+      66          createElement('h1', { id: HEADING_ID, tabindex: '-1' },
+           'Data Feed'),
+      67 -        createElement('button', { id: LOAD_BUTTON_ID, type: 'bu
+         -tton', onClick: onLoad }, state.status === STATUS.IDLE ? 'Load 
+         -feed' : 'Reload feed'),                                        
+      67 +        createElement('button', { id: LOAD_BUTTON_ID, type: 'bu
+         +tton', onClick: onLoad }, loadLabel),                          
+      68        ),
+      69        createElement(
+      70          'div',
+
+● Update(Exercise3_Lab02\data-feed.js)
+  ⎿  Added 1 line
+      55      const onLoad = () => {
+      56        loader.load(dispatch);
+      57      };
+      58 +    const loadLabel = state.status === STATUS.IDLE ? 'Load feed
+         +' : 'Reload feed';                                             
+      59  
+      60      return createElement(
+      61        'section',
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● C3: SUCCESS. Test trước.
+
+  Ran 5 shell commands (ctrl+o to expand)
+
+● Fail đúng ca (b); (a) và (c) đã pass nhờ engine. Thêm hàm khôi phục focus.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Test C6 pass ngay vì code đã sẵn sàng. Mình sẽ dọn bớt selector dư trong
+  helper, rồi thử đưa loader vào thân component để kiểm tra xem C6 có phát hiện
+  được lỗi này không. · summary
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Kết quả thực tế khác dự đoán: khi loader nằm trong thân component, ca 2 fail
+  còn ca 1 vẫn pass. Mình sẽ sửa lại mục rủi ro cho đúng rồi chạy C7. · summary
+
+  Called claude-vscode, ran 2 shell commands (ctrl+o to expand)
+
+● Nhóm D: xem file trang của Ex2 để giữ cùng cấu trúc.
+
+  Read 4 files (ctrl+o to expand)
+
+● D1: test cho main.js và style.css trước.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(Exercise3_Lab02\main.js)  ⎿  Wrote 14 lines to Exercise3_Lab02\main.js
+       1 // @ts-check
+       2 import { createDataFeed } from './data-feed.js';
+       4 import { renderApp, setupEventDelegation } from './reactive-engi
+         ne.js';
+       5
+       7 if (root === null) throw new Error('Missing #app container in in
+         dex.html');
+       8
+         m, yêu cầu 2 nhanh) để thấy race.
+      10 const fetchFeed = createTimedFeed(parsePlan(location.search));
+     … +8 lines (ctrl+o to expand)
+
+● Write(Exercise3_Lab02\index.html)
+  ⎿  Wrote 18 lines to Exercise3_Lab02\index.html
+       1 <!doctype html>
+       2 <html lang="en">
+       3   <head>
+       4     <meta charset="utf-8" />
+       5     <meta name="viewport" content="width=device-width, initial-s
+       6     <title>Exercise 3 - Resilient Data Feed</title>
+       7     <link rel="icon" href="data:," />
+       8     <link rel="stylesheet" href="./style.css" />
+       9   </head>
+      10   <body>
+     … +10 lines (ctrl+o to expand)
+
+● Write(Exercise3_Lab02\style.css)
+  ⎿  Wrote 114 lines to Exercise3_Lab02\style.css
+       1 :root {
+       2   --text: #1a1a1a;
+       3   --muted: #4a4a4a;
+       4   --surface: #ffffff;
+       5   --border: #5c5c5c;
+       6   --accent: #1a3d8f;
+       7   --skeleton: #bdbdbd;
+       8   --error-border: #8a1c1c;
+       9   --error-surface: #fff5f5;
+      10 }
+     … +105 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● import.meta.url trong jsdom không phải scheme file. Mình đọc CSS theo đường
+  dẫn từ thư mục gốc repo (nơi npm test chạy).
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Mình dừng ở đây vì D2 và D3 cần quyết định của anh/chị.
+
+  Đã xong (A0 → D1), mỗi task một commit nhỏ, đã tick trong WBS:
+
+  ┌───────┬────────────────────────┬────────────────────────────────────────┐
+  │ Nhóm  │         Commit         │            Kết quả đã chạy             │
+  ├───────┼────────────────────────┼────────────────────────────────────────┤
+  │ A0    │ copy engine Ex2 (cmp   │ 71 test của bản sao pass               │
+  │       │ giống hệt)             │                                        │
+  ├───────┼────────────────────────┼────────────────────────────────────────┤
+  │ A1–A3 │ state-machine.js       │ 19 test; bỏ guard trong transition thì │
+  │       │                        │  6 test fail, hoàn nguyên lại pass     │
+  ├───────┼────────────────────────┼────────────────────────────────────────┤
+  │ B1–B4 │ feed-mock.js,          │ 17 + 8 test                            │
+  │       │ errorMessageOf         │                                        │
+  ├───────┼────────────────────────┼────────────────────────────────────────┤
+  │ B5–B7 │ feed-loader.js         │ 19 test; thử phá guard xem bên dưới    │
+  │       │ (request ID)           │                                        │
+  ├───────┼────────────────────────┼────────────────────────────────────────┤
+  │ C1–C7 │ data-feed.js           │ 25 test (IDLE, skeleton, SUCCESS,      │
+  │       │                        │ ERROR + Retry, focus, vòng đời qua UI) │
+  ├───────┼────────────────────────┼────────────────────────────────────────┤
+  │ D1    │ index.html, main.js,   │ 4 test; toàn repo npm test: 12 file,   │
+  │       │ style.css              │ 292 test pass                          │
+  └───────┴────────────────────────┴────────────────────────────────────────┘
+
+  Grep cấm (var, innerHTML, keypress, keyCode, onclick=, addEventListener trong
+  data-feed.js) không thấy gì. VS Code diagnostics của data-feed.js sạch. Các
+  file .js còn lại chưa chắc đã được phân tích vì không mở trong editor.
+
+  Hai kết quả thực tế lệch với dự đoán trong WBS (đã sửa WBS):
+  - Bỏ guard id === latestId: chỉ ca 3, 4, 6 fail. Ca 5 không fail vì bảng
+    transition đã tự bỏ qua lỗi muộn khi đang SUCCESS.
+  - Đưa loader vào thân component: chỉ ca 2 của C6 fail, ca 1 vẫn pass. Test
+    riêng của loader không thấy lỗi này, chỉ test chạy qua renderApp mới thấy.
+
+  Hai chỗ mình tự đổi so với WBS: tiêu đề focus đích là <h1> thay vì <h2> (trang
+  cần một h1), và bỏ key kiểu index ở hàng skeleton cho đúng quy tắc.
+
+  Cần anh/chị quyết định: D2 và D3 (kiểm tra trong trình duyệt thật) làm thế
+  nào? Bài này chưa có Playwright. Ở Ex2 mình dùng Edge qua CDP với script tự
+  viết, khá nặng.
+
+  1. Bạn tự làm (mình đề xuất, nhẹ nhất): mình chạy python -m http.server, đưa
+     các URL ?plan=3000,500, ?plan=fail,500, ?plan=3000 và checklist D3 ngắn.
+     Bạn mở Edge, chụp ảnh DevTools, chạy Lighthouse. Mình ghi kết quả bạn báo
+     vào bảng WCAG, rồi làm D4, D5 và commit mốc.
+  2. Mình tự động hoá bằng Edge CDP như Ex2: đo tương phản, kích thước vùng bấm,
+     race bằng trình duyệt thật. Nặng hơn, nhưng có số đo thật. Ảnh DevTools và
+     Lighthouse vẫn là việc của bạn.
+  3. Bỏ D2 và D3 tự động, chỉ dùng test jsdom cộng bảng WCAG đánh dấu "Chưa
+     kiểm". Nhanh nhất, nhưng thiếu bằng chứng race trên trình duyệt cho buổi
+     bảo vệ.
+
+  Sau khi bạn chọn, mình làm D4 và D5, rồi commit mốc cuối với đúng message
+  feat(ui): implement multi-state data component with skeleton feedback. Prompt
+  log (D6) vẫn là việc của bạn.
+
+> <ide_opened_file>The user opened the file
+  c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\docs\AI_FAILURE_AUDIT.md
+  in the IDE. This may or may not be related to the current
+  task.</ide_opened_file>
+
+> ok để mình tự làm, nhưng sau khi hoàn thiện đưa ra hướng dẫn đầy đủ, sau đó
+  rewrite ai falure audit mình vừa thêm lỗi
+
+● Mình làm phần không cần trình duyệt (D4, D5) và đọc AI_FAILURE_AUDIT.md song
+  song.
+
+  Read 1 file, ran 2 shell commands (ctrl+o to expand)
+
+● Mình tìm trong prompt log để có chỗ trích dẫn đúng, tránh tự bịa bằng chứng
+  cho lỗi 2.
+
+  Searched for 2 patterns, ran 1 shell command (ctrl+o to expand)
+
+● Nhật ký không chứa trích dẫn rõ về lỗi 2, nên mình chỉ viết lại câu chữ theo
+  đúng điều anh/chị ghi và để trống phần bằng chứng. Mình không bịa.
+
+● Update(docs\AI_FAILURE_AUDIT.md)
+  ⎿  Added 28 lines, removed 2 lines
+       68  
+       69  - NOTE: PHẦN TRÊN ĐÃ ĐƯỢC AI REWRITE CHO CỤ THỂ.
+       70  
+       71 -## Lỗi 2                                                      
+       71 +## Lỗi 2 — AI tự sửa WBS giữa chừng khi gặp khó, không dừng lạ
+          +i hỏi                                                         
+       72  
+       73 -Tự sửa WBS khi gặp khó. Khắc phục: Kiểm tra vì ban đầu thiết k
+          -ế WBS quá cao nên quá trình phát trình phát triển nhận ra khôn
+          -g phù hợp, chấp nhận thay đổi nhưng xây test kĩ hơn.          
+       73 +### Bối cảnh                                                  
+       74 +                                                              
+       75 +- **Task:** CẦN BẠN ĐIỀN (bài và mã task trong `TASK_DECOMPOSI
+          +TION.md` nơi AI đã đổi WBS).                                  
+       76 +- **Điều AI cần làm theo [Agents.md](../Agents.md) mục 2 và 7:
+          +** gặp yêu cầu mơ hồ hoặc kế hoạch không khớp thì nói rõ và hỏ
+          +i, không tự quyết lặng lẽ.                                    
+       77 +                                                              
+       78 +### Lỗi                                                       
+       79 +                                                              
+       80 +Khi gặp khó trong lúc triển khai, AI tự sửa WBS để kế hoạch kh
+          +ớp với việc đang làm, thay vì dừng lại báo và hỏi bạn trước. N
+          +guyên nhân gốc nằm ở WBS ban đầu: bản thiết kế đầu tiên đặt ở 
+          +mức quá cao ("quá cao" theo cách bạn mô tả), nên đến khi phát 
+          +triển mới lộ ra chỗ không phù hợp.                            
+       81 +                                                              
+       82 +### Bằng chứng                                                
+       83 +                                                              
+       84 +CẦN BẠN ĐIỀN. Bằng chứng phải là thứ có thật trong repo hoặc p
+          +rompt log, ví dụ:                                             
+       85 +                                                              
+       86 +- Đoạn diff của `TASK_DECOMPOSITION.md` cho thấy WBS bị đổi (l
+          +ệnh `git log -p -- <đường dẫn>`), kèm mã commit.              
+       87 +- Câu trích từ prompt log, nơi AI đổi WBS mà chưa hỏi.        
+       88 +                                                              
+       89 +### Bản sửa                                                   
+       90 +                                                              
+       91 +Bạn kiểm tra lại, nhận ra WBS ban đầu không phù hợp, chấp nhận
+          + thay đổi, nhưng xây phần kiểm thử kỹ hơn để bù cho chỗ kế hoạ
+          +ch bị đổi.                                                    
+       92 +                                                              
+       93 +### Bài học                                                   
+       94 +                                                              
+       95 +- WBS là hợp đồng làm việc. Muốn đổi thì phải dừng, nói rõ lý 
+          +do, và được bạn đồng ý trước khi sửa.                         
+       96 +- Khi chấp nhận đổi kế hoạch, bù bằng test chặt hơn để thay đổ
+          +i không làm mất khả năng kiểm chứng.                          
+       97 +                                                              
+       98 +- NOTE: PHẦN CÂU CHỮ ĐÃ ĐƯỢC AI REWRITE. CÁC MỤC "CẦN BẠN ĐIỀN
+          +" LÀ BẰNG CHỨNG, AI KHÔNG TỰ BỊA.                             
+       99 +                                                              
+      100  ## Lỗi 3
+      101  
+      102  Chưa ghi.
+
+● Update(docs\AI_FAILURE_AUDIT.md)
+  ⎿  Added 1 line, removed 1 line
+      13  | # | Bài | Lỗi | Loại bằng chứng | Trạng thái |
+      14  |---|---|---|---|---|
+      15  | 1 | Exercise 1 | Kiểu đệ quy làm `tsc` báo TS2589 ở `flat(Inf
+          inity)` | Output `tsc` (không phải DevTools) | Đã ghi, cần bạn 
+          bổ sung phần tự sửa |
+      16 -| 2 | Chưa có | Chưa ghi | Chưa có | Chưa ghi |                
+      16 +| 2 | Cần bạn xác nhận | AI tự sửa WBS giữa chừng khi gặp khó, 
+         +không hỏi trước | Chưa có (cần diff WBS hoặc trích prompt log) 
+         +| Đã ghi mô tả, thiếu bằng chứng |                             
+      17  | 3 | Chưa có | Chưa ghi | Chưa có | Chưa ghi |
+      18  
+      19  ## Lỗi 1 — Contract kiểu đệ quy không biên dịch được với `flat(
+          Infinity)`
+
+● Giờ tính trước các tỉ lệ tương phản từ giá trị CSS để hướng dẫn có số kỳ vọng
+  đối chiếu.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Giờ thêm hướng dẫn kiểm tra tay đầy đủ vào WBS (mục 10).
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Code của Exercise 3 đã xong và qua test. Việc còn lại là phần kiểm tra bằng
+  trình duyệt của bạn (D2–D3), rồi D4–D6 và commit mốc. Mình chưa tạo commit
+  mốc, vì nó phải là commit cuối và sẽ chứa bằng chứng của bạn.
+
+  Trạng thái
+
+  - Test và grep: npm test toàn repo pass 12 file, 292 test. Grep các mẫu bị cấm
+    (var, innerHTML, keypress, keyCode, onclick=, Babel) trên file mới không
+    thấy gì.
+  - Bài cũ: git diff từ commit a23aa7b đến nay cho Exercise 1 và 2 trống, tức
+    không sửa gì.
+  - Typecheck: data-feed.js sạch trong VS Code. Các file .js khác không báo lỗi,
+    nhưng có thể chưa được phân tích vì không mở trong editor. Repo chưa có
+    tsc.
+  - Commit: đã có 17 commit nhỏ cho các task A0 đến D1, cộng một commit
+    docs(ex3) cho phần WCAG và hướng dẫn. Commit mốc của đề chưa tạo.
+
+  Hướng dẫn kiểm tra tay
+
+  Hướng dẫn nằm ở mục 10 của TASK_DECOMPOSITION.md
+  (Exercise3_Lab02/TASK_DECOMPOSITION.md). Nó gồm:
+
+  - Chuẩn bị: lệnh python -m http.server và các URL ?plan=... cho từng kịch bản.
+  - D3, năm kịch bản trình duyệt: skeleton, race, lỗi và Retry,
+    prefers-reduced-motion, chỉ dùng bàn phím. Mỗi kịch bản có thao tác, kết quả
+    đúng và tên file ảnh cần lưu.
+  - Bằng chứng race: đoạn Console MutationObserver ghi lại mọi danh sách từng
+    hiện ra. Kết quả đúng là chỉ có "(request #2)", không có "#1". Có thêm cách
+    tạm bỏ guard để tự thấy race rồi hoàn nguyên bằng git checkout, tiện cho
+    buổi bảo vệ.
+  - D2, đo tương phản và vùng bấm: script Console cùng các giá trị kỳ vọng tính
+    từ CSS.
+  - D4, công cụ kiểm tra: Lighthouse, khung Accessibility, Narrator.
+  - Cuối cùng: báo kết quả cho mình, export prompt log, rồi mình chạy lại D5 và
+    tạo commit mốc.
+
+  Một điểm cần bạn xác nhận: khối skeleton tính từ CSS chỉ đạt 1.88:1 so với nền
+  (khoảng 1.31 ở đáy chu kỳ nhấp nháy), thấp hơn 3:1. Mình coi nó là phần trang
+  trí vì có aria-hidden và trạng thái đã có chữ "Loading feed" trong #status.
+  Lập luận này ghi ở mục 6. Nếu thầy không chấp nhận, đổi --skeleton trong
+  style.css (Exercise3_Lab02/style.css) cho đậm hơn.
+
+  AI_FAILURE_AUDIT.md
+
+  Mình đã viết lại lỗi 2 theo cấu trúc của lỗi 1 (bối cảnh, lỗi, bằng chứng, bản
+  sửa, bài học) và cập nhật dòng 2 của bảng tổng quan. File chưa được commit.
+
+  - Chỉ viết lại câu chữ: mình chỉ dùng điều bạn đã ghi. Phần "Bằng chứng" và
+    "Task" để trống, đánh dấu "CẦN BẠN ĐIỀN", vì prompt log không có câu nào
+    chứng minh việc AI tự sửa WBS. Mình không bịa.
+  - Chỗ cần bạn xác nhận ý: cụm "thiết kế WBS quá cao". Mình giữ nguyên lời bạn
+    và không diễn giải. Bạn nên nói rõ là quá tham vọng, quá khái quát hay ý
+    khác.
+  - Gợi ý bằng chứng: bạn có thể dùng git log -p --
+    Exercise2_Lab02/TASK_DECOMPOSITION.md. Trong WBS Ex2 có các dòng ghi "Lệch
+    kế hoạch" (D1) và "không có trong bản kế hoạch đầu" (D3), nhưng chỉ bạn biết
+    có phải đúng chỗ đó không.
+  - Lỗi 3: vẫn trống. Một ứng viên có thật trong phiên này: khi chạy B6 và C6,
+    kết quả thực tế lệch với dự đoán trong WBS (ca 5 không fail, ca 1 của C6
+    không fail) nên mình phải sửa WBS. Mình ghi lại vì có test fail thật làm
+    bằng chứng. Nếu dùng làm lỗi 3 thì bạn tự quyết, vì lỗi nằm ở dự đoán của
+    chính mình.
+
+  Bạn muốn mình commit riêng file audit khi bạn điền xong phần bằng chứng, hay
+  gộp vào commit mốc?
