@@ -1,0 +1,611 @@
+{
+  "when": "2026-10-28T16:09:49.422Z",
+  "edge": "Edg/156.0.4314.50",
+  "checks": [
+    {
+      "name": "S1 page loads with no console error or warning",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S1 no AudioContext is created on load",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S1 live region is empty on load",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S1 title and lang",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S2 three tracks become ready",
+      "pass": true,
+      "detail": "[\"120 BPM Bright.mp3Length 1:00PlayRemove\",\"tone-5s.wavLength 0:05PlayRemove\",\"Bright and Cheerful.mp3Length 2:42PlayRemove\"]"
+    },
+    {
+      "name": "S2 ready list keeps the order the files were added",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S2 lengths are decoded for real (1:00, 0:05, 2:42)",
+      "pass": true,
+      "detail": "120 BPM Bright.mp3Length 1:00PlayRemove || tone-5s.wavLength 0:05PlayRemove || Bright and Cheerful.mp3Length 2:42PlayRemove"
+    },
+    {
+      "name": "S2 fetches start in the order the object URLs were created (FIFO)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S2 never more than one load (fetch..decode) in flight",
+      "pass": true,
+      "detail": "maxActive=1"
+    },
+    {
+      "name": "S2 never more than one row Loading/Decoding in the DOM",
+      "pass": true,
+      "detail": "max=1 over 28 samples"
+    },
+    {
+      "name": "S2 every object URL revoked exactly once",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S2 AudioContext created once, and only after the user acted",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S2 analyser uses fftSize 256 (128 bins)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S2 no console problems",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S2b broken file shows an error row with the browser reason",
+      "pass": true,
+      "detail": "broken.mp3Status: Error. Unable to decode audio dataDismiss"
+    },
+    {
+      "name": "S2b the next track still loads after an error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S2b error row can be dismissed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S3 cancelling a loading track shows Cancelled immediately",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S3 the next track starts loading right after the abort",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S3 a waiting track can be cancelled",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S3 cancel-all leaves every row Cancelled",
+      "pass": true,
+      "detail": "tone-5s.wavStatus: CancelledDismiss || 120 BPM Bright.mp3Status: CancelledDismiss || Bright and Cheerful.mp3Status: CancelledDismiss"
+    },
+    {
+      "name": "S3 the cancelled waiting track was never fetched",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S3 every object URL revoked exactly once",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S3 no console problems (abort is not logged as an error)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S4 cancelling a decoding track shows Cancelled immediately",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S4 the next track waits while the cancelled decode is still running",
+      "pass": true,
+      "detail": "fetches 1 -> 1"
+    },
+    {
+      "name": "S4 the next track starts only after the cancelled decode finished",
+      "pass": true,
+      "detail": "1 ms after"
+    },
+    {
+      "name": "S4 the cancelled track did not appear as ready",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S5 context is running after the Play click (autoplay policy satisfied)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S5 status says what is playing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S5 visualizer draws about 60 fps in headless (indicative only)",
+      "pass": true,
+      "detail": "144.0 fps, 0 gaps > 33 ms of 288"
+    },
+    {
+      "name": "S5 bars are actually drawn on the canvas while playing",
+      "pass": true,
+      "detail": "4134 non-transparent pixels"
+    },
+    {
+      "name": "S5 turning the effect off stops requestAnimationFrame and clears the canvas",
+      "pass": true,
+      "detail": "raf calls during 600 ms: 0"
+    },
+    {
+      "name": "S5 toggle exposes its state with aria-pressed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S5 turning the effect on again restarts the loop",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S5 every AudioBufferSourceNode was started, stopped and disconnected exactly once",
+      "pass": true,
+      "detail": "31 nodes; bad=0"
+    },
+    {
+      "name": "S5 nothing is playing after the final Stop",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S5 the loop is not running while idle",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S5 a track that ends by itself is cleaned up and announced",
+      "pass": true,
+      "detail": "Finished tone-5s.wav"
+    },
+    {
+      "name": "S6 slider moves with arrow keys and shows the value",
+      "pass": true,
+      "detail": "{\"value\":\"90\",\"text\":\"90%\",\"shown\":\"90%\",\"gain\":0.8999999761581421}"
+    },
+    {
+      "name": "S6 GainNode follows the slider (Home sets 0)",
+      "pass": true,
+      "detail": "gain=0"
+    },
+    {
+      "name": "S7 with prefers-reduced-motion the effect starts OFF",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S7 audio plays but no animation frames are requested",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S7 the user can still turn the effect on",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S8 text contrast >= 4.5:1 for every text element measured",
+      "pass": true,
+      "detail": "lowest 8.86 (hint:Added files load o), 21 elements"
+    },
+    {
+      "name": "S8 control borders >= 3:1 against the page",
+      "pass": true,
+      "detail": "lowest 6.69 over 8 controls"
+    },
+    {
+      "name": "S8 every control is at least 24x24 CSS px",
+      "pass": true,
+      "detail": "smallest BUTTON:Cancel all loading 153x40; 8 controls"
+    },
+    {
+      "name": "S8 Tab visits every control and eventually leaves the page controls (no trap)",
+      "pass": true,
+      "detail": "file-input > cancel-all > Dismiss broken.mp3 > Play tone-5s.wav > Remove tone-5s.wav > stop > toggle-effect > volume > BODY > file-input > cancel-all > Dismiss broken.mp3 > Play tone-5s.wav > Remove tone-5s.wav"
+    },
+    {
+      "name": "S8 every focused control shows :focus-visible with an outline >= 2px",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "name": "S8 every button has an accessible name",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "S8 accessibility tree exposes the slider, the status region and a pressed toggle",
+      "pass": true,
+      "detail": "status: | button:Animate spectrum [pressed=true] | slider:Volume"
+    },
+    {
+      "name": "S8 every button accessible name contains its visible text (2.5.3 Label in Name)",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "name": "S8 reflow at 320 px: no horizontal page scroll",
+      "pass": true,
+      "detail": "{\"scroll\":305,\"client\":305}"
+    },
+    {
+      "name": "S9 DOM nodes and event listeners are flat after 300 play/stop cycles (GC forced twice)",
+      "pass": true,
+      "detail": "{\"cycles\":300,\"nodesBefore\":122,\"nodesAfter\":122,\"listenersBefore\":5,\"listenersAfter\":5,\"heapBeforeKB\":759,\"heapAfterKB\":822,\"note\":\"heap includes arrays kept by the audit instrumentation itself (frames, sources); the heap snapshot in F2 is the real evidence\"}"
+    },
+    {
+      "name": "S9 no console problems across the whole run",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "data": {
+    "s2": {
+      "ready": [
+        "120 BPM Bright.mp3Length 1:00PlayRemove",
+        "tone-5s.wavLength 0:05PlayRemove",
+        "Bright and Cheerful.mp3Length 2:42PlayRemove"
+      ],
+      "fetchGapsMs": [
+        0,
+        1
+      ]
+    },
+    "fps": {
+      "frames": 289,
+      "seconds": 2,
+      "avgFrameMs": 6.94,
+      "fps": 144,
+      "gapsOver33ms": 0
+    },
+    "contrast": {
+      "text": [
+        [
+          "h1",
+          "H1:Audio Queue Visual",
+          17.4
+        ],
+        [
+          "h2",
+          "add-heading:Add tracks",
+          17.4
+        ],
+        [
+          "h2",
+          "queue-heading:Loading queue",
+          17.4
+        ],
+        [
+          "h2",
+          "ready-heading:Ready tracks",
+          17.4
+        ],
+        [
+          "h2",
+          "player-heading:Player",
+          17.4
+        ],
+        [
+          ".hint",
+          "hint:Added files load o",
+          8.86
+        ],
+        [
+          "#status",
+          "status:Could not load bro",
+          8.86
+        ],
+        [
+          "#now-playing",
+          "now-playing:Nothing is playing",
+          17.4
+        ],
+        [
+          "label[for=file-input]",
+          "LABEL:Choose audio files",
+          17.4
+        ],
+        [
+          "label[for=volume]",
+          "LABEL:Volume",
+          17.4
+        ],
+        [
+          "#volume-value",
+          "volume-value:100%",
+          8.86
+        ],
+        [
+          ".track-name",
+          "track-name:broken.mp3",
+          17.4
+        ],
+        [
+          ".track-name",
+          "track-name:tone-5s.wav",
+          17.4
+        ],
+        [
+          ".track-status",
+          "track-status:Status: Error. Una",
+          8.86
+        ],
+        [
+          ".track-status",
+          "track-status:Length 0:05",
+          8.86
+        ],
+        [
+          "button",
+          "BUTTON:Cancel all loading",
+          17.4
+        ],
+        [
+          "button",
+          "Dismiss broken.mp3:Dismiss",
+          17.4
+        ],
+        [
+          "button",
+          "Play tone-5s.wav:Play",
+          17.4
+        ],
+        [
+          "button",
+          "Remove tone-5s.wav:Remove",
+          17.4
+        ],
+        [
+          "button",
+          "BUTTON:Stop",
+          17.4
+        ],
+        [
+          "button",
+          "BUTTON:Animate spectrum",
+          9.96
+        ]
+      ],
+      "borders": [
+        [
+          "file-input:",
+          6.69
+        ],
+        [
+          "BUTTON:Cancel all loading",
+          6.69
+        ],
+        [
+          "Dismiss broken.mp3:Dismiss",
+          6.69
+        ],
+        [
+          "Play tone-5s.wav:Play",
+          6.69
+        ],
+        [
+          "Remove tone-5s.wav:Remove",
+          6.69
+        ],
+        [
+          "BUTTON:Stop",
+          6.69
+        ],
+        [
+          "BUTTON:Animate spectrum",
+          9.96
+        ],
+        [
+          "volume:",
+          6.69
+        ]
+      ],
+      "sizes": [
+        [
+          "file-input:",
+          314,
+          44
+        ],
+        [
+          "BUTTON:Cancel all loading",
+          153,
+          40
+        ],
+        [
+          "Dismiss broken.mp3:Dismiss",
+          81,
+          40
+        ],
+        [
+          "Play tone-5s.wav:Play",
+          57,
+          40
+        ],
+        [
+          "Remove tone-5s.wav:Remove",
+          85,
+          40
+        ],
+        [
+          "BUTTON:Stop",
+          60,
+          40
+        ],
+        [
+          "BUTTON:Animate spectrum",
+          183,
+          40
+        ],
+        [
+          "volume:",
+          381,
+          44
+        ]
+      ]
+    },
+    "tabOrder": [
+      {
+        "who": "file-input",
+        "tag": "INPUT",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "cancel-all",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "Dismiss broken.mp3",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "Play tone-5s.wav",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "Remove tone-5s.wav",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "stop",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "toggle-effect",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "volume",
+        "tag": "INPUT",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "BODY",
+        "tag": "BODY",
+        "focusVisible": false,
+        "outline": "3px none rgb(26, 26, 26)"
+      },
+      {
+        "who": "file-input",
+        "tag": "INPUT",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "cancel-all",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "Dismiss broken.mp3",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "Play tone-5s.wav",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      },
+      {
+        "who": "Remove tone-5s.wav",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outline": "3px solid rgb(26, 61, 143)"
+      }
+    ],
+    "accessibilityTree": [
+      "main:",
+      "heading:Audio Queue Visualizer",
+      "region:Add tracks",
+      "region:Loading queue",
+      "region:Ready tracks",
+      "region:Player",
+      "status:",
+      "heading:Add tracks",
+      "button:Choose audio files",
+      "button:Cancel all loading",
+      "heading:Loading queue",
+      "list:",
+      "heading:Ready tracks",
+      "list:",
+      "heading:Player",
+      "button:Stop",
+      "button:Animate spectrum [pressed=true]",
+      "slider:Volume",
+      "listitem:",
+      "listitem:",
+      "button:Dismiss broken.mp3",
+      "button:Play tone-5s.wav",
+      "button:Remove tone-5s.wav"
+    ],
+    "cycles": {
+      "cycles": 300,
+      "nodesBefore": 122,
+      "nodesAfter": 122,
+      "listenersBefore": 5,
+      "listenersAfter": 5,
+      "heapBeforeKB": 759,
+      "heapAfterKB": 822,
+      "note": "heap includes arrays kept by the audit instrumentation itself (frames, sources); the heap snapshot in F2 is the real evidence"
+    }
+  },
+  "summary": {
+    "pass": 55,
+    "fail": 0
+  }
+}
