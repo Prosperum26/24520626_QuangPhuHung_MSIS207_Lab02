@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Employee Directory - Accessible Data Grid</title>
+    <meta name="description" content="Sortable, filterable, paginated employee table with full keyboard navigation." />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Employee Directory</h1>
+      <p class="hint">
+        Use the arrow keys to move between cells, Enter to select one row, Space to toggle rows in or out of the
+        selection.
+      </p>
+      <div id="app"></div>
+      <!-- Ngoài #app để không bị replaceChildren tạo lại; xem announce() trong src/grid/announce.js -->
+      <p id="status" role="status"></p>
+      <p id="opened"></p>
+    </main>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
