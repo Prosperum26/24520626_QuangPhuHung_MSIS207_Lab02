@@ -1,0 +1,172 @@
+:root {
+  --text: #1a1a1a;
+  --muted: #4a4a4a;
+  --surface: #ffffff;
+  --border: #5c5c5c; /* viền control: 6.7:1 trên nền trắng (cần >= 3:1) */
+  --rule: #c9c9c9; /* đường kẻ trang trí giữa các dòng, không mang thông tin */
+  --accent: #1a3d8f;
+  --panel: #eef0f4;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+  font: 1rem/1.5 system-ui, sans-serif;
+}
+
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h1 {
+  margin-block: 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+h2 {
+  margin-block: 1.5rem 0.5rem;
+  font-size: 1.25rem;
+}
+
+.hint,
+#status,
+#volume-value {
+  color: var(--muted);
+}
+
+#status {
+  min-height: 1.5rem;
+  margin-block: 1rem 0;
+}
+
+/* ---------- Control ---------- */
+
+button,
+input {
+  min-height: 2.5rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 0.25rem;
+}
+
+button {
+  min-width: 2.5rem;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+}
+
+button[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  /* Không chỉ dùng màu: dấu tích cho trạng thái bật (WCAG 1.4.1). */
+  font-weight: 700;
+}
+
+button[aria-pressed='true']::before {
+  content: '\2713\00a0';
+  /* Dạng có alt rỗng để trình đọc màn hình bỏ qua: aria-pressed đã nói điều này. */
+  content: '\2713\00a0' / '';
+}
+
+input[type='file'] {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 0.25rem 0.5rem;
+}
+
+input[type='file']::file-selector-button {
+  min-height: 2rem;
+  margin-inline-end: 0.5rem;
+  font: inherit;
+}
+
+input[type='range'] {
+  flex: 1 1 10rem;
+  min-width: 8rem;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Tiêu đề chỉ nhận focus bằng mã (khi dòng chứa nút vừa bị xóa), không cần vòng focus. */
+h2:focus {
+  outline: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+/* ---------- Danh sách track ---------- */
+
+.track-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 2px solid var(--border);
+  border-radius: 0.25rem;
+}
+
+.track-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.track-list li:last-child {
+  border-bottom: 0;
+}
+
+.track-list .empty {
+  color: var(--muted);
+}
+
+.track-name {
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.track-status {
+  color: var(--muted);
+}
+
+/* ---------- Bộ hiển thị ---------- */
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-block: 0.5rem 1rem;
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 0.25rem;
+}
+
+/* Không có chuyển động nào do CSS tạo ra khi người dùng yêu cầu giảm chuyển động (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Audio Queue Visualizer</title>
+    <meta
+      name="description"
+      content="Add audio files, watch them load one at a time in first-in first-out order, cancel any of them, and play a ready track with a live frequency visualizer."
+    />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Audio Queue Visualizer</h1>
+      <p class="hint">
+        Added files load one at a time, in the order you added them. Nothing plays until you press Play on a ready
+        track.
+      </p>
+
+      <section aria-labelledby="add-heading">
+        <h2 id="add-heading" tabindex="-1">Add tracks</h2>
+        <div class="row">
+          <label for="file-input">Choose audio files</label>
+          <input id="file-input" type="file" multiple accept="audio/*,video/mp4" data-action="add-files" />
+          <button type="button" data-action="cancel-all">Cancel all loading</button>
+        </div>
+      </section>
+
+      <section aria-labelledby="queue-heading">
+        <h2 id="queue-heading" tabindex="-1">Loading queue</h2>
+        <ul id="queue-list" class="track-list"></ul>
+      </section>
+
+      <section aria-labelledby="ready-heading">
+        <h2 id="ready-heading" tabindex="-1">Ready tracks</h2>
+        <ul id="ready-list" class="track-list"></ul>
+      </section>
+
+      <section aria-labelledby="player-heading">
+        <h2 id="player-heading" tabindex="-1">Player</h2>
+        <p id="now-playing">Nothing is playing.</p>
+        <!-- Trang trí: thông tin tương đương nằm ở #now-playing và #status (WCAG 1.1.1). -->
+        <canvas id="visualizer" width="512" height="160" aria-hidden="true"></canvas>
+        <div class="row">
+          <button type="button" data-action="stop">Stop</button>
+          <button type="button" data-action="toggle-effect" aria-pressed="true">Animate spectrum</button>
+          <label for="volume">Volume</label>
+          <input id="volume" type="range" min="0" max="100" step="1" value="100" data-action="volume" />
+          <span id="volume-value">100%</span>
+        </div>
+      </section>
+
+      <!-- Ngoài mọi vùng được render lại; chỉ ghi từ handler, không ghi lúc render (WCAG 4.1.3). -->
+      <p id="status" role="status"></p>
+    </main>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
