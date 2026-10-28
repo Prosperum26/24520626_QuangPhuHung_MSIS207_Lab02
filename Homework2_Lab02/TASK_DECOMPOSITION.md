@@ -1,7 +1,7 @@
 # Homework 2 — Task Decomposition
 
 > Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rules](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS: [Homework 1](../Homework1_Lab02/TASK_DECOMPOSITION.md).
-> Trạng thái (2026-10-28): **mới lập plan, chưa có dòng mã nào**. Mọi task còn `[ ]`. Plan chờ bạn duyệt (mục 9) trước khi làm task A1.
+> Trạng thái (2026-10-28): **nhóm A và B đã làm và verify bằng test (32 test, chưa commit)**. Nhóm C đến F chưa làm. Plan đã được bạn duyệt; thanh trượt âm lượng đã chốt (task C4).
 > Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task.
 
 ## 1. Thông tin chung
@@ -123,28 +123,33 @@ Mỗi task là một commit atomic, trừ khi ghi chú khác. Test viết trư�
 
 ### Nhóm A — Nền
 
-- [ ] **A1 Contract.** `src/queue/audio-task.js`: JSDoc các kiểu ở mục 3; hằng `TASK_STATUS`; `isTerminal(status)`; `createAbortError()`, `isAbortError(error)`.
-  - Test: `isTerminal` đúng cho `ready`, `cancelled`, `error` và sai cho ba trạng thái còn lại; `createAbortError().name === 'AbortError'`; `isAbortError` nhận lỗi tự tạo và `fetch` giả, từ chối `new Error('x')`.
-  - Commit: `feat(queue): add audio task contract and abort error`.
+- [x] **A1 Contract.** `src/queue/audio-task.js`: JSDoc các kiểu ở mục 3; hằng `TASK_STATUS`; `isTerminal(status)`; `createAbortError()`, `isAbortError(error)`.
+  - Test: `isTerminal` đúng cho `ready`, `cancelled`, `error` và sai cho ba trạng thái còn lại; `createAbortError().name === 'AbortError'`; `isAbortError` nhận lỗi tự tạo và `signal.reason`, từ chối `new Error('x')`.
+  - Kiểm chứng: 7 test pass (`audio-task.test.js`), chạy đỏ trước khi có mã.
+  - Lệch plan: thêm kiểu `TaskSnapshot` (bản chỉ đọc gửi cho `subscribe`). Bỏ assertion `instanceof Error` ở test vì `DOMException` của jsdom không phải con của `Error` của Node; trình duyệt thật thì đúng. Đây cũng là lý do `isAbortError` kiểm theo `name`.
+  - Commit dự kiến: `feat(queue): add audio task contract and abort error`.
 
 ### Nhóm B — Hàng đợi (logic thuần, test bằng `load` giả)
 
-- [ ] **B1 FIFO tuần tự.** `AudioTaskQueue` với `enqueue`, `processNext`; `load` giả trả Promise do test điều khiển.
+> Kiểm chứng chung nhóm B: `audio-task-queue.test.js` 25 test pass. Thứ tự làm: viết hết test B1 đến B6 trước; cài B1 tối thiểu thì 6 pass và 19 fail; cài đủ thì 25 pass. Sau đó phá cố ý 8 lỗi (LIFO thay FIFO; bỏ guard `#active`; bỏ `controller.abort()`; bỏ `processNext` sau khi settle; không bỏ kết quả của tác vụ đã hủy; bỏ pha `decoding`; `cancel` không reject; để lỗi listener thoát ra ngoài), cả 8 đều bị ít nhất một test bắt, rồi khôi phục (`cmp` khớp). Chạy lại toàn repo: 548 test pass. Chưa commit nên chưa tách được thành 6 commit; B1 đến B6 cùng nằm trong một file nên không tách sạch bằng `git add`, đề xuất gộp thành một commit.
+
+- [x] **B1 FIFO tuần tự.** `AudioTaskQueue` với `enqueue`, `processNext`; `load` giả trả Promise do test điều khiển.
   - Test: ba tác vụ vào theo thứ tự A, B, C thì `load` được gọi đúng thứ tự A, B, C; B chưa được gọi khi A chưa xong; `promise` resolve đúng buffer của chính nó; **không bao giờ** có hai `load` chạy cùng lúc (đếm đồng thời tối đa bằng 1).
   - Commit: `feat(queue): implement sequential fifo queue`.
-- [ ] **B2 Trạng thái và `subscribe`.** Chuyển `queued → loading → decoding → ready`; `onPhase('decoding')` đổi trạng thái; `listener` nhận từng lần đổi theo đúng thứ tự.
+- [x] **B2 Trạng thái và `subscribe`.** Chuyển `queued → loading → decoding → ready`; `onPhase('decoding')` đổi trạng thái; `listener` nhận từng lần đổi theo đúng thứ tự.
   - Test: chuỗi trạng thái đúng; hủy đăng ký rồi không nhận nữa; lỗi ném trong `listener` không làm hỏng queue.
   - Commit: `feat(queue): publish task status changes`.
-- [ ] **B3 Hủy tác vụ đang chờ.** `cancel(id)` với `queued`: bỏ khỏi mảng, reject `AbortError`, trạng thái `cancelled`, không gọi `load` cho nó.
+- [x] **B3 Hủy tác vụ đang chờ.** `cancel(id)` với `queued`: bỏ khỏi mảng, reject `AbortError`, trạng thái `cancelled`, không gọi `load` cho nó.
   - Test: hủy tác vụ giữa hàng thì A và C vẫn chạy đúng thứ tự; `cancel` id không tồn tại trả `false`; hủy hai lần chỉ reject một lần.
   - Commit: `feat(queue): cancel queued tasks`.
-- [ ] **B4 Hủy tác vụ đang chạy.** `cancel(id)` với `loading`/`decoding`: gọi `controller.abort()`; `load` giả tôn trọng `signal` và reject `AbortError`; queue sang tác vụ kế.
+- [x] **B4 Hủy tác vụ đang chạy.** `cancel(id)` với `loading`/`decoding`: gọi `controller.abort()`; `load` giả tôn trọng `signal` và reject `AbortError`; queue sang tác vụ kế.
+  - Quyết định thêm (đã có test): `status = 'cancelled'` và promise reject **ngay** khi gọi `cancel` để UI phản hồi tức thì, nhưng tác vụ kế **chỉ bắt đầu sau khi `load` của tác vụ bị hủy settle** (`#active` nhả trong `finally`). Vì `decodeAudioData` không hủy được, cho tác vụ kế chạy sớm sẽ làm hai lần giải mã chồng nhau. Nếu `load` của tác vụ đã hủy ném lỗi khác (mạng chết), tác vụ vẫn là `cancelled`, không thành `error`.
   - Test: hủy lúc `loading` và lúc `decoding` (hai test riêng); `signal.aborted === true`; tác vụ kế vẫn chạy; nếu `load` bỏ qua signal và vẫn resolve sau khi hủy, kết quả **bị bỏ** và promise vẫn reject `AbortError`.
   - Commit: `feat(queue): cancel running tasks with abort signal`.
-- [ ] **B5 Lỗi không làm kẹt hàng.** `load` reject lỗi khác `AbortError` thì `status = 'error'`, reject nguyên lỗi, tác vụ kế vẫn chạy.
+- [x] **B5 Lỗi không làm kẹt hàng.** `load` reject lỗi khác `AbortError` thì `status = 'error'`, reject nguyên lỗi, tác vụ kế vẫn chạy.
   - Test: lỗi ở tác vụ đầu, tác vụ thứ hai vẫn `ready`; `processNext` không chạy hai lần song song khi `enqueue` được gọi trong lúc đang xử lý.
   - Commit: `fix(queue): keep processing after a failed task` hoặc gộp vào B4 nếu không tách sạch được.
-- [ ] **B6 `cancelAll`.** Hủy mọi tác vụ chưa kết thúc, đang chạy trước hay sau không quan trọng; hàng rỗng sau đó.
+- [x] **B6 `cancelAll`.** Hủy mọi tác vụ chưa kết thúc, đang chạy trước hay sau không quan trọng; hàng rỗng sau đó.
   - Test: sau `cancelAll` không còn `load` nào được gọi; mọi promise reject `AbortError`; `enqueue` sau đó vẫn chạy bình thường.
   - Commit: `feat(queue): add cancelAll`.
 
@@ -159,6 +164,9 @@ Mỗi task là một commit atomic, trừ khi ghi chú khác. Test viết trư�
 - [ ] **C3 `audio-player`.** `createPlayer({ audioContext, analyser })` có `play(buffer, { onEnded })` và `stop()`; nối `source → analyser → destination`; `resume()` nếu context `suspended`.
   - Test (node giả đếm lời gọi): `stop()` gọi `source.stop` và `source.disconnect` đúng một lần; `stop()` lần hai không ném lỗi và không gọi thêm; `onended` tự dọn và gọi `onEnded`; `play()` thứ hai dừng nguồn đầu; sau `stop`, `source.onended === null`; **vòng 200 lần** `play`/`stop` thì số node tạo ra bằng số node đã `stop` và `disconnect` (kiểm rò rỉ ở mức mã).
   - Commit: `feat(audio): implement player with explicit node cleanup`.
+- [ ] **C4 Âm lượng (1.4.2).** `audio-player` nối `source → analyser → gain → destination` (analyser đứng **trước** gain để phổ không phụ thuộc âm lượng); `setVolume(value)` kẹp trong `[0, 1]`, đổi bằng `gain.setTargetAtTime` để không nghe tiếng lách tách; giá trị ban đầu 1.
+  - Test (node giả): `setVolume(2)` thành 1, `setVolume(-1)` thành 0, `NaN` ném lỗi; thứ tự nối đúng; âm lượng giữ nguyên qua các lần `play` liên tiếp; `stop()` không đổi âm lượng.
+  - Commit: `feat(audio): add volume control through a gain node`.
 
 ### Nhóm D — Bộ hiển thị
 
@@ -174,7 +182,7 @@ Mỗi task là một commit atomic, trừ khi ghi chú khác. Test viết trư�
 
 ### Nhóm E — Trang và kiểu dáng
 
-- [ ] **E1 `index.html` và `style.css`.** `<html lang="en">`, `<title>`, `<main>` với `<h1>`; nhóm điều khiển bằng `<button>` và `<input type="file" multiple accept="audio/*">` có `<label for>`; `<canvas aria-hidden="true">`; danh sách tác vụ `<ul>`; `#status` với `role="status"`.
+- [ ] **E1 `index.html` và `style.css`.** `<html lang="en">`, `<title>`, `<main>` với `<h1>`; nhóm điều khiển bằng `<button>`, `<input type="file" multiple accept="audio/*,video/mp4">` có `<label for>`, và `<input type="range">` âm lượng có `<label for>` (task C4); `<canvas aria-hidden="true">`; danh sách tác vụ `<ul>`; `#status` với `role="status"`.
   - Test (`main.test.js`): HTML chứa các phần tử trên; CSS chứa `:focus-visible`, `prefers-reduced-motion`, kích thước tối thiểu 24 px; **không** có `innerHTML`, `onclick`, `keypress`, `var` trong mã.
   - Commit: `feat(ui): add audio visualizer page and styles`.
 - [ ] **E2 `main.js` nối các module.** Tạo một `AudioContext` lười; một `AudioTaskQueue` với loader thật; một hub `click` và `change` ở gốc theo `data-action` (`add-files`, `cancel`, `cancel-all`, `play`, `stop`, `remove`, `toggle-effect`); render danh sách tác vụ và danh sách bản sẵn sàng bằng `replaceChildren`; ghi `#status` từ handler, không ghi lúc render; thu hồi object URL khi tác vụ kết thúc.
@@ -215,7 +223,7 @@ Thứ tự đề xuất: A1, B1 đến B6, C1 đến C3, D1 đến D3, E1, E2, r
 | 1.1.1 Nội dung không phải chữ | Canvas đánh dấu `aria-hidden`; thông tin tương đương nằm ở `#status` và danh sách tác vụ | Chưa kiểm |
 | 1.3.1 Thông tin và quan hệ | Test cấu trúc (`main`, `h1`, `ul`, `label for`, `button`); cây accessibility trong Edge | Chưa kiểm |
 | 1.4.1 Không chỉ dùng màu | Trạng thái tác vụ luôn có chữ ("Queued", "Loading", "Decoding", "Ready", "Cancelled", "Error") | Chưa kiểm |
-| 1.4.2 Điều khiển âm thanh | Không tự phát; có Stop và điều chỉnh âm lượng (`<input type="range">` điều khiển `GainNode`) hoặc tuyên bố rõ chỉ Stop. Chốt ở mục 9 | Chưa kiểm |
+| 1.4.2 Điều khiển âm thanh | Không tự phát; có nút Stop và `<input type="range">` có `<label>` điều khiển `GainNode` (task C4, E1); `aria-valuetext` đọc phần trăm | Chưa kiểm |
 | 1.4.3 Tương phản tối thiểu | `getComputedStyle` trong Edge, công thức WCAG | Chưa kiểm |
 | 1.4.10 Reflow | Đo ở 320 px | Chưa kiểm |
 | 1.4.11 Tương phản phi văn bản | Viền nút, vòng focus, màu cột phổ so với nền ít nhất 3:1 | Chưa kiểm |
@@ -256,10 +264,10 @@ Các "đột biến" thầy có thể yêu cầu, và nơi sửa:
 
 | Câu hỏi | Mặc định đang dùng | Trạng thái |
 |---|---|---|
-| `enqueue` trả `{ id, promise }` thay vì `Promise` | Có, để hủy theo `id` | Chờ bạn xác nhận |
-| Mẫu nhạc để demo | Không đưa file nhạc vào repo; bạn chọn file cục bộ. Cần 2 đến 3 file ngắn khác độ dài để thấy hàng đợi | Chờ bạn xác nhận |
+| `enqueue` trả `{ id, promise }` thay vì `Promise` | Có, để hủy theo `id` | Đã chốt, đã cài (B1) |
+| Mẫu nhạc để demo | Bạn có sẵn file trong `C:\Dev\Project\remotion-video\my-video\public\sounds` và video `out\NestFairPromo_Pro_v2.mp4` (trình duyệt giải mã được âm thanh của mp4). Chưa chép vào repo; chọn file bằng ô chọn file khi demo. Nếu muốn nộp kèm, hỏi lại trước khi chép (kích thước, bản quyền) | Đã chốt hướng; chưa xem nội dung thư mục |
 | Tự phát bản kế tiếp | Không; mỗi bản có nút Play | Giả định |
-| Âm lượng (1.4.2) | Thêm một `<input type="range">` điều khiển `GainNode`, hoặc chỉ cần nút Stop | Chờ bạn chọn |
+| Âm lượng (1.4.2) | Có thanh trượt điều khiển `GainNode` (task C4) | Đã chốt |
 | Số cột phổ | 64 cột | Giả định |
 | Số commit tối thiểu | Một commit mỗi task | Đề chưa nói |
 | `AI_FAILURE_AUDIT.md` cho bài này | Không bắt buộc riêng; ghi lỗi AI gặp nếu có | Chờ bạn xác nhận |
