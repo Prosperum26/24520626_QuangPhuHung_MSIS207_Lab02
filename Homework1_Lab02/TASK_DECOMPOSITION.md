@@ -1,7 +1,8 @@
 # Homework 1 — Task Decomposition
 
 > Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rules](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS: [Exercise 3](../Exercise3_Lab02/TASK_DECOMPOSITION.md).
-> Trạng thái: **bản plan chờ bạn duyệt**, chưa có dòng code nào. Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task, mỗi task một commit.
+> Trạng thái (2026-10-28): nhóm A đến E đã làm và verify bằng test; F1 và F5 (phần kiểm chứng) đã chạy; **F2 (Lighthouse), F3 (trình đọc màn hình) và prompt log là việc của bạn**, hướng dẫn ở mục 11.
+> Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task.
 
 ## 1. Thông tin chung
 
@@ -11,9 +12,27 @@
 | Thời hạn | 1 tuần |
 | Mục tiêu | Data-Grid truy cập được: sort, filter, pagination, điều hướng bàn phím; Lighthouse Accessibility và Best Practices đều 100 |
 | Ngôn ngữ | JavaScript thuần, contract bằng JSDoc, `// @ts-check` (như Exercise 1 đến 3) |
-| Engine | Sao chép `mini-react.js` và `reactive-engine.js` từ Exercise 3 vào `Homework1_Lab02/`, không sửa bản gốc |
+| Engine | Bản sao engine Exercise 3 trong `src/engine/`, chỉ sửa một chỗ (giữ caret, task C1); bản Exercise 3 không đổi |
 | Test | Vitest + jsdom, mỗi module một file `*.test.js` cạnh nó |
-| Chạy thử | `python -m http.server 8765` từ gốc repo, mở `Homework1_Lab02/index.html` |
+| Chạy thử | `python -m http.server 8765` từ gốc repo, mở `http://127.0.0.1:8765/Homework1_Lab02/index.html` |
+
+### 1.1 Cấu trúc thư mục
+
+```text
+Homework1_Lab02/
+  index.html            trang demo (lang, title, main > h1, #app, #status)
+  main.js               điểm vào: gắn hub, render grid
+  main.test.js          test điểm vào, index.html, style.css
+  style.css
+  TASK_DECOMPOSITION.md
+  evidence/             ảnh chụp và browser-audit.json
+  src/
+    engine/             engine Mini-React (bản sao Exercise 3 + giữ caret)
+    grid/               data-grid.js và các module logic thuần grid-*.js, announce.js
+    data/               employees.js (dữ liệu mẫu), employee-columns.js (cấu hình cột)
+```
+
+Quy tắc phụ thuộc: `engine` không biết `grid`; `grid` chỉ import `engine`; `data` không import gì ngoài kiểu của `grid`. Logic thuần (`grid-sort`, `grid-filter`, `grid-page`, `grid-nav`, `grid-selection`, `grid-view`) không đụng DOM nên test không cần jsdom; chỉ `data-grid.js` và `announce.js` đụng DOM.
 
 ## 2. Ràng buộc từ đề
 
@@ -58,155 +77,187 @@ interface GridState {
 | Quyết định | Chốt | Lý do |
 |---|---|---|
 | Engine | Dùng lại engine Exercise 3, grid là function component | Bạn đã chốt; đúng tinh thần Tier 1 |
-| `role="grid"` trên `<table>` | Có, ghi rõ ngoại lệ | Đề bắt buộc bất biến grid; `td`/`th` trong grid tự hiểu là `gridcell`/`columnheader`, không gắn role thừa cho `tr`, `td` |
-| Phần tử nhận focus | Ô dữ liệu: chính `<td tabindex>`. Ô tiêu đề sortable: `<button>` bên trong `<th>` | Mẫu APG sortable grid; một `<button>` thật nên Enter/Space tự sort, không viết lại |
+| `role="grid"` trên `<table>` | Có, ghi rõ ngoại lệ | Đề bắt buộc bất biến grid; `td`/`th` trong grid tự hiểu là `gridcell`/`columnheader`, không gắn role thừa cho `tr`, `th`, `td` (có test) |
+| Phần tử nhận focus | Ô dữ liệu: chính `<td tabindex>`. Ô tiêu đề sortable: `<button>` bên trong `<th>`; ô tiêu đề không sortable: chính `<th tabindex>` | Mẫu APG sortable grid; một `<button>` thật nên Enter/Space tự sort, không viết lại |
 | Roving tabindex | Chỉ `activeCell` có `tabindex="0"`, còn lại `-1` | Một lần Tab vào, một lần Tab ra |
 | Một handler bàn phím | `onKeydown` ở `<table>` duy nhất, đọc toạ độ từ `id` của `event.target` | Hub của engine tra handler theo `_vnode`; một chỗ để sửa khi bảo vệ |
-| Id ô | `${gridId}-r${row}-c${col}` | Engine chỉ khôi phục focus theo `id` |
-| Di chuyển focus | Handler gọi `setActiveCell`, rồi `document.getElementById(nextId).focus()` (render đồng bộ nên cây mới đã có) | `writeFocus` của engine khôi phục focus **cũ**, không biết ô đích. Cùng mẫu `recoverLostFocus` của Exercise 3 |
-| Space và Enter trên ô | `Enter` gọi `onRowSelect(item)` và đánh dấu dòng đang chọn; `Space` bật/tắt `aria-selected` của dòng (chọn nhiều) và `preventDefault` chặn cuộn trang | Đề không nói "toggle cái gì"; đây là cách hiểu hợp lý, chờ bạn xác nhận (mục 9) |
-| Trạng thái chọn | `aria-selected` trên `<tr>` bằng **chuỗi** `'true'`/`'false'`, kèm chữ ẩn thị giác hoặc dấu "Selected" ở ô đầu | `createElement` bỏ prop `false`; không chỉ truyền đạt bằng màu (1.4.1) |
-| Sắp xếp | Vòng `none → asc → desc → none`; chỉ cột đang sort có `aria-sort` | APG: chỉ một cột mang `aria-sort`; so sánh số bằng số, chuỗi bằng `localeCompare` với `numeric: true`; sort ổn định |
-| Lọc | Một ô văn bản có `<label>`, lọc không phân biệt hoa thường trên mọi cột | Đủ yêu cầu; lọc theo cột là YAGNI |
-| Phân trang | Cố định 10 dòng mỗi trang; `<nav aria-label>`, nút Trước/Sau, cửa sổ tối đa 5 số trang, trang hiện tại có `aria-current="page"`; nút ở biên dùng `aria-disabled`, không dùng `disabled` | `disabled` làm mất focus; bỏ qua click ở handler |
-| Dòng ảo | Chỉ hiển thị trang hiện tại, nên `aria-rowcount` = tổng dòng đã lọc + 1 và mỗi `<tr>` có `aria-rowindex` | Trình đọc màn hình biết vị trí thật trong tập kết quả |
-| Thông báo | Dùng lại `#status role="status"` ngoài `#app`; đọc "Showing 12 of 240 rows", "Sorted by Name, ascending", "Page 3 of 24" | 4.1.3; tách khỏi cây bị thay mỗi lần render |
-| Dữ liệu | `employees.js`: 240 dòng sinh **tất định** (không `Math.random`), có cột số và ngày | Test lặp lại được; có dữ liệu đủ để thấy phân trang |
-| Bọc cuộn ngang | `<div class="grid-scroll">` với `overflow-x: auto` quanh `<table>` | Reflow 320px (1.4.10); bảng có phần tử focus được nên không dính lỗi "vùng cuộn không focus được" |
-| Style | CSS riêng; tương phản, focus, vùng bấm tối thiểu 2.5rem như Exercise 3 | Không dùng màu làm kênh duy nhất |
+| Id ô | `${gridId}-r${row}-c${col}`, theo **vị trí**, không theo nội dung | Engine chỉ khôi phục focus theo `id`; sau sort, focus ở nguyên vị trí |
+| Di chuyển focus | Handler cập nhật `activeCell`, rồi `document.getElementById(idĐích).focus()` (render đồng bộ nên cây mới đã có) | `writeFocus` của engine khôi phục focus **cũ**, không biết ô đích. Cùng mẫu `recoverLostFocus` của Exercise 3 |
+| Enter trên ô dữ liệu | Chọn **riêng** dòng đó (bỏ các dòng khác) và gọi `onRowSelect(item)` | Đề không nói rõ; Enter có hiệu ứng nhìn thấy được. Giả định, chờ bạn xác nhận (mục 9) |
+| Space trên ô dữ liệu | Bật/tắt dòng đó trong tập đã chọn (chọn nhiều), `preventDefault` chặn cuộn trang | Như trên |
+| Enter/Space ở hàng tiêu đề | Không xử lý; `<button>` tự sort bằng click gốc | Không viết lại hành vi gốc của trình duyệt |
+| Trạng thái chọn | `aria-selected` trên `<tr>` bằng **chuỗi** `'true'`/`'false'`; kiểu dáng có vạch trái, dấu ✓ (alt rỗng) và chữ đậm | `createElement` bỏ prop `false`; không chỉ truyền đạt bằng màu (1.4.1) |
+| Sắp xếp | Vòng `asc → desc → bỏ sort`; chỉ cột đang sort có `aria-sort`; chỉ báo ▲/▼ ẩn khỏi trình đọc màn hình | APG; số so như số, chuỗi `localeCompare` với `numeric: true`; sort ổn định; ô trống xuống cuối |
+| Lọc | Một ô `<input type="search">` có `<label for>`, khớp chuỗi con không phân biệt hoa thường trên mọi cột | Đủ yêu cầu; lọc theo cột là YAGNI. Dùng `includes`, không dựng RegExp |
+| Phân trang | 10 dòng mỗi trang; `<nav aria-label>`, Previous/Next, cửa sổ tối đa 5 số trang, `aria-current="page"`; nút ở biên dùng `aria-disabled`, không dùng `disabled` | `disabled` làm mất focus và mất khỏi thứ tự Tab; handler tự bỏ qua click |
+| Dòng ảo | Chỉ hiển thị trang hiện tại; `aria-rowcount` = tổng dòng đã lọc + 1; mỗi `<tr>` có `aria-rowindex` | Trình đọc màn hình biết vị trí thật trong tập kết quả |
+| Thông báo | `#status role="status"` ngoài `#app`; ghi từ handler, không ghi lúc render | 4.1.3; tách khỏi cây bị thay mỗi lần render; mũi tên không đọc lại thông báo cũ |
+| Dữ liệu | `employees.js`: 240 dòng sinh **tất định** (không `Math.random`), có cột số và ngày | Test lặp lại được; ảnh chụp luôn cùng dữ liệu |
+| Bọc cuộn ngang | `<div class="grid-scroll">` với `overflow-x: auto` quanh `<table>` | Reflow 320 px (1.4.10); bảng có phần tử focus được |
+| Vẽ vòng focus trong ô | `outline-offset` âm cho `td`, `th`, `th button` | `overflow-x: auto` cắt outline vẽ ra ngoài mép |
 
 ## 5. WBS và kế hoạch commit
 
-Mỗi dòng là một task, một commit. Các nhóm B đến D độc lập với DOM nên thứ tự trong nhóm có thể đổi mà không phá nhau. Cột "Commit" dùng Conventional Commits, kèm dòng `Co-Authored-By` theo Agents.md.
+Cột "Commit" là commit thực tế (mã rút gọn) khi đã có. Các task D1 đến D6 gộp thành một commit vì cùng nằm trong `data-grid.js` và không tách sạch được bằng `git add`.
 
 ### Nhóm A — Nền
 
-- [ ] **A0 Sao chép engine.** Chép nguyên văn `mini-react.js`, `reactive-engine.js` và hai file test từ Exercise 3.
-  - Commit: `chore(hw1): copy exercise 3 engine`.
-  - Nghiệm thu: `diff` từng file không khác; `npm test` pass; `git status` không thấy file ngoài `Homework1_Lab02/` bị đổi.
-- [ ] **A1 Contract.** `grid-contract.js`: JSDoc `ColumnDef`, `DataGridProps`, `GridState`; hằng `SORT_CYCLE`, `PAGE_SIZE = 10`, `initialGridState` đóng băng.
-  - Commit: `feat(grid): add data-grid contract`.
-  - Test: hằng đóng băng; `PAGE_SIZE` là số nguyên dương.
-- [ ] **A2 Dữ liệu mẫu.** `employees.js`: `createEmployees(count)` tất định; xuất `EMPLOYEES` (240 dòng). Cột: `id`, `name`, `department`, `role`, `salary` (số), `joined` (chuỗi ISO).
-  - Commit: `feat(grid): add deterministic employee mock data`.
-  - Test: gọi hai lần ra kết quả bằng nhau; `id` không trùng; có đủ kiểu số và chuỗi.
+- [x] **A0 Sao chép engine.** Chép nguyên văn `mini-react.js`, `reactive-engine.js` và hai file test từ Exercise 3.
+  - Commit: `9d63527 chore(hw1): copy exercise 3 engine`.
+  - Kết quả: `cmp` từng file khớp byte; sau đó chuyển vào `src/engine/` (mục 1.1).
+- [x] **A1 Contract.** `grid-contract.js`: JSDoc `ColumnDef`, `DataGridProps`, `GridState`; hằng `SORT_CYCLE`, `PAGE_SIZE = 10`, `initialGridState` đóng băng.
+  - Commit: `3c65776 feat(grid): add data-grid contract`.
+- [x] **A2 Dữ liệu mẫu.** `employees.js`: `createEmployees(count)` tất định; xuất `EMPLOYEES` (240 dòng).
+  - Commit: `1153d98 feat(grid): add deterministic employee mock data`.
 
 ### Nhóm B — Logic thuần (không DOM)
 
-- [ ] **B1 `sortRows`.** Sort ổn định, số và chuỗi, `null` về cuối, không sửa mảng đầu vào.
-  - Commit: `feat(grid): implement stable sortRows`.
-  - Test: asc/desc, hai dòng bằng nhau giữ thứ tự gốc, `sort = null` trả đúng thứ tự gốc, giá trị `null`/`undefined`, "item2" trước "item10" nhờ `numeric`.
-- [ ] **B2 `filterRows`.** Không phân biệt hoa thường, trên mọi cột có trong `columns`; chuỗi rỗng trả toàn bộ.
-  - Commit: `feat(grid): implement filterRows`.
-  - Test: khớp một phần, hoa thường, số được ép chuỗi, không khớp trả mảng rỗng, ký tự regex (`.*`) được coi là chữ thường.
-- [ ] **B3 `paginate` và `pageWindow`.** `paginate(rows, page, size)` trả `{ rows, totalPages, page }` với `page` bị kẹp vào `[1, totalPages]`; `pageWindow(page, totalPages, max=5)` trả danh sách số trang quanh trang hiện tại.
-  - Commit: `feat(grid): implement paginate and pageWindow`.
-  - Test: trang đầu, cuối, vượt biên, 0 dòng (một trang rỗng, `totalPages = 1`), 7 dòng với size 10, cửa sổ ở đầu, giữa, cuối.
-- [ ] **B4 `nextCell` và `cellId`.** `nextCell(cell, key, { rows, cols })` với `ArrowUp/Down/Left/Right`, `Home`, `End`, `Ctrl+Home`, `Ctrl+End`; kẹp biên, không vòng; `cellId(gridId, row, col)` và `parseCellId` là hai hàm ngược nhau.
-  - Commit: `feat(grid): implement cell navigation model`.
-  - Test: mỗi phím ở giữa và ở biên; phím lạ trả cùng ô; `parseCellId(cellId(...))` khứ hồi; id lạ trả `null`.
-- [ ] **B5 `toggleSelection` và `nextSort`.** Hàm thuần: bật/tắt phần tử trong `Set` (trả `Set` mới, đóng băng); `nextSort(sort, key)` đi theo `SORT_CYCLE`.
-  - Commit: `feat(grid): implement selection and sort cycle helpers`.
-  - Test: bật rồi tắt, không sửa `Set` cũ; sort đổi cột thì quay về `asc`; đủ vòng `asc → desc → null`.
+- [x] **B1 `sortRows`.** Ổn định, số và chuỗi, `null` về cuối, không sửa mảng đầu vào. Commit: `2f82ae6 feat(grid): implement sortRows and nextSort` (gồm cả `nextSort` của B5).
+- [x] **B2 `filterRows`.** Commit: `8a5c774 feat(grid): implement filterRows`.
+- [x] **B3 `paginate` và `pageWindow`.** Commit: `30c1a5a feat(grid): implement paginate and pageWindow`.
+- [x] **B4 `nextCell`, `cellId`, `parseCellId`.** Commit: `7d425e7 feat(grid): implement cell navigation model`. Thêm `clampCell` ở D5.
+- [x] **B5 `toggleSelection` và `nextSort`.** Commit: `dc4ff06 feat(grid): implement toggleSelection`.
+  - Lệch plan: `Object.freeze` không chặn được `Set.add`, nên chỉ đảm bảo hàm không sửa `Set` đầu vào và trả `Set` mới (có test).
 
-### Nhóm C — Engine (bản sao của HW1)
+### Nhóm C — Engine
 
-- [ ] **C1 Giữ caret khi khôi phục focus.** Mở rộng `readFocusedId`/`writeFocus` ở bản sao: nếu phần tử focus là `<input>`, ghi nhớ và khôi phục `selectionStart`/`selectionEnd`. Chỉ sửa trong `Homework1_Lab02/reactive-engine.js`, bản Exercise 3 không đổi.
-  - Commit: `feat(engine): preserve caret when restoring focus`.
-  - Lý do: gõ vào ô lọc làm `replaceChildren` tạo input mới; không có bước này, caret nhảy về đầu và gõ tiếp bị ngược (bài học lỗi mất chữ của Exercise 2).
-  - Test: input có `value`, đặt caret giữa chuỗi, render lại, caret giữ nguyên; phần tử không phải input không lỗi.
-  - Nghiệm thu: test engine cũ vẫn pass.
+- [x] **C1 Giữ caret khi khôi phục focus.** `readFocus`/`writeFocus` ghi nhớ và khôi phục `selectionStart`/`selectionEnd`/hướng của `<input>`.
+  - Commit: `db92ff1 feat(engine): preserve caret when restoring focus`.
+  - Kiểm chứng: 6 test; cố ý bỏ bước khôi phục caret thì 4 test fail. Gõ giữa chuỗi trong Edge thật cho kết quả đúng (mục 6.1).
 
-### Nhóm D — UI (mỗi tính năng một commit)
+### Nhóm D — UI
 
-- [ ] **D1 Bảng tĩnh.** `data-grid.js`: `createDataGrid(props)` trả function component; dựng `<table role="grid" aria-label aria-rowcount>` với `<thead><tr><th scope="col">` và `<tbody><tr aria-rowindex><td>`; hiển thị toàn bộ `data`, chưa có sort/lọc/trang.
-  - Commit: `feat(grid): render semantic table with grid roles`.
-  - Test: đúng cấu trúc `table > thead > tr > th[scope=col]`, `tbody > tr > td`; `aria-rowcount`/`aria-rowindex` đúng; **chống XSS**: ô chứa `<img src=x onerror=alert(1)>` hiện như chữ, không tạo `<img>`; không có `div` trong bảng.
-- [ ] **D2 Sắp xếp.** Cột `sortable` có `<button>` trong `<th>`; click gọi `nextSort`; `aria-sort` chỉ ở cột đang sort; vùng thông báo ghi "Sorted by Name, ascending".
-  - Commit: `feat(grid): add column sorting with aria-sort`.
-  - Test: click ba lần đi `ascending → descending → bỏ thuộc tính`; chỉ một `th` có `aria-sort`; cột không `sortable` không có `<button>`; `#status` đổi nội dung.
-- [ ] **D3 Lọc.** `<label for>` + `<input type="search">`; gõ gọi `onInput`; `aria-rowcount` và `#status` cập nhật ("Showing 12 of 240 rows"); trả về trang 1.
-  - Commit: `feat(grid): add text filter with live result count`.
-  - Test: gõ lọc đúng dòng; nhãn gắn đúng input (`label[for]` khớp `id`); focus và caret còn sau mỗi ký tự; 0 kết quả hiện dòng "No matching rows" và thông báo.
-- [ ] **D4 Phân trang.** `<nav aria-label="Pagination">` với nút Previous/Next và nút số trang; `aria-current="page"`; nút biên dùng `aria-disabled`; `#status` ghi "Page 3 of 24".
-  - Commit: `feat(grid): add pagination nav`.
-  - Test: click số trang đổi đúng 10 dòng; `aria-current` chỉ một nút; Previous ở trang 1 không đổi trang; `aria-rowindex` của dòng đầu trang 3 là 22 (1 tiêu đề + 20 dòng trước); lọc làm co số trang và kẹp trang hiện tại.
-- [ ] **D5 Điều hướng bàn phím.** Roving tabindex, `onKeydown` ở `<table>`, di chuyển focus bằng `getElementById(...).focus()`; click vào ô cũng đặt `activeCell`. Bỏ qua `Enter`/`Space` khi `target` là `<button>` tiêu đề.
-  - Commit: `feat(grid): add arrow key navigation with roving tabindex`.
-  - Test: đúng một phần tử `tabindex="0"` trong bảng; mũi tên Phải, Xuống, Trái, Lên đổi `document.activeElement` theo đúng ô; `Home`, `End`, `Ctrl+Home`, `Ctrl+End`; biên không vòng; sau sort/lọc/chuyển trang `activeElement` không bao giờ là `<body>` và `activeCell` bị kẹp vào vùng còn tồn tại; dùng `e.key`, không `keyCode`.
-- [ ] **D6 Chọn dòng.** `Enter` gọi `onRowSelect(item)`; `Space` bật/tắt `aria-selected` và `preventDefault`; dòng được chọn có dấu chữ, không chỉ màu.
-  - Commit: `feat(grid): add row selection with Enter and Space`.
-  - Test: `onRowSelect` nhận đúng `item` (kể cả sau sort và sang trang); `Space` hai lần về `aria-selected="false"`; `aria-selected` luôn là chuỗi; `Space` không chặn trên `<button>` tiêu đề.
+- [x] **D0 `deriveView` (thêm vào plan).** Lọc, rồi sort, rồi cắt trang, kèm chỉ số dòng gốc; hàm thuần. Commit: `ae12eb1 feat(grid): derive visible rows from filter, sort and page`.
+- [x] **D1 Bảng ngữ nghĩa.** `table[role=grid] > thead > tr > th[scope=col]`, `tbody > tr[aria-rowindex] > td`; XSS: ô chứa `<img onerror>` hiện như chữ.
+- [x] **D2 Sắp xếp.** `<button>` trong `<th>`, `aria-sort` chỉ một cột, thông báo "Sorted by Name, ascending".
+- [x] **D3 Lọc.** `<label for>` + `<input type="search">`, "Showing N of 240 rows", "No matching rows" đặt ngoài bảng.
+- [x] **D4 Phân trang.** `<nav aria-label="Pagination">`, `aria-current="page"`, `aria-disabled` ở biên, "Page 3 of 24".
+- [x] **D5 Điều hướng bàn phím.** Roving tabindex, một `onKeydown` ở `<table>`, `clampCell`. Không nuốt Alt/Meta + mũi tên (phím tắt trình duyệt).
+- [x] **D6 Chọn dòng.** Enter và Space như mục 4; `aria-selected` bằng chuỗi.
+  - Commit chung D1 đến D6: `d8d6db1 feat(grid): render accessible data grid with sort, filter, pagination, keyboard and selection`.
+  - Kiểm chứng: 70 test trong `data-grid.test.js`. Đã thử phá 9 lỗi cố ý (bỏ `.focus()` sau khi di chuyển, bỏ `clampCell`, bỏ guard Alt/Meta, bỏ `preventDefault`, bỏ `id` của ô, chọn theo vị trí thay vì chỉ số gốc, Enter dùng toggle, `aria-selected` kiểu boolean, chọn ở hàng tiêu đề); cả 9 đều bị test bắt.
+  - Lệch plan: D1 hiển thị 10 dòng đầu thay vì toàn bộ dữ liệu vì dùng `deriveView` ngay từ đầu; Enter vừa chọn riêng dòng vừa gọi `onRowSelect`.
 
 ### Nhóm E — Trang và kiểu dáng
 
-- [ ] **E1 `index.html`, `main.js`, `style.css`.** `<html lang="en">`, `<title>` có nghĩa, `<main>` với `<h1>`, `#app`, `<p id="status" role="status">`; `main.js` gắn hub một lần và render grid với `EMPLOYEES`. CSS: bọc cuộn ngang, `:focus-visible` rõ, `scroll-padding` để focus không bị tiêu đề dính che, vùng bấm tối thiểu 2.5rem, ô được chọn có viền và dấu chữ.
-  - Commit: `feat(ui): add grid page, entry point and styles`.
-  - Test: `main.test.js` như Exercise 3 (hub đúng một lần, render lần đầu có 10 dòng); `style.css` chứa `:focus-visible` và `overflow-x`.
+- [x] **E1 `index.html`, `main.js`, `style.css`, `employee-columns.js`.** Chưa commit.
+  - Thêm ngoài plan: `employee-columns.js` (một chỗ cấu hình cột), `<p id="opened">` hiện kết quả `onRowSelect` để thấy Enter hoạt động.
+  - Bỏ so với plan: `scroll-padding`, vì không có tiêu đề dính nên không có gì che focus (xem 2.4.11 ở mục 7).
+  - Kiểm chứng: `main.test.js` 11 test (hub gắn một lần, render 10 dòng, Enter gọi `onRowSelect`, HTML/CSS chứa các thuộc tính cần thiết).
+  - Commit dự kiến: `feat(ui): add grid page, entry point and styles`.
+- [x] **E2 Tổ chức lại thư mục (theo yêu cầu).** Chia `src/engine`, `src/grid`, `src/data`; sửa đường dẫn import. Chưa commit.
+  - Kiểm chứng: 505 test pass ngay sau khi chuyển; không file nào của Exercise 1 đến 3 bị đổi.
+  - Commit dự kiến: `refactor(hw1): group sources into engine, grid and data folders`.
 
 ### Nhóm F — Kiểm chứng và bằng chứng
 
-- [ ] **F1 Kiểm tương phản và kích thước.** Script `getComputedStyle` trong Edge như Exercise 3 mục 10.4, thêm ô chọn, hàng hover, nút phân trang.
-  - Commit: `docs(hw1): record contrast and target-size measurements`.
-- [ ] **F2 Lighthouse.** Chạy Accessibility và Best Practices, chế độ Desktop và Mobile, ở ba trạng thái: ban đầu, sau khi sort + lọc, trang cuối. Chụp ảnh vào `evidence/`. Đạt 100 mới tick; nếu không đạt, ghi từng mục lỗi và sửa bằng commit riêng.
-  - Commit: `docs(hw1): add lighthouse evidence`.
-  - Cách chạy: cửa sổ ẩn danh để extension không làm lệch điểm; tab Lighthouse trong DevTools của Edge hoặc Chrome, chọn Accessibility và Best Practices. Phần Accessibility của Lighthouse là tập con rule của axe-core, nên không có bước axe riêng.
-  - Hệ quả của việc không cài axe: lỗi ARIA và cấu trúc bảng chỉ được bắt bằng test jsdom tự viết ở D1 đến D6 và bằng Lighthouse ở F2, nên các test cấu trúc ở D1 đến D6 phải kiểm kỹ `role`, `scope`, `aria-rowindex`, `aria-selected`, `aria-sort`.
-  - Việc của bạn: ảnh chụp từ DevTools thật; mình không khẳng định thay.
-- [ ] **F3 Kiểm tay bàn phím và trình đọc màn hình.** Chỉ dùng bàn phím; thử NVDA hoặc Narrator: đọc `aria-label` của bảng, "row 2 of 241", tên cột, `aria-sort`, thông báo `#status`. Ghi cả kết quả không đạt.
-  - Commit: `docs(hw1): record manual accessibility check`.
-- [ ] **F4 Bảng kiểm WCAG 2.2 AA.** Điền mục 7 với cột "Cách kiểm" và "Trạng thái". Không ghi "đạt WCAG" khi còn dòng "Một phần" hoặc "Chưa làm".
-  - Commit: `docs(hw1): fill wcag checklist`.
-- [ ] **F5 Verify cuối và prompt log.** `npm test` toàn bộ; `grep` cấm (`var`, `innerHTML`, `keypress`, `keyCode`, `onclick=`, `addEventListener` trong file grid); `git diff --stat -- Exercise1_Lab02 Exercise2_Lab02 Exercise3_Lab02` rỗng; VS Code diagnostics sạch. Bạn export prompt log vào `docs/prompt_logs/`.
-  - Commit: `docs(hw1): add prompt log`.
+- [x] **F1 Đo tương phản, vùng bấm và hành vi trong Edge thật.** Chạy Edge headless qua Chrome DevTools Protocol (không cài gì): 19 kiểm tra pass, console không lỗi hay cảnh báo. Kết quả ở mục 6.1; báo cáo thô ở [evidence/browser-audit.json](evidence/browser-audit.json). Script chạy từ thư mục tạm, không lưu vào repo.
+  - Commit dự kiến: `docs(hw1): record browser measurements and wcag status`.
+- [ ] **F2 Lighthouse.** **Việc của bạn.** Chạy Accessibility và Best Practices, Desktop và Mobile, ba trạng thái (mục 11.1). Đạt 100 mới tick; không đạt thì ghi từng mục lỗi để mình sửa bằng commit riêng.
+  - Phần Accessibility của Lighthouse là tập con rule của axe-core, nên không có bước axe riêng (đã chốt không cài thêm).
+- [ ] **F3 Kiểm tay bàn phím và trình đọc màn hình.** **Việc của bạn** (mục 11.2). Mình đã thử phím thật trong Edge qua CDP nhưng đó không phải trình đọc màn hình.
+- [x] **F4 Bảng kiểm WCAG 2.2 AA.** Đã điền mục 7 đúng mức đã kiểm. **Không ghi "đạt WCAG"**: còn nhiều dòng "Một phần".
+- [ ] **F5 Verify cuối và prompt log.**
+  - [x] Verify: `npm test` toàn repo 25 file, 516 test pass (riêng HW1: 13 file, 224 test); `grep` các từ cấm trong code HW1 không có kết quả; `addEventListener` chỉ còn ở hub của engine; `git diff --stat -- Exercise1_Lab02 Exercise2_Lab02 Exercise3_Lab02` rỗng.
+  - [ ] Prompt log: **việc của bạn**, export vào `docs/prompt_logs/` (AI không xuất được phiên làm việc của chính nó).
 
 ## 6. Điều kiện hoàn thành (checklist nghiệm thu)
 
-- [ ] Dùng `<table>`, `<thead>`, `<tbody>`, `<th scope="col">`, `<button>` đúng chỗ (D1, D2)
-- [ ] Mũi tên di chuyển giữa ô; `Enter` chọn; `Space` bật/tắt (D5, D6)
-- [ ] Sort, lọc, phân trang chạy và có `aria-sort`, `aria-current`, thông báo trạng thái (D2 đến D4)
-- [ ] Tương phản 4.5:1 (chữ) và 3:1 (viền, focus) (F1)
-- [ ] Lighthouse Accessibility = 100 và Best Practices = 100, có ảnh (F2)
-- [ ] Kiểm tay bằng bàn phím và ít nhất một trình đọc màn hình (F3)
-- [ ] `npm test` pass, không sửa Exercise 1 đến 3 (F5)
-- [ ] Mỗi commit atomic, Conventional Commits (toàn bộ)
-- [ ] Prompt log đã export (F5)
+- [x] Dùng `<table>`, `<thead>`, `<tbody>`, `<th scope="col">`, `<button>` đúng chỗ (D1, D2)
+- [x] Mũi tên di chuyển giữa ô; `Enter` chọn; `Space` bật/tắt (D5, D6; phím thật trong Edge ở F1)
+- [x] Sort, lọc, phân trang chạy và có `aria-sort`, `aria-current`, thông báo trạng thái (D2 đến D4)
+- [x] Tương phản 4.5:1 (chữ) và 3:1 (viền, focus), đo trong Edge (F1)
+- [ ] Lighthouse Accessibility = 100 và Best Practices = 100, có ảnh (F2, chờ bạn)
+- [ ] Kiểm tay bằng bàn phím và ít nhất một trình đọc màn hình (F3, chờ bạn)
+- [x] `npm test` pass, không sửa Exercise 1 đến 3 (F5)
+- [ ] Mỗi commit atomic, Conventional Commits (còn E1, E2, F1, F4 chưa commit)
+- [ ] Prompt log đã export (F5, chờ bạn)
 
-## 7. Kiểm tra WCAG 2.2 AA (điền ở F4)
+### 6.1 Kết quả đo trong Edge thật (F1)
 
-| Tiêu chí | Cách kiểm dự kiến | Trạng thái |
+Môi trường: Edge headless, viewport 1280×900 (và 320×640 cho reflow), dữ liệu 240 dòng. Tương phản tính từ `getComputedStyle` theo công thức WCAG; hai dòng ghi "từ CSS" tính từ giá trị màu khai báo, chưa đo `getComputedStyle`.
+
+| Phần tử | Tương phản chữ | Tương phản viền | Kích thước (px) |
+|---|---|---|---|
+| `h1` | 17.40 | không viền | 1024×42 |
+| Dòng hướng dẫn và `#status` | 8.86 | không viền | 1024×24 |
+| `th` (tiêu đề cột) | 15.25 | không viền | 200×57 |
+| `th button` (nút sort) | 15.25 | viền trong suốt | 91×40 |
+| `td` (ô dữ liệu) | 17.40 | không viền | 200×42 |
+| Ô lọc | 17.40 | 6.69 | 384×40 |
+| Nút Next, số trang thường | 17.40 | 6.69 | 40×40 trở lên |
+| Nút Previous khi `aria-disabled` | 7.92 | 6.69 (nét đứt) | 88×40 |
+| Nút trang hiện tại (`aria-current`) | 9.96 | 9.96 | 40×40 |
+| Vòng focus `#1a3d8f` so với nền trắng | không áp dụng | 9.96 | không áp dụng |
+| Vòng focus so với nền dòng được chọn | không áp dụng | 8.35 (từ CSS) | không áp dụng |
+| Chữ trên nền dòng được chọn `#e3ebff` | 14.58 (từ CSS) | không áp dụng | không áp dụng |
+
+Hành vi chạy bằng phím thật (`Input.dispatchKeyEvent`) trong Edge, tất cả pass:
+
+| Kiểm tra | Kết quả |
+|---|---|
+| Mũi tên, Home, End di chuyển đúng ô | Đúng chuỗi `r1-c0, r1-c1, r2-c1, r2-c0, r1-c0, r1-c4, r1-c0` |
+| `:focus-visible` khớp sau khi di chuyển bằng phím | Có |
+| Đúng một tab stop trong bảng | 1 |
+| Space chọn dòng, focus giữ nguyên ô | Có |
+| Enter chọn riêng một dòng và `onRowSelect` chạy | Có ("Last selected with Enter: Chi Pham, Finance") |
+| Hai dòng chọn cùng lúc (Enter rồi Space dòng khác) | 2 dòng |
+| Mũi tên không cuộn trang | `scrollY` vẫn 0 |
+| Enter và Space trên nút sort | Đúng `ascending` rồi `descending`, focus giữ ở nút, `#status` đọc "Sorted by Name, descending" |
+| Gõ vào ô lọc | Giá trị, caret, focus giữ nguyên |
+| Gõ giữa chuỗi ("engi", lùi 2, gõ X) | `enXgi`, caret 3 (không bị chèn ngược) |
+| `#status` sau khi lọc | "Showing 48 of 240 rows" |
+| Next bằng Enter | Trang 2, focus còn ở Next |
+| Reflow 320 px | `scrollWidth` 320 bằng `clientWidth`; chỉ bảng cuộn ngang |
+| Console | Không có lỗi hay cảnh báo |
+
+Cây accessibility (rút gọn): `searchbox "Filter rows"`, `grid "Employees"`, `navigation "Pagination"`, `button "Previous"` (disabled), `button "Page 1"` đến `"Page 5"`, `button "Next"`, `columnheader "Name"`, `"Department"`, `"Role"`.
+
+Ảnh chụp: [evidence/grid-initial.png](evidence/grid-initial.png), [evidence/grid-selected-focus.png](evidence/grid-selected-focus.png), [evidence/grid-filtered.png](evidence/grid-filtered.png), [evidence/grid-320px.png](evidence/grid-320px.png). Ảnh do script chụp để mình tự kiểm tra giao diện; ảnh nộp bài (Lighthouse, DevTools) bạn tự chụp.
+
+## 7. Kiểm tra WCAG 2.2 AA (F4)
+
+Cột "Cách đã kiểm" ghi đúng việc đã làm. "Đã kiểm" nghĩa là đã làm bằng chứng đủ cho tiêu chí đó ở mức công cụ cho phép; "Một phần" nghĩa là còn thiếu bước ghi trong cột.
+
+| Tiêu chí | Cách đã kiểm | Trạng thái |
 |---|---|---|
-| 1.3.1 Thông tin và quan hệ | Test cấu trúc bảng; cây accessibility trong Edge | Chưa làm |
-| 1.4.1 Không chỉ dùng màu | Dòng được chọn và cột sort có chữ hoặc dấu; xem ảnh | Chưa làm |
-| 1.4.3 Tương phản | Script `getComputedStyle` (F1) và Lighthouse | Chưa làm |
-| 1.4.10 Reflow | Thu cửa sổ về 320 px, kiểm không cuộn ngang trang (chỉ bảng cuộn) | Chưa làm |
-| 1.4.11 Tương phản phi văn bản | Viền nút, focus, viền ô (F1) | Chưa làm |
-| 2.1.1 Bàn phím | Test jsdom (D5, D6) và thử tay (F3) | Chưa làm |
-| 2.4.3 Thứ tự focus | Test `activeElement` sau sort/lọc/trang; thử tay | Chưa làm |
-| 2.4.7 Focus nhìn thấy | `:focus-visible`; xem ảnh | Chưa làm |
-| 2.4.11 Focus không bị che | Kiểm khi cuộn bảng và khi tiêu đề dính (nếu có) | Chưa làm |
-| 2.5.8 Vùng bấm 24×24 | Đo `getBoundingClientRect` (F1) | Chưa làm |
-| 3.3.2 Nhãn | `<label for>` của ô lọc; test | Chưa làm |
-| 4.1.2 Tên, vai trò, giá trị | `aria-label` bảng, `aria-sort`, `aria-selected`, `aria-current` | Chưa làm |
-| 4.1.3 Thông báo trạng thái | Test `#status`; NVDA (F3) | Chưa làm |
+| 1.3.1 Thông tin và quan hệ | Test jsdom cấu trúc `table > thead > th[scope=col]`, không role thừa, không div trong bảng; cây accessibility trong Edge (grid, columnheader, searchbox, navigation) | Một phần: chưa nghe bằng trình đọc màn hình |
+| 1.4.1 Không chỉ dùng màu | Dòng chọn có vạch, ✓ và chữ đậm; trang hiện tại có gạch chân; nút vô hiệu có viền nét đứt; cột sort có ▲/▼; đã xem ảnh `grid-selected-focus.png` | Một phần: mình tự xem ảnh, cần bạn xác nhận bằng mắt |
+| 1.4.3 Tương phản tối thiểu | `getComputedStyle` trong Edge (mục 6.1): mọi chữ từ 7.92 trở lên | Một phần: chưa đo chữ trên nền hover bằng `getComputedStyle` (từ CSS: 15.82); chưa có Lighthouse |
+| 1.4.10 Reflow | Đo ở 320 px trong Edge: trang không cuộn ngang, chỉ bảng cuộn | Một phần: chưa thử zoom 400% bằng tay |
+| 1.4.11 Tương phản phi văn bản | Viền control 6.69, vòng focus 9.96 và 8.35 | Một phần: nút sort không có viền, chỉ có chữ và gạch chân nét chấm; mình xem đó là đủ nhận biết (chữ tự nhận biết) nhưng cần bạn xác nhận |
+| 2.1.1 Bàn phím | Test jsdom và phím thật trong Edge (mũi tên, Home, End, Enter, Space, Next bằng Enter) | Một phần: chưa thử Tab vào và ra bằng tay, chưa Ctrl+Home/End trong Edge |
+| 2.4.3 Thứ tự focus | Test `activeElement` sau sort, lọc, sang trang; Edge: focus giữ ở nút sort, ô lọc, Next | Một phần: chưa thử tay |
+| 2.4.7 Focus nhìn thấy | `:focus-visible` khớp sau phím di chuyển trong Edge; vòng focus vẽ vào trong ô; thấy trong ảnh | Một phần: chưa kiểm sau khi Tab từ ngoài vào |
+| 2.4.11 Focus không bị che | Không có tiêu đề dính hay lớp phủ trong thiết kế | Một phần: chưa thử khi cuộn ngang bảng ở màn hẹp bằng tay |
+| 2.5.3 Nhãn trong tên | Nút số trang có `aria-label="Page 2"` chứa chữ hiển thị "2" | Đã kiểm bằng test |
+| 2.5.8 Vùng bấm 24×24 | Đo `getBoundingClientRect` trong Edge: mọi control cao từ 40 px, ô lọc 384×40, nút số trang 40×40 | Đã kiểm cho các control đo ở mục 6.1 |
+| 3.3.2 Nhãn hoặc hướng dẫn | `<label for>` hiển thị; cây accessibility cho `searchbox "Filter rows"` | Đã kiểm |
+| 4.1.2 Tên, vai trò, giá trị | Cây accessibility: tên của grid, nút trang, nút Previous (disabled); test `aria-sort`, `aria-selected`, `aria-current` | Một phần: chưa xem thuộc tính sort và selected trong cây accessibility của Edge |
+| 4.1.3 Thông báo trạng thái | Test và Edge: nội dung `#status` đổi đúng sau sort, lọc, chọn | Một phần: chưa nghe bằng NVDA hoặc Narrator |
+
+Chưa làm: Lighthouse (F2), trình đọc màn hình (F3), Firefox và Safari (CSS `content: '✓ ' / ''` có dòng dự phòng cho trình duyệt không hiểu cú pháp alt), zoom 400%.
 
 ## 8. Rủi ro và điểm cần giải thích khi bảo vệ
 
-- **Mỗi phím mũi tên render lại cả bảng.** Engine thay cả cây bằng `replaceChildren`. Với 10 dòng thì không đáng kể, nhưng focus phải được trả lại bằng `getElementById(...).focus()` ngay sau render; thiếu bước đó thì focus rơi về `<body>`. Có test D5 bắt lỗi này.
+- **Mỗi phím mũi tên render lại cả bảng.** Engine thay cả cây bằng `replaceChildren`. Với 10 dòng thì không đáng kể; nếu thầy đổi `PAGE_SIZE` lên vài trăm sẽ thấy chậm. Focus phải được trả lại bằng `getElementById(...).focus()` ngay sau render; bỏ dòng đó thì 4 test fail (đã thử phá).
 - **`writeFocus` khôi phục focus cũ, không phải ô đích.** Đây là lý do handler phải tự gọi `.focus()`. Nếu thầy hỏi vì sao không sửa engine: giữ engine nhỏ, quyết định nằm ở một chỗ (handler của grid).
 - **`aria-selected={false}` bị `createElement` bỏ.** `applyProp` bỏ qua giá trị `false`; phải truyền chuỗi `'false'`.
-- **Nhãn dùng `for`, không dùng `htmlFor`.** Engine chỉ ánh xạ `className → class`; `htmlFor` sẽ thành attribute sai.
-- **`role="grid"` trái luật "không role thừa".** Đề bắt buộc bất biến; ngoại lệ đã ghi ở mục 4. `aria-sort` chỉ gắn một cột, khác gợi ý "`none`" ở bản nháp cũ (APG khuyến nghị vậy).
+- **Nhãn dùng `for`, không dùng `htmlFor`.** Engine chỉ ánh xạ `className → class`.
+- **`overflow-x: auto` cắt outline vẽ ra ngoài.** Vì vậy vòng focus của ô dùng `outline-offset` âm. Nếu ai đổi về giá trị dương, vòng focus ở ô sát mép bị cắt (vi phạm 2.4.7); có test kiểm chuỗi CSS.
+- **`role="grid"` trái luật "không role thừa".** Đề bắt buộc bất biến; ngoại lệ ghi ở mục 4. `aria-sort` chỉ gắn một cột (khuyến nghị của APG), không gắn `none` cho các cột còn lại.
+- **Alt rỗng của dấu ✓.** Cú pháp `content: '✓ ' / ''` chưa chắc được mọi trình duyệt hiểu; có dòng `content` thường đứng trước làm dự phòng. Khi dự phòng chạy, một số trình đọc màn hình có thể đọc thêm "check mark" bên cạnh `aria-selected`. Chưa kiểm.
+- **Thông báo giống hệt lần trước** (ví dụ hai lần liên tiếp "1 row selected") có thể không được đọc lại. Chưa kiểm với trình đọc màn hình; nếu gặp ở F3, xoá nội dung `#status` trước khi ghi.
 - **Lighthouse 100 không đồng nghĩa WCAG.** Công cụ tự động chỉ phủ một phần; F3 là phần kiểm tay bắt buộc.
-- **Phản hồi trình đọc màn hình khác nhau** giữa NVDA, JAWS, Narrator; chỉ ghi kết quả của công cụ đã thử.
-- **Chuỗi thông báo giống hệt lần trước** có thể không được đọc lại; nếu gặp khi thử (F3), xoá nội dung `#status` trước khi ghi.
+- **Đo bằng Edge headless chưa phải DevTools trên màn hình thật.** Công thức và giá trị tính được giống nhau, nhưng ảnh nộp bài và điểm Lighthouse vẫn do bạn chạy.
+- **Hai lỗi TypeScript nhẹ ở `grid-sort.js`** (bạn đã thấy trong VS Code): chưa sửa theo yêu cầu. VS Code diagnostics phía mình trả rỗng vì chỉ phân tích file đang mở. Nghi ngờ: `SORT_CYCLE` bị suy ra kiểu `string[]` thay vì `SortDir[]`; cần bạn dán nội dung lỗi để xác nhận trước khi sửa.
 
 ## 9. Câu hỏi còn mở và giả định
 
 | Câu hỏi | Mặc định đang dùng | Trạng thái |
 |---|---|---|
-| `Enter` chọn, `Space` bật/tắt nghĩa là gì | `Enter` = `onRowSelect` cho dòng; `Space` = bật/tắt `aria-selected` (chọn nhiều) | Giả định, chờ bạn xác nhận |
-| Số commit tối thiểu | Một commit mỗi task (khoảng 20) | Đề chưa nói |
+| `Enter` chọn, `Space` bật/tắt nghĩa là gì | Enter: chọn riêng dòng và gọi `onRowSelect`; Space: bật/tắt trong tập chọn nhiều | Giả định, chờ bạn xác nhận |
+| Số commit tối thiểu | Một commit mỗi task; D1 đến D6 gộp một commit | Đề chưa nói |
 | `AI_FAILURE_AUDIT.md` cho bài này | Không bắt buộc riêng; ghi lỗi AI gặp ở F5 nếu có | Chờ bạn xác nhận |
 | Công cụ kiểm tra tự động | Chỉ Lighthouse trong DevTools; không cài `axe-core` hay `lighthouse` CLI, `package.json` không đổi | Đã chốt |
 | Kích thước dữ liệu và cỡ trang | 240 dòng, 10 dòng mỗi trang | Giả định |
@@ -215,4 +266,70 @@ Mỗi dòng là một task, một commit. Các nhóm B đến D độc lập v�
 
 ## 10. Ghi chú nguồn
 
-Đề gốc: slide Homework 1 (đã chép ở mục 2 và 3). Chuẩn WCAG: [project-rules mục 8](../docs/project-rules.md). Mẫu tương tác: ARIA Authoring Practices Guide, các mẫu "Data Grid" và "Sortable Table" (chưa tra lại bản mới nhất; đối chiếu khi làm D2 và D5).
+Đề gốc: slide Homework 1 (đã chép ở mục 2 và 3). Chuẩn WCAG: [project-rules mục 8](../docs/project-rules.md). Mẫu tương tác: ARIA Authoring Practices Guide, các mẫu "Data Grid" và "Sortable Table" (chưa tra lại bản mới nhất; đối chiếu khi cần giải thích lúc bảo vệ).
+
+## 11. Hướng dẫn kiểm tra tay (F2, F3)
+
+Phần này là việc của bạn vì ảnh chụp Lighthouse và trình đọc màn hình không do AI tạo được. Làm xong thì báo kết quả (kể cả mục không đạt) để cập nhật mục 7 và tick F2, F3.
+
+### 11.1 F2 — Lighthouse
+
+Chuẩn bị:
+
+```bash
+python -m http.server 8765
+```
+
+Mở **cửa sổ ẩn danh** của Edge hoặc Chrome (để extension không làm lệch điểm), vào `http://127.0.0.1:8765/Homework1_Lab02/index.html`, nhấn F12, chọn tab Lighthouse, tick **Accessibility** và **Best Practices**.
+
+| # | Trạng thái trang | Thiết bị | Ảnh lưu vào `evidence/` |
+|---|---|---|---|
+| 1 | Vừa tải, chưa thao tác | Desktop | `lighthouse-desktop-initial.png` |
+| 2 | Vừa tải, chưa thao tác | Mobile | `lighthouse-mobile-initial.png` |
+| 3 | Sau khi gõ "eng" vào ô lọc và bấm sort cột Salary | Desktop | `lighthouse-desktop-filtered.png` |
+| 4 | Sang trang cuối (bấm Next nhiều lần) | Desktop | `lighthouse-desktop-lastpage.png` |
+
+Mỗi ảnh phải thấy điểm Accessibility, Best Practices và thiết bị. Nếu có mục không đạt, mở mục đó, chụp phần mô tả và gửi cho mình; mình sửa bằng commit riêng rồi bạn chạy lại. Điểm ở trạng thái 3 và 4 là bằng chứng quan trọng vì Lighthouse chỉ kiểm cây DOM tại lúc chạy.
+
+### 11.2 F3 — Bàn phím và trình đọc màn hình
+
+Chỉ dùng bàn phím (không chuột) với `http://127.0.0.1:8765/Homework1_Lab02/index.html`:
+
+| # | Thao tác | Kết quả đúng |
+|---|---|---|
+| 1 | Tab từ đầu trang | Tới ô lọc, rồi vào bảng ở ô tiêu đề đầu tiên (nút "Name"); một lần Tab nữa ra khỏi bảng tới Previous/số trang |
+| 2 | Mũi tên Xuống, Phải, Trái, Lên; Home, End; Ctrl+Home, Ctrl+End | Vòng focus di chuyển đúng ô, thấy rõ, không cuộn trang |
+| 3 | Enter trên một ô dữ liệu | Dòng được chọn (vạch xanh, ✓, chữ đậm); dòng "Last selected with Enter" đổi |
+| 4 | Space trên ô dữ liệu khác | Thêm dòng thứ hai vào vùng chọn; Space lần nữa bỏ chọn |
+| 5 | Ở nút "Name" bấm Enter, rồi Space | Sắp xếp tăng, rồi giảm; focus vẫn ở nút |
+| 6 | Gõ vào ô lọc, rồi dùng Tab | Số dòng đổi, thông báo "Showing N of 240 rows" |
+| 7 | Tab tới số trang và Next, bấm Enter | Trang đổi, focus không rơi về đầu trang |
+
+Trình đọc màn hình (NVDA miễn phí, hoặc Narrator: Windows + Ctrl + Enter), ghi lại **câu mà nó đọc** cho từng mục, kể cả khi sai:
+
+| # | Thao tác | Cần nghe |
+|---|---|---|
+| 1 | Vào bảng bằng Tab | Tên bảng "Employees", số dòng/cột nếu có |
+| 2 | Mũi tên Xuống một ô | Giá trị ô, tên cột, vị trí dòng (ví dụ "row 3 of 241") |
+| 3 | Sort cột Name | "Sorted by Name, ascending" và trạng thái sắp xếp của cột |
+| 4 | Gõ "eng" vào ô lọc | "Showing ... of 240 rows" |
+| 5 | Space chọn một dòng | "1 row selected"; có đọc "selected" ở dòng không |
+| 6 | Bấm một số trang | "Page N of 24" |
+| 7 | Dòng được chọn có đọc thêm "check mark" không | Ghi có hoặc không |
+
+### 11.3 Sau khi làm xong
+
+1. Báo kết quả từng mục kèm tên file ảnh. Mình cập nhật mục 7 (không ghi "đạt WCAG" nếu còn mục "Một phần") và tick F2, F3.
+2. Export prompt log của bài này vào `docs/prompt_logs/`.
+3. Commit (mình chạy khi bạn xác nhận), theo thứ tự:
+
+```bash
+git add -u Homework1_Lab02/src
+git commit -m "refactor(hw1): group sources into engine, grid and data folders"
+git add Homework1_Lab02/index.html Homework1_Lab02/main.js Homework1_Lab02/main.test.js Homework1_Lab02/style.css Homework1_Lab02/src/data/employee-columns.js
+git commit -m "feat(ui): add grid page, entry point and styles"
+git add Homework1_Lab02/evidence Homework1_Lab02/TASK_DECOMPOSITION.md
+git commit -m "docs(hw1): record browser measurements and wcag status"
+```
+
+Mỗi commit kèm dòng `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.

@@ -1,0 +1,190 @@
+{
+  "table rendered": {
+    "ok": true,
+    "detail": ""
+  },
+  "arrows+Home/End move focus (real keys)": {
+    "ok": true,
+    "detail": "data-grid-r1-c0 > data-grid-r1-c1 > data-grid-r2-c1 > data-grid-r2-c0 > data-grid-r1-c0 > data-grid-r1-c4 > data-grid-r1-c0"
+  },
+  "focus-visible matches after keyboard move": {
+    "ok": true,
+    "detail": ""
+  },
+  "exactly one tab stop in table": {
+    "ok": true,
+    "detail": "1"
+  },
+  "Space selects row (aria-selected=true)": {
+    "ok": true,
+    "detail": ""
+  },
+  "focus stays after Space": {
+    "ok": true,
+    "detail": "data-grid-r2-c0"
+  },
+  "Enter selects only that row": {
+    "ok": true,
+    "detail": ""
+  },
+  "Enter reports via onRowSelect": {
+    "ok": true,
+    "detail": "Last selected with Enter: Chi Pham, Finance"
+  },
+  "two rows selected (Enter row + Space row)": {
+    "ok": true,
+    "detail": ""
+  },
+  "arrow does not scroll the page": {
+    "ok": true,
+    "detail": "0"
+  },
+  "Enter on sort button sorts + keeps focus": {
+    "ok": true,
+    "detail": "data-grid-r0-c0"
+  },
+  "Space on sort button toggles to descending": {
+    "ok": true,
+    "detail": ""
+  },
+  "status announces sort": {
+    "ok": true,
+    "detail": "Sorted by Name, descending"
+  },
+  "typing in filter keeps value, caret and focus": {
+    "ok": true,
+    "detail": "{\"v\":\"engi\",\"s\":4,\"a\":true}"
+  },
+  "typing mid-string inserts at caret (no reversed text)": {
+    "ok": true,
+    "detail": "{\"v\":\"enXgi\",\"s\":3}"
+  },
+  "filter status text": {
+    "ok": true,
+    "detail": "Showing 48 of 240 rows"
+  },
+  "Next via keyboard: page 2 current, focus kept": {
+    "ok": true,
+    "detail": ""
+  },
+  "320px: page has no horizontal scroll, only the table scrolls": {
+    "ok": true,
+    "detail": "{\"page\":320,\"view\":320,\"tableScroll\":true}"
+  },
+  "measure": [
+    {
+      "sel": "h1",
+      "text": 17.4,
+      "border": "-",
+      "w": 1024,
+      "h": 42
+    },
+    {
+      "sel": ".hint",
+      "text": 8.86,
+      "border": "-",
+      "w": 1024,
+      "h": 24
+    },
+    {
+      "sel": "#status",
+      "text": 8.86,
+      "border": "-",
+      "w": 1024,
+      "h": 24
+    },
+    {
+      "sel": "th",
+      "text": 15.25,
+      "border": "-",
+      "w": 213,
+      "h": 57
+    },
+    {
+      "sel": "th button",
+      "text": 15.25,
+      "border": "-",
+      "w": 83,
+      "h": 40
+    },
+    {
+      "sel": "tbody td",
+      "text": 17.4,
+      "border": "-",
+      "w": 213,
+      "h": 42
+    },
+    {
+      "sel": "#data-grid-filter",
+      "text": 17.4,
+      "border": 6.69,
+      "w": 384,
+      "h": 40
+    },
+    {
+      "sel": "label",
+      "text": 17.4,
+      "border": "-",
+      "w": 73,
+      "h": 24
+    },
+    {
+      "sel": "#data-grid-prev",
+      "text": 7.92,
+      "border": 6.69,
+      "w": 88,
+      "h": 40
+    },
+    {
+      "sel": "#data-grid-next",
+      "text": 17.4,
+      "border": 6.69,
+      "w": 61,
+      "h": 40
+    },
+    {
+      "sel": "#data-grid-page-1",
+      "text": 9.96,
+      "border": 9.96,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "sel": "#data-grid-page-2",
+      "text": 17.4,
+      "border": 6.69,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "sel": ".grid-empty",
+      "missing": true
+    }
+  ],
+  "states": {
+    "current": 9.96,
+    "disabled": 7.92,
+    "focusRingVsWhite": 9.96,
+    "focusRingVsSelectedRow": 8.35
+  },
+  "axSample": [
+    "status: \"\"",
+    "searchbox: \"Filter rows\"",
+    "grid: \"Employees\"",
+    "navigation: \"Pagination\"",
+    "button: \"Previous\" disabled=true",
+    "button: \"Page 1\"",
+    "button: \"Page 2\"",
+    "button: \"Page 3\"",
+    "button: \"Page 4\"",
+    "button: \"Page 5\"",
+    "button: \"Next\"",
+    "columnheader: \"Name\"",
+    "columnheader: \"Department\"",
+    "columnheader: \"Role\""
+  ],
+  "no console errors or warnings": {
+    "ok": true,
+    "detail": ""
+  }
+}
