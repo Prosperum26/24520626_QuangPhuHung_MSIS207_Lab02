@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDataGrid } from './data-grid.js';
-import { EMPLOYEES } from './employees.js';
-import { renderApp, resetCursor, setRenderer, setupEventDelegation, stateStore } from './reactive-engine.js';
+import { EMPLOYEES } from '../data/employees.js';
+import { renderApp, resetCursor, setRenderer, setupEventDelegation, stateStore } from '../engine/reactive-engine.js';
 
 beforeEach(() => {
   stateStore.length = 0;

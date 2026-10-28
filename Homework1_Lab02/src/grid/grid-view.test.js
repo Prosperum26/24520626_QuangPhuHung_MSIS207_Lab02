@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EMPLOYEES } from './employees.js';
+import { EMPLOYEES } from '../data/employees.js';
 import { deriveView } from './grid-view.js';
 
 const columns = [

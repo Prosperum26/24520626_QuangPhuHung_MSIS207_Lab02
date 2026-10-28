@@ -6,8 +6,8 @@ import { pageWindow } from './grid-page.js';
 import { toggleSelection } from './grid-selection.js';
 import { nextSort } from './grid-sort.js';
 import { deriveView } from './grid-view.js';
-import { createElement } from './mini-react.js';
-import { useState } from './reactive-engine.js';
+import { createElement } from '../engine/mini-react.js';
+import { useState } from '../engine/reactive-engine.js';
 
 /** Tiền tố id của mọi phần tử trong grid; engine khôi phục focus theo id nên id phải ổn định. */
 const GRID_ID = 'data-grid';
@@ -175,7 +175,7 @@ function describeSelection(count) {
  * nên không gắn role cho tr, th, td (tránh role thừa).
  * @template {Record<string, unknown>} T
  * @param {import('./grid-contract.js').DataGridProps<T>} props
- * @returns {() => import('./mini-react.js').VNode}
+ * @returns {() => import('../engine/mini-react.js').VNode}
  */
 export function createDataGrid(props) {
   const { data, columns, ariaLabel, onRowSelect } = props;
