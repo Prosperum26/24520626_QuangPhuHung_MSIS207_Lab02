@@ -1,7 +1,7 @@
 # Homework 2 — Task Decomposition
 
 > Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rules](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS: [Homework 1](../Homework1_Lab02/TASK_DECOMPOSITION.md).
-> Trạng thái (2026-10-28): **nhóm A và B đã làm và verify bằng test (32 test, chưa commit)**. Nhóm C đến F chưa làm. Plan đã được bạn duyệt; thanh trượt âm lượng đã chốt (task C4).
+> Trạng thái (2026-10-28): **nhóm A, B, C, D đã làm và verify bằng test** (A và B đã commit; C và D mới viết, chưa commit; HW2 hiện 109 + 32 = 141 test). Nhóm E và F chưa làm. Plan đã được bạn duyệt; thanh trượt âm lượng đã chốt (task C4).
 > Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task.
 
 ## 1. Thông tin chung
@@ -29,7 +29,7 @@ Homework2_Lab02/
   src/
     queue/              audio-task.js, audio-task-queue.js
     audio/              track-loader.js, audio-player.js, analyser-reader.js
-    visual/             bars.js (tính chiều cao cột), visualizer.js (vòng rAF)
+    visual/             bars.js (tính chiều cao cột), visualizer.js (vòng rAF), motion-policy.js (khi nào chạy hiệu ứng)
 ```
 
 Quy tắc phụ thuộc:
@@ -155,30 +155,36 @@ Mỗi task là một commit atomic, trừ khi ghi chú khác. Test viết trư�
 
 ### Nhóm C — Âm thanh (test bằng đối tượng giả)
 
-- [ ] **C1 `track-loader`.** `createTrackLoader({ audioContext, fetchImpl })` trả `LoadTrack`: `fetch(url, { signal })`; ném nếu `!response.ok`; `arrayBuffer()`; gọi `onPhase('decoding')`; `decodeAudioData`; kiểm `signal.aborted` ngay sau mỗi `await`.
+> Kiểm chứng chung nhóm C và D: 6 file test mới, viết trước (6 file đỏ vì thiếu module), rồi cài; lần đầu 108 pass. Sau đó phá cố ý 22 lỗi, **2 lỗi lọt** (loader bỏ kiểm abort sau `fetch`; `computeBars` để nhóm rỗng, vì `NaN` bị `Uint16Array` đổi thầm lặng thành 0). Đã bổ sung 2 test, chạy lại cả 2 lỗi thì bị bắt, rồi khôi phục. Kết quả cuối: HW2 109 test pass (nhóm C và D), toàn repo 625 test pass, quét từ cấm (`var`, `innerHTML`, `keypress`, `onclick=`, `Math.random`, `Date.now`) không có kết quả. Chưa chạy typecheck TypeScript; chưa chạy thứ gì trong trình duyệt thật (Web Audio, rAF, canvas) nên **chưa biết** mã chạy đúng với `AudioContext` thật, việc đó thuộc F1.
+
+- [x] **C1 `track-loader`.** `createTrackLoader({ audioContext, fetchImpl })` trả `LoadTrack`: `fetch(url, { signal })`; ném nếu `!response.ok`; `arrayBuffer()`; gọi `onPhase('decoding')`; `decodeAudioData`; kiểm `signal.aborted` ngay sau mỗi `await`.
   - Test: fake `fetch` và fake context; hủy trước `fetch` xong; hủy giữa `arrayBuffer` và `decode`; hủy sau `decode` xong (kết quả bị bỏ, throw `AbortError`); HTTP 404 ném lỗi thường; `onPhase` được gọi đúng một lần.
   - Commit: `feat(audio): load and decode tracks with abort support`.
-- [ ] **C2 `analyser-reader`.** `createAnalyser(audioContext, fftSize)` kiểm 256 hoặc 512; `createFrequencyReader(analyser)` trả `{ read(): Uint8Array, binCount }` với một mảng dùng lại.
+  - Lệch plan: dùng `signal.throwIfAborted()` thay vì tự ném lỗi (jsdom hỗ trợ, test chạy được). Thêm test "phản hồi đến sau khi đã hủy thì không đọc body". Test "hủy sau khi decode xong" kiểm kết quả bị bỏ (loader ném `AbortError`, không trả buffer).
+- [x] **C2 `analyser-reader`.** `createAnalyser(audioContext, fftSize)` kiểm 256 hoặc 512; `createFrequencyReader(analyser)` trả `{ read(): Uint8Array, binCount }` với một mảng dùng lại.
   - Test: `fftSize` 128 hoặc 1024 ném lỗi; `read()` trả **cùng một tham chiếu** `Uint8Array` ở hai lần gọi; `binCount === fftSize / 2`; mỗi lần `read` gọi `getByteFrequencyData` đúng một lần.
   - Commit: `feat(audio): add analyser with reusable frequency buffer`.
-- [ ] **C3 `audio-player`.** `createPlayer({ audioContext, analyser })` có `play(buffer, { onEnded })` và `stop()`; nối `source → analyser → destination`; `resume()` nếu context `suspended`.
+- [x] **C3 `audio-player`.** `createPlayer({ audioContext, analyser })` có `play(buffer, { onEnded })` và `stop()`; nối `source → analyser → destination`; `resume()` nếu context `suspended`.
   - Test (node giả đếm lời gọi): `stop()` gọi `source.stop` và `source.disconnect` đúng một lần; `stop()` lần hai không ném lỗi và không gọi thêm; `onended` tự dọn và gọi `onEnded`; `play()` thứ hai dừng nguồn đầu; sau `stop`, `source.onended === null`; **vòng 200 lần** `play`/`stop` thì số node tạo ra bằng số node đã `stop` và `disconnect` (kiểm rò rỉ ở mức mã).
   - Commit: `feat(audio): implement player with explicit node cleanup`.
-- [ ] **C4 Âm lượng (1.4.2).** `audio-player` nối `source → analyser → gain → destination` (analyser đứng **trước** gain để phổ không phụ thuộc âm lượng); `setVolume(value)` kẹp trong `[0, 1]`, đổi bằng `gain.setTargetAtTime` để không nghe tiếng lách tách; giá trị ban đầu 1.
+  - Quyết định đã có test: `play()` là hàm `async`; `resume()` được gọi **trước mọi `await`** để còn nằm trong cử chỉ của người dùng. `onEnded` chỉ chạy khi bản nhạc tự hết, không chạy khi `stop()` hay khi `play()` khác thay thế (người gọi đã biết mình vừa dừng). Hai `play()` gọi sát nhau vẫn chỉ để lại một node sống. Vòng 200 lần `play`/`stop` và 200 lần `play` thay nhau rồi một lần `stop`: mọi node đều `stop` và `disconnect` đúng một lần (kiểm bằng node giả, **chưa phải** heap snapshot thật, việc đó là F2).
+- [x] **C4 Âm lượng (1.4.2).** `audio-player` nối `source → analyser → gain → destination` (analyser đứng **trước** gain để phổ không phụ thuộc âm lượng); `setVolume(value)` kẹp trong `[0, 1]`, đổi bằng `gain.setTargetAtTime` để không nghe tiếng lách tách; giá trị ban đầu 1.
   - Test (node giả): `setVolume(2)` thành 1, `setVolume(-1)` thành 0, `NaN` ném lỗi; thứ tự nối đúng; âm lượng giữ nguyên qua các lần `play` liên tiếp; `stop()` không đổi âm lượng.
   - Commit: `feat(audio): add volume control through a gain node`.
 
 ### Nhóm D — Bộ hiển thị
 
-- [ ] **D1 `bars.js` (hàm thuần).** `computeBars(frequencyData, barCount, height)` gộp bin thành `barCount` cột (lấy trung bình mỗi nhóm), trả mảng chiều cao nguyên trong `[0, height]`; ghi vào mảng cho sẵn để không cấp phát mỗi khung hình.
+- [x] **D1 `bars.js` (hàm thuần).** `computeBars(frequencyData, barCount, height)` gộp bin thành `barCount` cột (lấy trung bình mỗi nhóm), trả mảng chiều cao nguyên trong `[0, height]`; ghi vào mảng cho sẵn để không cấp phát mỗi khung hình.
   - Test: đầu vào toàn 0 cho toàn 0; toàn 255 cho `height`; `barCount` không chia hết số bin vẫn phủ hết bin, không chỉ số ngoài mảng; không sửa `frequencyData`; dùng lại mảng đầu ra.
   - Commit: `feat(visual): compute bar heights from frequency data`.
-- [ ] **D2 `visualizer.js` vòng rAF.** `createVisualizer({ canvas, read, raf, caf, onFrame? })` có `start()`, `stop()`, `isRunning`; `start()` hai lần chỉ có một vòng; `stop()` gọi `caf` với id hiện tại; vẽ bằng `fillRect`.
+- [x] **D2 `visualizer.js` vòng rAF.** `createVisualizer({ canvas, read, raf, caf, onFrame? })` có `start()`, `stop()`, `isRunning`; `start()` hai lần chỉ có một vòng; `stop()` gọi `caf` với id hiện tại; vẽ bằng `fillRect`.
   - Test (rAF giả chạy tay từng khung): `start` rồi n khung thì `read` gọi n lần; `stop` rồi không còn khung nào; `start` hai lần chỉ lên lịch một khung; không tạo object mới mỗi khung (kiểm `read` trả cùng tham chiếu và hàm vẽ không nhận mảng mới).
   - Commit: `feat(visual): add requestAnimationFrame visualizer loop`.
-- [ ] **D3 Tạm dừng theo tab ẩn và `prefers-reduced-motion`.** Khi `document.hidden` thì `stop()`; khi hiện lại và đang phát thì `start()`. Khi `reduced-motion: reduce` thì không tự chạy hiệu ứng; người dùng vẫn bật được bằng nút.
+  - Lệch plan (D2): thêm `clear()` để xóa canvas khi bản nhạc hết. Nếu việc đọc dữ liệu ném lỗi thì vòng dừng hẳn và lỗi được ném ra, thay vì lặp lỗi 60 lần mỗi giây. Bỏ qua cột cao 0 (không gọi `fillRect`). Lời hứa "không tạo object mới mỗi khung" **chỉ được kiểm một phần**: test chứng minh `read` dùng lại cùng mảng (C2), còn việc không cấp phát trong `draw` chưa có test tự động; chứng cứ phải lấy từ Performance panel (F3).
+- [x] **D3 Tạm dừng theo tab ẩn và `prefers-reduced-motion`.** Khi `document.hidden` thì `stop()`; khi hiện lại và đang phát thì `start()`. Khi `reduced-motion: reduce` thì không tự chạy hiệu ứng; người dùng vẫn bật được bằng nút.
   - Test: `visibilitychange` giả; `matchMedia` giả trả `matches: true` và `false`.
   - Commit: `feat(visual): pause on hidden tab and respect reduced motion`.
+  - Lệch plan: tách thành module riêng `motion-policy.js` (`visualizer.js` không biết `document`). API: `sync()`, `setEffectEnabled(bool)`, `effectEnabled`, `dispose()`. Hệ thống đổi cài đặt "giảm chuyển động" giữa phiên thì hiệu ứng theo cài đặt mới (ghi đè lựa chọn trước đó của người dùng). `main.js` phải gọi `sync()` mỗi khi bắt đầu hoặc kết thúc phát.
 
 ### Nhóm E — Trang và kiểu dáng
 
