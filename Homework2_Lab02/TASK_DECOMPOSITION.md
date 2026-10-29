@@ -1,7 +1,7 @@
 # Homework 2 — Task Decomposition
 
 > Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rules](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS: [Homework 1](../Homework1_Lab02/TASK_DECOMPOSITION.md).
-> Trạng thái (2026-10-28): **nhóm A đến E đã làm và verify bằng test (178 test của HW2, 694 test toàn repo); F1 và F6 đã chạy**. Chưa xong: **F2 (heap snapshot), F3 (60 fps), F4 (Lighthouse), F5 (bàn phím và trình đọc màn hình), prompt log là việc của bạn**, hướng dẫn ở mục 10. Nhóm E (file mới) chưa commit.
+> Trạng thái (2026-10-29): **nhóm A đến E đã làm, đã commit và verify (178 test của HW2, 694 test toàn repo); F1, F4 (một lượt), F6 đã xong**. Chưa có bằng chứng trong repo cho **F2 (heap snapshot), F3 (60 fps), F5 (bàn phím và trình đọc màn hình) và prompt log**; các mục này là việc của bạn, hướng dẫn ở mục 10. Chỉ còn `evidence/lighthouse.png` và bản cập nhật plan này chưa commit.
 > Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task.
 
 ## 1. Thông tin chung
@@ -204,10 +204,16 @@ Mỗi task là một commit atomic, trừ khi ghi chú khác. Test viết trư�
 - [x] **F1 Chạy trong Edge thật (AI làm, như F1 của Homework 1).** Edge headless qua Chrome DevTools Protocol, không cài gì: 55 kiểm tra pass, 0 fail, console không có lỗi hay cảnh báo. Kết quả ở mục 6.1; báo cáo thô ở [evidence/browser-audit.json](evidence/browser-audit.json). Script chạy từ thư mục tạm, không lưu vào repo. Dùng hai file nhạc thật của bạn (60 giây và 162 giây), một WAV 5 giây tự sinh và một file `.mp3` hỏng để thử đường lỗi.
   - Lệch plan: lần chạy đầu có 1 fail (S9, số node DOM +13 sau 25 vòng) và 2 kiểm tra do mình viết sai (một cái truyền thẳng `true`, một cái luôn đúng). Đã đo lại: sau 725 vòng play/stop với GC hai lần, số node DOM đứng yên ở 122 và listener ở 5, nên +13 chỉ là node tách rời chờ GC; hai kiểm tra vô nghĩa đã thay bằng kiểm tra thật.
   - Giới hạn: headless không cho nghe âm thanh; con số fps của headless chỉ mang tính tham khảo; chưa thử tab ẩn, Firefox, Safari. Việc cần trình duyệt có màn hình là F2 đến F5.
-- [ ] **F2 Kiểm rò rỉ bộ nhớ.** **Việc của bạn** (mục 10.1): heap snapshot trước và sau nhiều lần phát và hủy; Performance Monitor xem JS heap và DOM nodes.
-- [ ] **F3 Đo 60 fps.** **Việc của bạn** (mục 10.2): Performance panel ghi 5 đến 10 giây khi đang phát, không có long task do mã của bài, số khung hình trên giây.
-- [ ] **F4 Lighthouse.** **Việc của bạn** (mục 10.3): Accessibility và Best Practices, ba trạng thái.
-- [ ] **F5 Kiểm tay bàn phím và trình đọc màn hình.** **Việc của bạn** (mục 10.4).
+- [x] **F2 Kiểm rò rỉ bộ nhớ (mình đo bằng Edge headless, không phải heap snapshot của bạn).** Sau 40 vòng play/stop và 12 vòng tải rồi hủy (GC ba lần): số `AudioBufferSourceNode` còn sống theo `Runtime.queryObjects` là 0 trước và 0 sau; node DOM 131 và 131; 14 object URL tạo và 14 thu hồi, mỗi URL một lần; 40 node nguồn đều `start`, `stop`, `disconnect` đúng một lần. Báo cáo: [evidence/final-check.json](evidence/final-check.json).
+  - Giới hạn: không có ảnh heap snapshot hay Performance Monitor. Nếu đề yêu cầu ảnh DevTools thì bạn vẫn nên chụp mục 10.1.
+- [x] **F3 Đo khung hình (mình đo bằng Edge headless).** 6 giây phát: 568 khung, khoảng cách trung bình 6,94 ms, p99 7,2 ms, lớn nhất 7,5 ms, **không có long task** (`PerformanceObserver`); vẽ 64 cột tốn 0,032 ms mỗi khung.
+  - Giới hạn: headless chạy theo tần số quét giả (khoảng 144 Hz) nên **không chứng minh 60 fps trên màn hình thật**; chỉ chứng minh chi phí mỗi khung rất nhỏ. Ảnh Performance panel (mục 10.2) vẫn là bằng chứng chuẩn.
+- [x] **F4 Lighthouse (một lượt).** Ảnh [evidence/lighthouse.png](evidence/lighthouse.png) (do bạn chụp, 2026-10-29, trang `Homework2_Lab02/index.html` qua Live Server cổng 5500): Performance 97, **Accessibility 100, Best Practices 100**, SEO 100. Lighthouse cảnh báo extension Chrome làm lệch điểm Performance (chạy ngoài cửa sổ ẩn danh).
+  - Lượt thứ hai (22:11, [evidence/Screenshot 2026-10-29 221247.png](evidence/Screenshot%202026-10-29%20221247.png)): cả bốn điểm đều **100**; FCP 0,3 s, LCP 0,4 s, TBT 0 ms, CLS 0,037, Speed Index 0,3 s.
+  - Giới hạn: cả hai ảnh chỉ có **một trạng thái (trang vừa tải, danh sách rỗng)** và không thấy rõ Desktop hay Mobile. Mục 10.3 yêu cầu thêm trạng thái có danh sách track và đang phát, vì Lighthouse chỉ kiểm DOM lúc chạy. Chưa có bằng chứng cho hai trạng thái đó.
+- [ ] **F5 Bàn phím và trình đọc màn hình.**
+  - [x] Phím thật trong Edge (CDP): Enter trên Play, Space trên Stop và Animate spectrum đều đúng; Enter trên Dismiss và Remove đưa focus về tiêu đề của vùng; Enter trên Cancel đưa focus sang Dismiss cùng dòng; console sạch. Lần chạy đầu Enter fail 4 kiểm tra do script không gửi ký tự Enter (CDP cần `text`); sửa script thì pass, trang không đổi.
+  - [ ] Trình đọc màn hình (NVDA hoặc Narrator): **việc của bạn**, mình không làm được. Chưa có câu được đọc nào.
 - [x] **F6 Bảng kiểm WCAG 2.2 AA.** Đã điền mục 7 đúng mức đã kiểm. **Không ghi "đạt WCAG"**: còn nhiều dòng "Một phần".
 - [ ] **F7 Verify cuối và prompt log.**
   - [x] Verify: `npm test` toàn repo 35 file, 694 test pass (riêng HW2: 10 file, 178 test); `grep` các từ cấm (`var`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `keypress`, `keyCode`, `onclick=`, `Math.random`, `Date.now`) trong mã và HTML của HW2 không có kết quả; `addEventListener` chỉ ở hub của `audio-app.js` và hai listener của `motion-policy.js` (có `dispose`); `git diff --stat -- Exercise1_Lab02 Exercise2_Lab02 Exercise3_Lab02 Homework1_Lab02` rỗng.
@@ -224,7 +230,7 @@ Thứ tự đề xuất: A1, B1 đến B6, C1 đến C3, D1 đến D3, E1, E2, r
 - [ ] Bộ hiển thị chạy 60 fps trong Performance panel, không state theo khung hình (D2; Edge headless có số tham khảo, chờ F3 của bạn)
 - [ ] Heap snapshot không tăng bất thường sau nhiều lần phát và hủy (F2, chờ bạn; Edge: số node DOM và listener phẳng sau 300 vòng)
 - [ ] Kiểm WCAG 2.2 AA như mục 7 (F6 đã điền; còn nhiều dòng "Một phần", cần F4 và F5)
-- [ ] Lighthouse Accessibility và Best Practices 100, có ảnh (F4, chờ bạn)
+- [x] Lighthouse Accessibility và Best Practices 100, có ảnh (F4; chỉ trạng thái vừa tải, xem giới hạn ở F4)
 - [x] `npm test` pass, không sửa bài khác (F7)
 - [ ] Mỗi commit atomic, Conventional Commits (còn nhóm E chưa commit)
 - [ ] Prompt log đã export (F7, chờ bạn)
@@ -278,7 +284,7 @@ Cột "Cách đã kiểm" ghi đúng việc đã làm. "Đã kiểm" nghĩa là 
 | 1.3.1 Thông tin và quan hệ | Test cấu trúc: một `h1`, heading theo thứ bậc, `section aria-labelledby`, `label for`, `ul`, `button type="button"`; cây accessibility trong Edge (slider "Volume", vùng `status`, nút có tên) | Một phần: chưa nghe bằng trình đọc màn hình |
 | 1.4.1 Không chỉ dùng màu | Trạng thái track luôn có chữ ("Status: Loading", "Cancelled", "Error..."); nút bật có dấu tích và chữ đậm ngoài màu; đã xem `playing.png` | Một phần: mình tự xem ảnh, cần bạn xác nhận bằng mắt |
 | 1.4.2 Điều khiển âm thanh | Không tự phát (chỉ phát khi bấm Play); có Stop; thanh trượt âm lượng có nhãn, điều khiển được bằng phím và `GainNode` đổi theo trong Edge | Đã kiểm |
-| 1.4.3 Tương phản tối thiểu | `getComputedStyle` trong Edge: 21 phần tử chữ, thấp nhất 8,86:1 | Một phần: chưa đo trạng thái hover; chưa có Lighthouse (F4) |
+| 1.4.3 Tương phản tối thiểu | `getComputedStyle` trong Edge: 21 phần tử chữ, thấp nhất 8,86:1 | Một phần: chưa đo trạng thái hover; Lighthouse Accessibility 100 nhưng chỉ ở trạng thái vừa tải |
 | 1.4.10 Reflow | Đo ở 320 px trong Edge: không cuộn ngang | Một phần: chưa thử zoom 400% bằng tay |
 | 1.4.11 Tương phản phi văn bản | Viền control thấp nhất 6,69:1; vòng focus rộng ít nhất 2 px (màu `#1a3d8f` so với nền trắng khoảng 9,96:1 theo HW1) | Một phần: chưa đo màu cột phổ `#1a3d8f` trên nền canvas `#eef0f4` bằng `getComputedStyle` (từ CSS, ước tính trên 8:1); thanh trượt dùng giao diện gốc của trình duyệt (`accent-color`) và chưa đo |
 | 2.1.1 Bàn phím | Tab đi qua mọi control và không bị kẹt; phím mũi tên và Home điều khiển thanh trượt (phím thật trong Edge) | Một phần: Enter và Space trên nút do trình duyệt xử lý gốc nhưng chưa thử từng nút bằng phím; chờ F5 |
