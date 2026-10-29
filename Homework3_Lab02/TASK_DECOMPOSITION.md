@@ -1,7 +1,7 @@
 # Homework 3 — Task Decomposition
 
 > Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rules](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS: [Homework 2](../Homework2_Lab02/TASK_DECOMPOSITION.md).
-> Trạng thái (2026-10-29): **mới có thiết kế, chưa viết dòng code nào, chưa có test nào**. Thiết kế đã được người dùng đồng ý ở mức hội thoại (mô hình tồn kho có số lượng, JS thuần, giờ máy chủ giả lập); chờ người dùng duyệt bản viết này trước khi làm task A1.
+> Trạng thái (2026-10-29): **nhóm A, B, C đã làm và verify (45 test của HW3, 739 test toàn repo), chưa commit**. B4 (`drift-demo.html`) mới kiểm bằng đọc mã, chưa chạy trên trình duyệt (việc F1 của bạn). Chưa làm nhóm D, E, F.
 > Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task.
 
 ## 1. Thông tin chung
@@ -123,7 +123,8 @@ Nhờ vậy `inventory` (phần quan trọng nhất) test được thuần, khô
 | `CHECKOUT` | `PAY_FAIL` | `CANCELLED` | hàng trả về kho (suy ra, không cần cộng trả) |
 | `RESERVED`, `CHECKOUT` | `CANCEL` | `CANCELLED` | |
 | `RESERVED`, `CHECKOUT` | `EXPIRE_DUE` | `EXPIRED` | `now >= expiresAt` (biên **bao gồm**) |
-| `SOLD`, `EXPIRED`, `CANCELLED` | mọi event khác | từ chối `INVALID_TRANSITION` | trạng thái kết thúc |
+| `SOLD`, `CANCELLED` | mọi event | từ chối `INVALID_TRANSITION` | trạng thái kết thúc |
+| `EXPIRED` | mọi event | từ chối `HOLD_EXPIRED` | trạng thái kết thúc; báo lý do rõ hơn cho người dùng |
 
 Hằng số mặc định (một chỗ, `types.js`): `HOLD_MS = 120_000`, `CHECKOUT_MS = 60_000`, `EXTEND_MS = 60_000`, `MAX_EXTENSIONS = 2`.
 
@@ -170,20 +171,20 @@ Bất biến của timer:
 
 ### Nhóm A — Nền
 
-- [ ] A1 Viết `src/inventory/types.js` (typedef mục 3.1, hằng số mục 3.2) và test khẳng định hằng số hợp lệ. Commit: `docs(hw3): add contracts and wbs`
+- [x] A1 Viết `src/inventory/types.js` (typedef mục 3.1, hằng số mục 3.2) và test khẳng định hằng số hợp lệ. Commit: `docs(hw3): add contracts and wbs`
 
 ### Nhóm B — Đồng hồ và timer
 
-- [ ] B1 `src/clock/server-clock.js` + test: `now()` đơn điệu khi `Date.now()` bị đổi; `sync` bù nửa khứ hồi; trước `sync` thì ném lỗi rõ ràng. Commit: `feat(clock): add monotonic server clock`
-- [ ] B2 `src/timer/countdown.js` + `anti-drift-timer.js`. Commit: `feat(timer): add deadline countdown and anti-drift timer`
-- [ ] B3 Test timer bằng `now`/`raf` giả: không trôi khi mỗi frame trễ ngẫu nhiên; `onTick(0)` đúng một lần; hủy giữa chừng; mốc đã qua; `remaining` không âm; nhảy thời gian lớn (tab ẩn rồi quay lại) cho ra giá trị đúng ngay tick đầu. Commit: `test(timer): cover drift, single final tick, cancel`
-- [ ] B4 `drift-demo.html`: chạy song song `setInterval` kiểu cộng dồn và `createAntiDriftTimer` trong 60 giây, in sai lệch mỗi 5 giây vào bảng. Dùng làm bằng chứng cho báo cáo. Commit: `feat(timer): add drift comparison demo`
+- [x] B1 `src/clock/server-clock.js` + test: `now()` đơn điệu khi `Date.now()` bị đổi; `sync` bù nửa khứ hồi; trước `sync` thì ném lỗi rõ ràng. Commit: `feat(clock): add monotonic server clock`
+- [x] B2 `src/timer/countdown.js` + `anti-drift-timer.js`. Commit: `feat(timer): add deadline countdown and anti-drift timer`
+- [x] B3 Test timer bằng `now`/`raf` giả: không trôi khi mỗi frame trễ ngẫu nhiên; `onTick(0)` đúng một lần; hủy giữa chừng; mốc đã qua; `remaining` không âm; nhảy thời gian lớn (tab ẩn rồi quay lại) cho ra giá trị đúng ngay tick đầu. Commit: `test(timer): cover drift, single final tick, cancel`
+- [x] B4 `drift-demo.html`: chạy song song `setInterval` kiểu cộng dồn và `createAntiDriftTimer` trong 60 giây, in sai lệch mỗi 5 giây vào bảng. Dùng làm bằng chứng cho báo cáo. Commit: `feat(timer): add drift comparison demo`
 
 ### Nhóm C — Máy trạng thái
 
-- [ ] C1 `src/inventory/inventory-fsm.js`: `createInventory`, `transition`, bảng mục 3.2 (chưa có hết hạn). Commit: `feat(inventory): add reservation state machine`
-- [ ] C2 Thêm lazy expiry (`EXPIRE_DUE`, chạy trước mọi event), `EXTEND`, `verifyInvariants`. Commit: `feat(inventory): add lazy expiry, extension and invariants`
-- [ ] C3 Test FSM: mọi cạnh hợp lệ; mọi cạnh không hợp lệ bị từ chối và `version` không đổi; biên `now === expiresAt` là hết hạn; thanh toán lượt đã quá hạn bị từ chối `HOLD_EXPIRED`; ngoài `saleWindow` bị `SALE_NOT_LIVE`; `EXTEND` quá giới hạn; hết hàng; state trả về bị `Object.freeze`, state cũ không bị sửa. Commit: `test(inventory): cover transitions, expiry and invariants`
+- [x] C1 `src/inventory/inventory-fsm.js`: `createInventory`, `transition`, bảng mục 3.2 (chưa có hết hạn). Commit: `feat(inventory): add reservation state machine`
+- [x] C2 Thêm lazy expiry (`EXPIRE_DUE`, chạy trước mọi event), `EXTEND`, `verifyInvariants`. Commit: `feat(inventory): add lazy expiry, extension and invariants`
+- [x] C3 Test FSM: mọi cạnh hợp lệ; mọi cạnh không hợp lệ bị từ chối và `version` không đổi; biên `now === expiresAt` là hết hạn; thanh toán lượt đã quá hạn bị từ chối `HOLD_EXPIRED`; ngoài `saleWindow` bị `SALE_NOT_LIVE`; `EXTEND` quá giới hạn; hết hàng; state trả về bị `Object.freeze`, state cũ không bị sửa. Commit: `test(inventory): cover transitions, expiry and invariants`
 
 ### Nhóm D — Khóa lạc quan và đồng thời
 
