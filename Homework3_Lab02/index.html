@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Mô phỏng flash sale 11.11: giữ hàng có thời hạn, đồng hồ đếm ngược không trôi và khóa tồn kho lạc quan.">
   <title>Flash sale 11.11 - giữ hàng</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,7 +26,7 @@
     </section>
 
     <section id="hold-panel" aria-labelledby="hold-title" class="card" hidden>
-      <h2 id="hold-title">Lượt giữ hàng của bạn</h2>
+      <h2 id="hold-title" tabindex="-1">Lượt giữ hàng của bạn</h2>
       <p>Trạng thái: <strong id="hold-status"></strong></p>
       <p id="hold-timer-line">Thời gian còn lại: <time id="hold-time"><span class="clock">--:--</span><span class="ms">.000</span></time></p>
       <div class="actions">

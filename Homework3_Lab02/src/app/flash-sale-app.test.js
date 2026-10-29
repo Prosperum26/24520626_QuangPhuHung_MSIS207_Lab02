@@ -103,6 +103,21 @@ describe('E2 flash-sale app', () => {
     expect(button('extend').hidden).toBe(true);
   });
 
+  it('moves focus to the hold panel heading when the clicked button becomes disabled (2.4.3)', async () => {
+    await mount(makeEnv());
+    button('reserve').focus();
+    await click('reserve');
+    expect(document.activeElement).toBe($('hold-title'));
+  });
+
+  it('keeps focus on the clicked button when it stays available', async () => {
+    await mount(makeEnv());
+    await click('reserve');
+    button('extend').focus();
+    await click('extend');
+    expect(document.activeElement).toBe(button('extend'));
+  });
+
   it('ignores clicks that are not on an action button', async () => {
     await mount(makeEnv());
     $('product-status').click();

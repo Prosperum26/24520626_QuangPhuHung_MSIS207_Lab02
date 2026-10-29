@@ -243,6 +243,17 @@ export async function mountFlashSale({ root, clock, store, timerDeps = {} }) {
     simulate,
   };
 
+  /**
+   * Nút vừa bấm có thể bị ẩn hoặc vô hiệu (vd. Giữ hàng), khi đó trình duyệt đẩy focus về <body>
+   * và người dùng bàn phím phải Tab lại từ đầu trang (WCAG 2.4.3). Đưa focus về tiêu đề panel giữ hàng.
+   */
+  function keepFocus() {
+    const doc = root.ownerDocument;
+    const active = doc.activeElement;
+    const lost = !active || active === doc.body || active.closest('[hidden]') !== null || (active instanceof HTMLButtonElement && active.disabled);
+    if (lost && !dom.holdPanel.hidden) el('hold-title').focus();
+  }
+
   // Hub sự kiện duy nhất: một listener ở root; nút là <button> nên Enter và Space đã kích hoạt click.
   /** @param {Event} event */
   async function onClick(event) {
@@ -254,6 +265,7 @@ export async function mountFlashSale({ root, clock, store, timerDeps = {} }) {
     try {
       await run();
       await refresh();
+      keepFocus();
     } catch (error) {
       announce('alert', `Có lỗi: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
