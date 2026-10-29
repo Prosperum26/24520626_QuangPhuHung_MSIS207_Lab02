@@ -1,7 +1,7 @@
 # Homework 3 — Task Decomposition
 
 > Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rules](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS: [Homework 2](../Homework2_Lab02/TASK_DECOMPOSITION.md).
-> Trạng thái (2026-10-29): **nhóm A, B, C đã làm và verify (45 test của HW3, 739 test toàn repo), chưa commit**. B4 (`drift-demo.html`) mới kiểm bằng đọc mã, chưa chạy trên trình duyệt (việc F1 của bạn). Chưa làm nhóm D, E, F.
+> Trạng thái (2026-10-29): **nhóm A, B, C, D, E đã làm và verify bằng test tự động (112 test của HW3)**. Nhóm F là việc của bạn và **chưa có bằng chứng nào trong repo**: chưa chạy `drift-demo.html`, chưa kiểm tab ẩn, bàn phím, trình đọc màn hình, Lighthouse; `AI_FAILURE_AUDIT.md` chưa có mục HW3; chưa export prompt log. Cột "Trạng thái" ở mục 8 vì vậy vẫn là "chưa kiểm".
 > Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task.
 
 ## 1. Thông tin chung
@@ -135,7 +135,7 @@ Bất biến, kiểm bằng `verifyInvariants(state)`:
 1. `sold + (số lượt RESERVED hoặc CHECKOUT) <= total` ở mọi thời điểm.
 2. `sold` đúng bằng số lượt ở trạng thái `SOLD`.
 3. `id` của lượt giữ duy nhất; trạng thái kết thúc không bao giờ đổi.
-4. `version` không giảm; chỉ tăng khi event được chấp nhận (event bị từ chối không đổi `version`).
+4. `version` không giảm; tăng 1 khi state thật sự đổi (event được chấp nhận, hoặc việc quét hết hạn làm đổi state). Event bị từ chối mà không đổi gì thì `version` giữ nguyên.
 
 ### 3.3 Hợp đồng timer và clock
 
@@ -188,16 +188,16 @@ Bất biến của timer:
 
 ### Nhóm D — Khóa lạc quan và đồng thời
 
-- [ ] D1 `src/inventory/inventory-store.js`: `read()` trả bản chụp (có `version`), `commit(expectedVersion, event)` đồng bộ trong thân hàm; lệch `version` trả `CONFLICT`. Có `delay` cấu hình được để mô phỏng độ trễ mạng. Commit: `feat(inventory): add optimistic versioned store`
-- [ ] D2 `src/inventory/reserve-with-retry.js`: đọc, chờ, `commit`; gặp `CONFLICT` thì đọc lại và thử lại tối đa `maxRetries`; thấy `available === 0` thì trả `SOLD_OUT` ngay, không thử. Commit: `feat(inventory): add reserve with bounded retry`
-- [ ] D3 `src/sim/buyers.js` + test đồng thời: tồn 10, 200 người mua cùng lúc với độ trễ ngẫu nhiên cố định seed. Khẳng định đúng 10 lượt giữ thành công, tổng kết quả bằng 200, `verifyInvariants` đúng. Thêm test bản ngây thơ (không kiểm version) **bán quá** để chứng minh race có thật. Thêm test: mọi người cùng thanh toán, `sold === total`, không vượt. Commit: `test(inventory): simulate concurrent buyers without oversell`
+- [x] D1 `src/inventory/inventory-store.js`: `read()` trả bản chụp (có `version`), `commit(expectedVersion, event)` đồng bộ trong thân hàm; lệch `version` trả `CONFLICT`. Có `delay` cấu hình được để mô phỏng độ trễ mạng. Commit: `feat(inventory): add optimistic versioned store`
+- [x] D2 `src/inventory/reserve-with-retry.js`: đọc, chờ, `commit`; gặp `CONFLICT` thì đọc lại và thử lại tối đa `maxRetries`; thấy `available === 0` thì trả `SOLD_OUT` ngay, không thử. Commit: `feat(inventory): add reserve with bounded retry`
+- [x] D3 `src/sim/buyers.js` + test đồng thời: tồn 10, 200 người mua cùng lúc với độ trễ ngẫu nhiên cố định seed. Khẳng định đúng 10 lượt giữ thành công, tổng kết quả bằng 200, `verifyInvariants` đúng. Thêm test bản ngây thơ (không kiểm version) **bán quá** để chứng minh race có thật. Thêm test: mọi người cùng thanh toán, `sold === total`, không vượt. Commit: `test(inventory): simulate concurrent buyers without oversell`
 
 ### Nhóm E — Giao diện
 
-- [ ] E1 `index.html` + `style.css` + `src/app/format-time.js` (+ test: `mm:ss.mmm`, 0, giá trị lớn). Thẻ ngữ nghĩa, `<time>`, trạng thái bằng chữ. Commit: `feat(ui): add flash-sale page and styles`
-- [ ] E2 `src/app/flash-sale-app.js` + `main.js`: nối clock, store, timer; một hub sự kiện (event delegation, `keydown` + `e.key`); render bằng DOM API; hiển thị `offset` giờ máy chủ. Có test jsdom. Commit: `feat(ui): wire clock, store and countdown`
-- [ ] E3 `src/app/milestones.js` + trợ năng: thông báo mốc còn 60 giây, còn 10 giây, đã hết qua `role="status"` (mốc 10 giây và hết dùng `role="alert"`); nút "Gia hạn"; không đặt `aria-live` trên đồng hồ; `prefers-reduced-motion` ẩn phần mili giây. Test mốc chỉ thông báo một lần. Commit: `feat(a11y): add milestone announcements and hold extension`
-- [ ] E4 `src/sim/fake-server.js` + nút "Mô phỏng người mua" chạy D3 trên giao diện, hiện số thành công, xung đột, hết hàng. Commit: `feat(ui): add buyer simulation control`
+- [x] E1 `index.html` + `style.css` + `src/app/format-time.js` (+ test: `mm:ss.mmm`, 0, giá trị lớn). Thẻ ngữ nghĩa, `<time>`, trạng thái bằng chữ. Commit: `feat(ui): add flash-sale page and styles`
+- [x] E2 `src/app/flash-sale-app.js` + `main.js`: nối clock, store, timer; một hub sự kiện (event delegation, `keydown` + `e.key`); render bằng DOM API; hiển thị `offset` giờ máy chủ. Có test jsdom. Commit: `feat(ui): wire clock, store and countdown`
+- [x] E3 `src/app/milestones.js` + trợ năng: thông báo mốc còn 60 giây, còn 10 giây, đã hết qua `role="status"` (mốc 10 giây và hết dùng `role="alert"`); nút "Gia hạn"; không đặt `aria-live` trên đồng hồ; `prefers-reduced-motion` ẩn phần mili giây. Test mốc chỉ thông báo một lần. Commit: `feat(a11y): add milestone announcements and hold extension`
+- [x] E4 `src/sim/fake-server.js` + nút "Mô phỏng người mua" chạy D3 trên giao diện, hiện số thành công, xung đột, hết hàng. Commit: `feat(ui): add buyer simulation control`
 
 ### Nhóm F — Kiểm chứng và tài liệu (việc của người dùng, trừ khi ghi khác)
 
@@ -247,7 +247,7 @@ Mỗi quyết định nằm ở một chỗ để sửa nhanh. Các đột biế
 | Đổi biên hết hạn `>=` thành `>` | `inventory-fsm.js`, hàm hết hạn | test biên `now === expiresAt` |
 | `PAY_FAIL` quay về `RESERVED` thay vì `CANCELLED` | bảng chuyển trong `inventory-fsm.js` | test cạnh `CHECKOUT` |
 | Đổi `HOLD_MS` hoặc giới hạn gia hạn | `types.js` | đọc hằng số trong test |
-| Bỏ kiểm `version` ở `commit` | `inventory-store.js` | test đồng thời phải đỏ (bán quá) |
+| Bỏ kiểm `version` ở `commit` | `inventory-store.js` | test CONFLICT trong `inventory-store.test.js` và `buyers.test.js` đỏ (đã thử: 5 test đỏ). Lưu ý: test "không bán quá" vẫn xanh vì `transition` cũng chặn `SOLD_OUT`; chỉ bản ngây thơ trong `simulateNaiveBuyers` mới bán quá |
 | Đổi timer từ deadline sang đếm lùi cộng dồn | `countdown.js` | test drift phải đỏ |
 | Hết hạn do timer thay vì lazy expiry | `inventory-fsm.js` | test thanh toán lượt quá hạn khi timer chưa chạy |
 | Gọi `onTick(0)` hai lần hoặc không gọi | `countdown.js` | test `onTick(0)` đúng một lần |
