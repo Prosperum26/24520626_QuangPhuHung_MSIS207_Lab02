@@ -37,6 +37,11 @@ export const MAX_EXTENSIONS = 2;
  */
 
 /**
+ * Event chưa có `now`: store gắn giờ máy chủ lúc commit, client không tự khai giờ.
+ * @typedef {InventoryEvent extends infer E ? (E extends unknown ? Omit<E, 'now'> : never) : never} EventInput
+ */
+
+/**
  * @typedef {{ ok: true, id?: number }
  *   | { ok: false, reason: 'SALE_NOT_LIVE'|'SOLD_OUT'|'NOT_FOUND'|'INVALID_TRANSITION'|'HOLD_EXPIRED'|'EXTENSION_LIMIT' }} TransitionResult
  */
