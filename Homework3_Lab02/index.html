@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Mô phỏng flash sale 11.11: giữ hàng có thời hạn, đồng hồ đếm ngược không trôi và khóa tồn kho lạc quan.">
+  <title>Flash sale 11.11 - giữ hàng</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Bỏ qua tới nội dung chính</a>
+  <main id="main">
+    <h1>Flash sale 11.11</h1>
+    <p id="offset" class="note">Đang đồng bộ giờ máy chủ...</p>
+
+    <section aria-labelledby="product-title" class="card">
+      <h2 id="product-title">Tai nghe không dây X1</h2>
+      <p>Trạng thái: <strong id="product-status">Đang tải</strong></p>
+      <p id="stock">Tồn kho: đang tải</p>
+      <p>
+        <span id="sale-label"></span>
+        <time id="sale-time"><span class="clock">--:--</span><span class="ms">.000</span></time>
+      </p>
+      <button type="button" data-action="reserve" disabled>Giữ hàng</button>
+    </section>
+
+    <section id="hold-panel" aria-labelledby="hold-title" class="card" hidden>
+      <h2 id="hold-title">Lượt giữ hàng của bạn</h2>
+      <p>Trạng thái: <strong id="hold-status"></strong></p>
+      <p id="hold-timer-line">Thời gian còn lại: <time id="hold-time"><span class="clock">--:--</span><span class="ms">.000</span></time></p>
+      <div class="actions">
+        <button type="button" data-action="checkout" hidden>Tiến hành thanh toán</button>
+        <button type="button" data-action="extend" hidden>Gia hạn thêm 1 phút</button>
+        <button type="button" data-action="pay" hidden>Xác nhận thanh toán</button>
+        <button type="button" data-action="pay-fail" hidden>Mô phỏng thanh toán thất bại</button>
+        <button type="button" data-action="cancel" hidden>Hủy giữ hàng</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="sim-title" class="card">
+      <h2 id="sim-title">Mô phỏng nhiều người mua</h2>
+      <p>Chạy 200 người mua cùng tranh 10 sản phẩm, một lần với khóa lạc quan và một lần với bản ngây thơ không kiểm version. Kho này riêng, không ảnh hưởng kho ở trên.</p>
+      <button type="button" data-action="simulate">Mô phỏng 200 người mua</button>
+      <div id="sim-result"></div>
+    </section>
+
+    <div id="status" class="message" role="status"></div>
+    <div id="alert" class="message message-alert" role="alert"></div>
+  </main>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
