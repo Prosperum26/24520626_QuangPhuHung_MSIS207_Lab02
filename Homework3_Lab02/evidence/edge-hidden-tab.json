@@ -1,0 +1,56 @@
+{
+  "when": "2026-10-29T15:40:15.883Z",
+  "edge": "Edg/156.0.4314.50",
+  "visibilityStateWhileBackground": "hidden",
+  "rafFramesDuring30sHidden": 0,
+  "afterReturn": {
+    "shownMs": 83890,
+    "expectedMs": 84015,
+    "diffMs": -125
+  },
+  "whileHiddenAfterExpiry": {
+    "hold": "Hết hạn giữ hàng",
+    "stock": "Tồn kho: còn 10 / 10 sản phẩm",
+    "vis": "hidden"
+  },
+  "expiryLatenessMs": 3021,
+  "passed": 6,
+  "failed": 1,
+  "checks": [
+    {
+      "name": "tab A thực sự ở trạng thái hidden khi tab B được đưa lên trước",
+      "pass": true,
+      "detail": "hidden"
+    },
+    {
+      "name": "khi ẩn rAF bị dừng hoặc giảm mạnh (≪ 1800 khung trong 30 s)",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "quay lại sau 30 s ẩn: giá trị còn lại đúng (|lệch| ≤ 400 ms, gồm độ trễ giữ hàng giả lập)",
+      "pass": true,
+      "detail": "{\"shownMs\":83890,\"expectedMs\":84015,\"diffMs\":-125}"
+    },
+    {
+      "name": "hết hạn khi tab đang ẩn: hàng đã được nhả (không cần quay lại tab)",
+      "pass": true,
+      "detail": "{\"hold\":\"Hết hạn giữ hàng\",\"stock\":\"Tồn kho: còn 10 / 10 sản phẩm\",\"vis\":\"hidden\"}"
+    },
+    {
+      "name": "hết hạn khi ẩn: trễ so với mốc dự kiến ≤ 2000 ms (timer ẩn bị throttle)",
+      "pass": false,
+      "detail": "3021"
+    },
+    {
+      "name": "thông báo hết hạn qua role=alert đúng một lần, kể cả sau khi quay lại",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "không lỗi/cảnh báo console (không tính favicon)",
+      "pass": true,
+      "detail": "[]"
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "when": "2026-10-29T15:44:58.613Z",
+  "edge": "Edg/156.0.4314.50",
+  "viewport": "1280x900 (320x640 cho reflow)",
+  "input": "phím thật qua Input.dispatchKeyEvent",
+  "passed": 41,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "load: không lỗi/cảnh báo console (không tính favicon)",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "name": "load: không có yêu cầu favicon bị 404",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "name": "load: html lang, title, một h1, main",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "load: vùng status và alert rỗng lúc tải",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "load: heading phân cấp không nhảy bậc",
+      "pass": true,
+      "detail": "[1,2,2,2]"
+    },
+    {
+      "name": "load: nút Giữ hàng vô hiệu trước giờ mở bán, trạng thái bằng chữ",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "AX tree: mọi button có tên truy cập",
+      "pass": true,
+      "detail": "[\"Giữ hàng\",\"Mô phỏng 200 người mua\"]"
+    },
+    {
+      "name": "AX tree: có landmark main (status/alert rỗng nên chưa vào cây, xem kiểm tra sau khi giữ hàng)",
+      "pass": true,
+      "detail": "[\"main\"]"
+    },
+    {
+      "name": "DOM: #status có role=status, #alert có role=alert",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "DOM: <time> không nằm trong vùng live và không aria-live",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "tương phản (vừa tải): chữ không bị vô hiệu ≥ 4.5:1",
+      "pass": true,
+      "detail": "{\"n\":13,\"min\":6.39}"
+    },
+    {
+      "name": "vùng bấm ≥ 24×24 CSS px (vừa tải)",
+      "pass": true,
+      "detail": "[{\"name\":\"Bỏ qua tới nội dung chính\",\"w\":220,\"h\":44},{\"name\":\"Giữ hàng\",\"w\":102,\"h\":44},{\"name\":\"Mô phỏng 200 người mua\",\"w\":227,\"h\":44}]"
+    },
+    {
+      "name": "sau 8 giây: trạng thái chuyển sang Đang mở bán",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "bàn phím: Tab đầu tiên tới skip link",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "bàn phím: Tab tới nút Giữ hàng",
+      "pass": true,
+      "detail": "[\"a.skip-link\",\"button[reserve]\"]"
+    },
+    {
+      "name": "bàn phím: Enter trên Giữ hàng tạo lượt giữ và có thông báo status",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "bàn phím: focus không rơi về <body> sau khi bấm Giữ hàng (WCAG 2.4.3)",
+      "pass": true,
+      "detail": "h2#hold-title"
+    },
+    {
+      "name": "tương phản (đang giữ hàng, có panel): chữ ≥ 4.5:1",
+      "pass": true,
+      "detail": "{\"n\":23,\"min\":6.39}"
+    },
+    {
+      "name": "vùng bấm ≥ 24×24 (đang giữ hàng)",
+      "pass": true,
+      "detail": "6"
+    },
+    {
+      "name": "AX tree (đang giữ hàng): có vùng status chứa thông báo",
+      "pass": true,
+      "detail": "[\"status\"]"
+    },
+    {
+      "name": "AX tree (đang giữ hàng): mọi button có tên",
+      "pass": true,
+      "detail": "[\"Giữ hàng\",\"Tiến hành thanh toán\",\"Gia hạn thêm 1 phút\",\"Hủy giữ hàng\",\"Mô phỏng 200 người mua\"]"
+    },
+    {
+      "name": "bàn phím: Tab tới Gia hạn",
+      "pass": true,
+      "detail": "[\"a.skip-link\",\"button[reserve]\",\"button[checkout]\",\"button[extend]\"]"
+    },
+    {
+      "name": "bàn phím: Space trên Gia hạn hoạt động và có thông báo",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "bàn phím: Tab tới Tiến hành thanh toán",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "bàn phím: sau Tiến hành thanh toán focus không rơi về <body>",
+      "pass": true,
+      "detail": "h2#hold-title"
+    },
+    {
+      "name": "bàn phím: Tab tới Xác nhận thanh toán",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "luồng đầy đủ: Đã mua và tồn kho còn 9/10",
+      "pass": true,
+      "detail": "Tồn kho: còn 9 / 10 sản phẩm"
+    },
+    {
+      "name": "luồng đầy đủ: sau khi mua, dòng đếm ngược của lượt giữ ẩn",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "bàn phím: sau Xác nhận thanh toán focus không rơi về <body>",
+      "pass": true,
+      "detail": "h2#hold-title"
+    },
+    {
+      "name": "focus nhìn thấy: mọi phần tử nhận focus (trừ khi Tab ra khỏi tài liệu) có outline ≥ 2px",
+      "pass": true,
+      "detail": "[{\"who\":\"a.skip-link\",\"style\":\"solid\",\"width\":3},{\"who\":\"button[reserve]\",\"style\":\"solid\",\"width\":3},{\"who\":\"button[checkout]\",\"style\":\"solid\",\"width\":3},{\"who\":\"button[extend]\",\"style\":\"solid\",\"width\":3},{\"who\":\"button[cancel]\",\"style\":\"solid\",\"width\":3},{\"who\":\"button[simulate]\",\"style\":\"solid\",\"width\":3},{\"who\":\"BODY\",\"style\":\"none\",\"width\":3},{\"who\":\"a.skip-link\",\"style\":\"solid\",\"width\":3},{\"who\":\"button[checkout]\",\"style\":\"solid\",\"width\":3},{\"who\":\"button[pay]\",\"style\":\"solid\",\"width\":3}]"
+    },
+    {
+      "name": "bàn phím: Tab tới Mô phỏng 200 người mua",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "mô phỏng trong Edge: khóa lạc quan giữ đúng 10, không bán quá, bất biến đạt",
+      "pass": true,
+      "detail": "{\"Giữ hàng thành công\":\"10\",\"Báo hết hàng\":\"190\",\"Bỏ cuộc sau khi thử lại\":\"0\",\"Lần xung đột (CONFLICT)\":\"527\",\"Bán quá số lượng\":\"Không\",\"Bất biến kho\":\"Đạt\"}"
+    },
+    {
+      "name": "mô phỏng trong Edge: bản ngây thơ bán quá",
+      "pass": true,
+      "detail": "{\"Người được báo thành công\":\"200\",\"Lượt giữ còn lại trong kho\":\"1\",\"Bán quá số lượng\":\"Có\"}"
+    },
+    {
+      "name": "mặc định: phần mili giây hiển thị",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "prefers-reduced-motion: reduce -> ẩn mili giây",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "bỏ giả lập: mili giây hiện lại",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reflow 320 px: không cuộn ngang",
+      "pass": true,
+      "detail": "{\"scrollWidth\":305,\"clientWidth\":305}"
+    },
+    {
+      "name": "vùng bấm ≥ 24×24 ở 320 px",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "toàn phiên: không lỗi/cảnh báo console (không tính favicon)",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "name": "?skew=5000: chênh lệch giờ máy chủ hiển thị ≈ +5000 ms (±100)",
+      "pass": true,
+      "detail": "Đồng hồ dùng giờ máy chủ. Chênh lệch so với giờ máy bạn: +4994 ms."
+    },
+    {
+      "name": "?skew=5000: đồng hồ mở bán vẫn theo giờ máy chủ (không lệch 5 giây)",
+      "pass": true,
+      "detail": "00:07"
+    }
+  ]
+}

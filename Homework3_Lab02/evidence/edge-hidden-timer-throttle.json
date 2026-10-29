@@ -1,0 +1,16 @@
+{
+  "when": "2026-10-29T15:43:11.711Z",
+  "edge": "Edg/156.0.4314.50",
+  "note": "Ba setTimeout(40 ms) nối tiếp, đo thời gian thực mỗi lần",
+  "visibleMs": [
+    42,
+    46,
+    41
+  ],
+  "hiddenState": "hidden",
+  "hiddenMs": [
+    1751,
+    249,
+    991
+  ]
+}

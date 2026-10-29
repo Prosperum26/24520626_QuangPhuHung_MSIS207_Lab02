@@ -1,0 +1,96 @@
+{
+  "when": "2026-10-29T15:38:49.376Z",
+  "edge": "Edg/156.0.4314.50",
+  "durationMs": 60000,
+  "blocks": "bấm \"Làm bận luồng chính 300 ms\" ở khoảng giây 10, 25, 40",
+  "header": [
+    "elapsed s",
+    "setInterval error ms",
+    "deadline error ms"
+  ],
+  "rows": [
+    [
+      "5",
+      "3.8",
+      "0.8"
+    ],
+    [
+      "10",
+      "312.1",
+      "0.1"
+    ],
+    [
+      "15",
+      "217.2",
+      "0.2"
+    ],
+    [
+      "20",
+      "217.2",
+      "0.2"
+    ],
+    [
+      "25",
+      "519.4",
+      "0.4"
+    ],
+    [
+      "30",
+      "423.3",
+      "0.3"
+    ],
+    [
+      "35",
+      "423.3",
+      "0.3"
+    ],
+    [
+      "40",
+      "623.5",
+      "0.5"
+    ],
+    [
+      "45",
+      "624.1",
+      "0.1"
+    ],
+    [
+      "50",
+      "624.2",
+      "0.2"
+    ],
+    [
+      "55",
+      "630.9",
+      "0.9"
+    ],
+    [
+      "60",
+      "703.6",
+      "3.6"
+    ]
+  ],
+  "long": [
+    {
+      "start": 10055,
+      "duration": 300
+    },
+    {
+      "start": 25059,
+      "duration": 303
+    },
+    {
+      "start": 40054,
+      "duration": 300
+    }
+  ],
+  "clicks": [
+    10055,
+    25059,
+    40054
+  ],
+  "startAt": 44,
+  "consoleLogs": [
+    "log error: Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:8791/favicon.ico"
+  ]
+}

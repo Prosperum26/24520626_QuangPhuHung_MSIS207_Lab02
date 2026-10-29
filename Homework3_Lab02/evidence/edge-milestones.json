@@ -1,0 +1,147 @@
+{
+  "when": "2026-10-29T15:45:08.998Z",
+  "edge": "Edg/156.0.4314.50",
+  "samples": [
+    {
+      "atMsBeforeExpiry": 109797,
+      "shown": 109792,
+      "diff": -5
+    },
+    {
+      "atMsBeforeExpiry": 99779,
+      "shown": 99779,
+      "diff": 0
+    },
+    {
+      "atMsBeforeExpiry": 89767,
+      "shown": 89765,
+      "diff": -1
+    },
+    {
+      "atMsBeforeExpiry": 79744,
+      "shown": 79742,
+      "diff": -2
+    },
+    {
+      "atMsBeforeExpiry": 69713,
+      "shown": 69709,
+      "diff": -4
+    },
+    {
+      "atMsBeforeExpiry": 59675,
+      "shown": 59674,
+      "diff": -1
+    },
+    {
+      "atMsBeforeExpiry": 49639,
+      "shown": 49633,
+      "diff": -6
+    },
+    {
+      "atMsBeforeExpiry": 39616,
+      "shown": 39611,
+      "diff": -4
+    },
+    {
+      "atMsBeforeExpiry": 29582,
+      "shown": 29578,
+      "diff": -3
+    },
+    {
+      "atMsBeforeExpiry": 19571,
+      "shown": 19570,
+      "diff": -1
+    },
+    {
+      "atMsBeforeExpiry": 9543,
+      "shown": 9543,
+      "diff": 1
+    }
+  ],
+  "mutations": [
+    {
+      "id": "status",
+      "t": 8345,
+      "text": "Đã giữ hàng. Hãy thanh toán trước khi đồng hồ về 0, hoặc gia hạn thêm."
+    },
+    {
+      "id": "hold-status",
+      "t": 8386,
+      "text": "Đang giữ hàng"
+    },
+    {
+      "id": "status",
+      "t": 68354,
+      "text": "Còn 1 phút để giữ hàng. Bạn có thể gia hạn."
+    },
+    {
+      "id": "alert",
+      "t": 118353,
+      "text": "Chỉ còn 10 giây. Lượt giữ hàng sắp hết hạn."
+    },
+    {
+      "id": "alert",
+      "t": 128350,
+      "text": "Đã hết thời gian giữ hàng. Hàng đã được trả về kho."
+    },
+    {
+      "id": "hold-status",
+      "t": 128476,
+      "text": "Hết hạn giữ hàng"
+    },
+    {
+      "id": "hold-status",
+      "t": 128526,
+      "text": "Hết hạn giữ hàng"
+    }
+  ],
+  "passed": 9,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "mốc 1 phút: đúng một lần, qua vùng role=status",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "mốc 10 giây: đúng một lần, qua vùng role=alert",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "hết giờ: đúng một lần, qua vùng role=alert",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "trạng thái lượt giữ chuyển sang \"Hết hạn giữ hàng\"",
+      "pass": true,
+      "detail": "[\"Đang giữ hàng\",\"Hết hạn giữ hàng\",\"Hết hạn giữ hàng\"]"
+    },
+    {
+      "name": "thời điểm thông báo: mốc 1 phút cách mốc hết giờ 60000 ms (±100)",
+      "pass": true,
+      "detail": "59997"
+    },
+    {
+      "name": "thời điểm thông báo: mốc 10 giây cách mốc hết giờ 10000 ms (±100)",
+      "pass": true,
+      "detail": "9997"
+    },
+    {
+      "name": "đồng hồ không trôi: giá trị hiển thị so với mốc hết hạn, |sai lệch| ≤ 50 ms ở mọi mẫu (~120 s)",
+      "pass": true,
+      "detail": "[{\"atMsBeforeExpiry\":109797,\"shown\":109792,\"diff\":-5},{\"atMsBeforeExpiry\":99779,\"shown\":99779,\"diff\":0},{\"atMsBeforeExpiry\":89767,\"shown\":89765,\"diff\":-1},{\"atMsBeforeExpiry\":79744,\"shown\":79742,\"diff\":-2},{\"atMsBeforeExpiry\":69713,\"shown\":69709,\"diff\":-4},{\"atMsBeforeExpiry\":59675,\"shown\":59674,\"diff\":-1},{\"atMsBeforeExpiry\":49639,\"shown\":49633,\"diff\":-6},{\"atMsBeforeExpiry\":39616,\"shown\":39611,\"diff\":-4},{\"atMsBeforeExpiry\":29582,\"shown\":29578,\"diff\":-3},{\"atMsBeforeExpiry\":19571,\"shown\":19570,\"diff\":-1},{\"atMsBeforeExpiry\":9543,\"shown\":9543,\"diff\":1}]"
+    },
+    {
+      "name": "hết hạn: hàng trả về kho (còn 10 / 10)",
+      "pass": true,
+      "detail": "Tồn kho: còn 10 / 10 sản phẩm"
+    },
+    {
+      "name": "không có lỗi/cảnh báo console (không tính favicon)",
+      "pass": true,
+      "detail": "[]"
+    }
+  ]
+}

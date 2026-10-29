@@ -1,0 +1,104 @@
+{
+  "when": "2026-10-29T15:44:09.916Z",
+  "tool": "Lighthouse 13.6.0 (npm, cài trong thư mục tạm, không thuộc repo) chạy trên Edge headless",
+  "page": "Homework3_Lab02/index.html ở trạng thái vừa tải (chưa giữ hàng), phục vụ bằng static server cục bộ",
+  "runs": {
+    "desktop": {
+      "lighthouseVersion": "13.6.0",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "formFactor": "desktop",
+      "runWarnings": [],
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "notPerfectAudits": [
+        {
+          "id": "unminified-javascript",
+          "score": 0.5,
+          "title": "Minify JavaScript",
+          "display": "Est savings of 7 KiB"
+        },
+        {
+          "id": "cache-insight",
+          "score": 0.5,
+          "title": "Use efficient cache lifetimes",
+          "display": "Est savings of 43 KiB"
+        },
+        {
+          "id": "document-latency-insight",
+          "score": 0.5,
+          "title": "Document request latency",
+          "display": "Est savings of 2 KiB"
+        },
+        {
+          "id": "network-dependency-tree-insight",
+          "score": 0,
+          "title": "Network dependency tree"
+        },
+        {
+          "id": "render-blocking-insight",
+          "score": 0.5,
+          "title": "Render-blocking requests"
+        }
+      ]
+    },
+    "mobile": {
+      "lighthouseVersion": "13.6.0",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "formFactor": "mobile",
+      "runWarnings": [],
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "notPerfectAudits": [
+        {
+          "id": "cumulative-layout-shift",
+          "score": 0.98,
+          "title": "Cumulative Layout Shift",
+          "display": "0.06"
+        },
+        {
+          "id": "mainthread-work-breakdown",
+          "score": 0.5,
+          "title": "Minimize main-thread work",
+          "display": "2.1 s"
+        },
+        {
+          "id": "unminified-javascript",
+          "score": 0.5,
+          "title": "Minify JavaScript",
+          "display": "Est savings of 7 KiB"
+        },
+        {
+          "id": "cache-insight",
+          "score": 0.5,
+          "title": "Use efficient cache lifetimes",
+          "display": "Est savings of 43 KiB"
+        },
+        {
+          "id": "document-latency-insight",
+          "score": 0.5,
+          "title": "Document request latency",
+          "display": "Est savings of 2 KiB"
+        },
+        {
+          "id": "network-dependency-tree-insight",
+          "score": 0,
+          "title": "Network dependency tree"
+        },
+        {
+          "id": "render-blocking-insight",
+          "score": 0,
+          "title": "Render-blocking requests",
+          "display": "Est savings of 30 ms"
+        }
+      ]
+    }
+  }
+}
