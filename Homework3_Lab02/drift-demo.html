@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>So sánh drift: setInterval và deadline</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #fff; color: #111; }
+    main { max-width: 48rem; margin: 0 auto; padding: 1rem; }
+    button { min-width: 24px; min-height: 44px; padding: 0 1rem; font: inherit; }
+    button:focus-visible { outline: 3px solid #0b57d0; outline-offset: 2px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    th, td { border: 1px solid #555; padding: 0.4rem 0.6rem; text-align: right; }
+    caption { text-align: left; font-weight: bold; padding-bottom: 0.4rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>So sánh drift trong 60 giây</h1>
+    <p>Hai đồng hồ cùng đếm ngược 60 giây. Bộ đếm cộng dồn trừ 100 ms mỗi lần <code>setInterval</code> chạy; bộ deadline tính lại từ mốc đích. Sai lệch là so với thời gian thực đo bằng <code>performance.now()</code>.</p>
+    <p>
+      <button type="button" id="start">Bắt đầu</button>
+      <button type="button" id="block">Làm bận luồng chính 300 ms</button>
+    </p>
+    <p id="status" role="status">Chưa chạy.</p>
+    <table>
+      <caption>Sai lệch so với thời gian thực (ms)</caption>
+      <thead>
+        <tr><th scope="col">Đã trôi (s)</th><th scope="col">Cộng dồn setInterval</th><th scope="col">Deadline (anti-drift)</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </main>
+  <script type="module">
+    import { createAntiDriftTimer } from './src/timer/anti-drift-timer.js';
+
+    const DURATION = 60_000;
+    const STEP = 100;
+    const ROW_EVERY = 5_000;
+
+    const rows = document.getElementById('rows');
+    const status = document.getElementById('status');
+    const startButton = document.getElementById('start');
+    const blockButton = document.getElementById('block');
+
+    let started = false;
+
+    function addRow(elapsedS, naiveError, deadlineError) {
+      const tr = document.createElement('tr');
+      for (const text of [String(elapsedS), naiveError.toFixed(1), deadlineError.toFixed(1)]) {
+        const td = document.createElement('td');
+        td.textContent = text;
+        tr.append(td);
+      }
+      rows.append(tr);
+    }
+
+    function run() {
+      started = true;
+      startButton.disabled = true;
+      rows.replaceChildren();
+      status.textContent = 'Đang chạy 60 giây...';
+
+      const t0 = performance.now();
+      let naiveRemaining = DURATION;
+      let deadlineRemaining = DURATION;
+      let lastRow = 0;
+
+      const intervalId = setInterval(() => {
+        naiveRemaining -= STEP;
+      }, STEP);
+
+      createAntiDriftTimer(DURATION, (remaining) => {
+        deadlineRemaining = remaining;
+        const elapsed = performance.now() - t0;
+        if (elapsed - lastRow >= ROW_EVERY || remaining === 0) {
+          lastRow = elapsed;
+          // Sai lệch = giá trị đồng hồ hiển thị - giá trị đúng theo thời gian thực.
+          addRow(Math.round(elapsed / 1000), naiveRemaining - (DURATION - elapsed), deadlineRemaining - (DURATION - elapsed));
+        }
+        if (remaining === 0) {
+          clearInterval(intervalId);
+          status.textContent = 'Xong. Xem bảng sai lệch.';
+          startButton.disabled = false;
+          started = false;
+        }
+      });
+    }
+
+    startButton.addEventListener('click', run);
+    blockButton.addEventListener('click', () => {
+      if (!started) return;
+      const until = performance.now() + 300;
+      while (performance.now() < until) { /* cố ý chặn luồng để thấy setInterval bị trễ */ }
+    });
+  </script>
+</body>
+</html>
