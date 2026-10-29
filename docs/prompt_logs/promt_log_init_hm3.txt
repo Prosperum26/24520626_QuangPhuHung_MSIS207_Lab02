@@ -1,0 +1,773 @@
+Prompt log Homework 3 (Claude Code, Claude Sonnet 5.5)
+Nguồn: transcript phiên 79aef28c-0292-41eb-b3d7-4d318c3d4a5c, từ 2026-10-29T15:10:07.787Z đến 2026-10-29T15:48:33.481Z
+Cách sinh: script đọc file transcript (.jsonl), giữ lời nhắn của người dùng và câu trả lời của AI nguyên văn,
+rút gọn mỗi lần gọi công cụ thành một dòng "⎿ Tên công cụ: mô tả". Bỏ output của công cụ, khối suy nghĩ, system-reminder và thông báo tự động của hệ thống.
+Đây KHÔNG phải bản /export của giao diện. Log dừng ở thời điểm sinh file, các lượt sau đó không có trong này.
+Số lời nhắn của người dùng: 8; số đoạn trả lời của AI: 40.
+======================================================================
+
+> <ide_opened_file>The user opened the file c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\Homework2_Lab02\TASK_DECOMPOSITION.md in the IDE. This may or may not be related to the current task.</ide_opened_file>
+    [Image]
+    Ok bây giờ tiếp tục với homework 3: bạn brainstorm rồi đề xuất bạn sẽ định làm như thế nào đi, plan ra sao, vì sao lại ra vậy, cụ thể dum mình nhe:
+
+
+> [Image: source: C:\Users\PHUHUN~1\AppData\Local\Temp\claude\c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02\79aef28c-0292-41eb-b3d7-4d318c3d4a5c\images\1.png]
+
+
+● Using superpowers:brainstorming to lên đề xuất cho HW3.
+
+  ⎿ Skill: superpowers:brainstorming
+
+● Mình phân loại HW3 là **architectural** (project mới, chưa có flow nào sẵn). Trước tiên mình đọc context của repo, chưa viết code.
+
+  ⎿ Glob: **/*.md
+  ⎿ Bash: List repo layout and commit count
+  ⎿ Read: c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\Homework3_Lab02\TASK_DECOMPOSITION.md
+  ⎿ Read: c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\docs\Context.md
+  ⎿ Bash: Inspect HW3 folder, HW2 src, tooling config
+
+● ## Mình hiểu đề thế này (cần bạn sửa nếu sai)
+  
+  **Mục tiêu:** một engine flash-sale chạy trên trình duyệt. Có hai lõi: (1) đồng hồ đếm ngược không trôi và (2) máy trạng thái giữ hàng với khóa lạc quan. Lõi kỹ thuật là "không bán quá số lượng", chứ UI chỉ để demo. Bài này nằm trong live defense (25%) và AI audit (15%), nên mã phải nhỏ và bạn giải thích được từng dòng.
+  
+  **Đã đọc:** [Homework3_Lab02/TASK_DECOMPOSITION.md](Homework3_Lab02/TASK_DECOMPOSITION.md) mới có ghi chú đề, chưa có WBS. HW2 dùng JS thuần + JSDoc + Vitest/jsdom và chia theo `src/<module>/`. Mình đề xuất giữ đúng phong cách đó.
+  
+  ## Ba điểm đề dễ làm sai (nên là trọng tâm thiết kế)
+  
+  | Vấn đề | Vì sao quan trọng | Hướng xử lý |
+  |---|---|---|
+  | Khung timer mẫu | Không gọi `onTick(0)` đúng một lần có chủ đích. `rAF` bị tạm dừng khi tab ẩn. `Date.now()` có thể bị đổi giờ. | Viết lại timer có `onTick(0)` đúng một lần, `stop()` idempotent, và nhận `now`/`raf` từ ngoài để test được. |
+  | Hết hạn khóa không được phụ thuộc `rAF` | Tab ẩn thì `rAF` dừng, nhưng hàng vẫn phải được nhả. | Timer chỉ để **hiển thị**. Hết hạn do store quyết định bằng cách so `now >= expiresAt` ở mỗi transition (lazy expiry), cộng một `setTimeout` đánh thức. |
+  | "Concurrency" trong JS đơn luồng | Race chỉ xảy ra khi có `await` giữa lúc đọc và lúc ghi. | Mô phỏng store async có độ trễ, chạy N buyer cùng lúc, và dùng version check để chặn. |
+  
+  ## Kiến trúc đề xuất
+  
+  ```text
+  Homework3_Lab02/src/
+    clock/      server-clock.js      giờ máy chủ giả lập + offset; performance.now cho đo khoảng
+    timer/      anti-drift-timer.js  deadline-based, onTick(0) đúng 1 lần, stop()
+    inventory/  inventory-fsm.js     reducer thuần: transition(state, event, now) -> state | rejection
+                inventory-store.js   async store có version (compare-and-swap)
+    sim/        buyers.js            Promise.all N buyer để test và demo
+    app/        flash-sale-app.js    nối UI với store và timer (một hub event delegation)
+    index.html, style.css, main.js
+  ```
+  
+  **Mô hình tồn kho.** Đề phác thảo trạng thái theo từng món hàng, nhưng sale thật có số lượng. Mình đề xuất:
+  - Mỗi sản phẩm có `{ total, sold, version }`.
+  - Mỗi lượt giữ hàng (`reservation`) có FSM riêng: `RESERVED → CHECKOUT → SOLD`. Nhánh phụ: `RESERVED/CHECKOUT → EXPIRED/CANCELLED → trả hàng`.
+  - **Invariant:** `sold + giữ_đang_hiệu_lực <= total` ở mọi thời điểm, kiểm bằng `verifyInvariants()` theo `SystemContract` trong Context.md §5.
+  - **Khóa lạc quan:** buyer đọc `version`, gửi `reserve(expectedVersion)`. Nếu version đã đổi thì trả `CONFLICT` và buyer thử lại. Không dùng mutex.
+  
+  **Vì sao FSM là reducer thuần:** dễ test từng transition, mọi chuyển trạng thái đi qua một hàm duy nhất (đúng ghi chú đề), và khi thầy đổi luật lúc live defense thì chỉ sửa một chỗ.
+  
+  **UI (tối giản, WCAG 2.2 AA):**
+  - Một thẻ sản phẩm với đồng hồ `<time>`, trạng thái bằng chữ, nút "Giữ hàng".
+  - Panel giữ hàng có đếm ngược khóa. Cảnh báo ở mốc 60s và 10s qua `role="status"` (không đặt `aria-live` trên đồng hồ chạy mili giây).
+  - Nút "Gia hạn" để đáp ứng 2.2.1.
+  - Nút "Thanh toán" mô phỏng thành công hoặc thất bại.
+  - Có nút "Mô phỏng 1000 người mua" để demo không bán quá.
+  - Giao diện dựng bằng DOM API (`createElement`/`textContent`), không `innerHTML`.
+  
+  ## Kế hoạch commit (≥ 8, thực tế mình dự kiến ~12)
+  
+  1. `docs(hw3): add WBS and decisions`
+  2. `feat(clock): add server clock with offset`
+  3. `feat(timer): add anti-drift timer with injectable clock`
+  4. `test(timer): cover drift, single onTick(0), stop`
+  5. `feat(inventory): define fsm contract and transitions`
+  6. `test(inventory): cover invalid transitions and invariants`
+  7. `feat(inventory): add optimistic version-checked store`
+  8. `test(inventory): simulate concurrent buyers, no oversell`
+  9. `feat(ui): add flash-sale page and event hub`
+  10. `feat(a11y): add milestone announcements and hold extension`
+  11. `docs(hw3): record drift measurement and wcag checks`
+  12. `docs(hw3): add AI failure audit`
+  
+  Mỗi commit ứng với một sub-task trong WBS, đúng luật atomic của [Agents.md](Agents.md).
+  
+  ## Bằng chứng cho AI_FAILURE_AUDIT
+  
+  Mình sẽ không bịa lỗi. Mình chỉ chỉ ra chỗ AI **hay sai** ở bài này để bạn để ý lúc review: `rAF` + tab ẩn, `Date.now()` không đơn điệu, race read-modify-write, hết hạn dựa vào timer UI. Lỗi thật phải xuất hiện trong lúc làm, và bạn tự chụp DevTools. Mình sẽ đề xuất thêm một test chứng minh **drift của `setInterval`** so với bản deadline (đo qua 30–60 giây) để có số liệu thật.
+  
+  ## Quyết định mình tự chọn (sửa nếu không hợp)
+  
+  - **JS + JSDoc**, không TS (khớp HW1/HW2, không thêm toolchain). Khung đề là TS nhưng chỉ là mẫu.
+  - **Vanilla DOM**, không Mini-React (HW2 cũng vậy, đỡ rủi ro khi live defense).
+  - **Giờ máy chủ giả lập** (một module tự trả `serverNow`), không gọi API thật.
+  - `AI_FAILURE_AUDIT.md`: dùng chung file `docs/AI_FAILURE_AUDIT.md` và thêm mục HW3, chờ bạn hỏi thầy xác nhận.
+  
+  ## Câu hỏi duy nhất để chốt
+  
+  Bạn muốn mô hình tồn kho là **có số lượng (total = N, nhiều reservation đồng thời)** như mình đề xuất, hay **đúng bảng đề phác thảo (một món hàng duy nhất đi qua các trạng thái)**? Bản có số lượng chứng minh "không bán quá" rõ hơn, nhưng thêm một lớp (danh sách reservation). Nếu bạn đồng ý bản của mình thì nói "OK", mình sẽ viết spec và WBS vào `TASK_DECOMPOSITION.md` rồi mới bắt đầu task 1.
+
+
+> OK ổn đấy note chi tiết vào plan nhe, bắt đầu làm plan đi
+
+  ⎿ Read: c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\Homework2_Lab02\TASK_DECOMPOSITION.md
+  ⎿ Write: c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\Homework3_Lab02\TASK_DECOMPOSITION.md
+
+● Mình đã viết plan chi tiết vào [Homework3_Lab02/TASK_DECOMPOSITION.md](Homework3_Lab02/TASK_DECOMPOSITION.md). Chưa chạy lệnh nào, chưa có code, chưa commit.
+  
+  Nội dung chính của plan:
+  - **Cấu trúc và phụ thuộc:** các module `clock`, `timer`, `inventory`, `sim`, `app`. `inventory` thuần, không biết DOM hay `Date.now()`, nên test không cần fake timer.
+  - **Hợp đồng kiểu và bảng chuyển trạng thái:**
+    - Có đủ typedef, hằng số `HOLD_MS` và `MAX_EXTENSIONS`, và các bất biến.
+    - Hết hạn do reducer quyết định bằng so `now` (lazy expiry), không phụ thuộc `rAF`.
+    - Khóa lạc quan dùng `version` (compare-and-swap).
+  - **WBS nhóm A–F** (F là phần của bạn: đo drift, tab ẩn, bàn phím và screen reader, Lighthouse, audit, prompt log).
+  - **Ánh xạ 17 commit** (đề cần ≥ 8), bảng đột biến cho live defense, bảng WCAG (cột trạng thái để "chưa kiểm"), và mục "nơi AI hay sai" chỉ để bạn soi, không phải lỗi đã xảy ra.
+  
+  Bốn điểm cần bạn xác nhận (mục 10 trong file):
+  1. **Audit:** dùng chung `docs/AI_FAILURE_AUDIT.md` hay làm riêng cho HW3?
+  2. **WCAG 2.2.2:** coi đồng hồ là thông tin thời gian thực cần thiết (ẩn mili giây khi reduced-motion) hay thêm nút tắt?
+  3. **Hằng số:** `HOLD_MS` 120 giây, `CHECKOUT_MS` 60 giây, `MAX_EXTENSIONS` 2 do mình chọn. Bạn có muốn đổi giá trị nào không?
+  4. **`PAY_FAIL`:** mình chọn `CANCELLED` thay vì quay về `RESERVED` như bảng phác thảo của đề.
+  
+  Mình cố ý lệch khung mẫu của đề ở một chỗ: đồng hồ tính từ `performance.now()` neo vào giờ máy chủ, không đọc `Date.now()` mỗi tick, vì `Date.now()` có thể nhảy khi đổi giờ. Lý do nằm ở mục 3 của file.
+  
+  Bạn đọc rồi nói "duyệt" (hoặc nêu chỗ cần sửa), mình sẽ bắt đầu task A1.
+
+
+> Mình có update plan nhẹ nên bạn nhớ bám sát theo plan nhe, bắt đầu thực hiện A B và C đi, thực hiện xong cho mình lệnh commit nhe
+
+  ⎿ Read: c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\Homework3_Lab02\TASK_DECOMPOSITION.md
+  ⎿ Bash: Check git status and HW2 code style
+
+> [Request interrupted by user]
+
+
+> continue
+
+
+● Mình đã đọc lại plan (nội dung khớp bản mình viết), giờ làm lần lượt A, B, C. Mình bắt đầu với A1 và B1–B2.
+
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/types.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/types.test.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/clock/server-clock.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/clock/server-clock.test.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/timer/countdown.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/timer/anti-drift-timer.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/timer/timer.test.js
+  ⎿ Bash: Run HW3 tests so far
+
+● Nhóm A và B1–B3 đã pass. Tiếp theo là B4 (trang demo drift) và FSM (C1 đến C3).
+
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/drift-demo.html
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/inventory-fsm.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/inventory-fsm.test.js
+  ⎿ Bash: Run HW3 tests and whole repo
+
+● Tất cả pass. Mình kiểm tra nhanh test có bắt được đột biến biên hết hạn không, rồi cập nhật plan.
+
+  ⎿ Bash: Mutation check on expiry boundary then restore
+  ⎿ Edit: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/TASK_DECOMPOSITION.md
+  ⎿ Bash: Tick done tasks and fix transition table row
+
+● A, B và C đã xong, mình chưa commit. Test pass: 45 test của HW3 và 739 test toàn repo, chạy bằng `npm test`.
+  
+  Mình cũng thử đột biến biên hết hạn từ `>=` thành `>`: 4 test đỏ đúng chỗ. Sau đó mình hoàn nguyên và test xanh lại.
+  
+  **Chưa verify**
+  - **`drift-demo.html`:** mới kiểm bằng đọc mã, chưa mở trên trình duyệt. Bạn chạy 60 giây và chụp bảng làm việc F1.
+  - **Typecheck:** `// @ts-check` chỉ có tác dụng trong editor, chưa có lệnh typecheck.
+  
+  **Lệch plan, cần bạn biết**
+  1. **Gộp commit C1 và C2:** hai task cùng sửa `inventory-fsm.js` nên không tách được commit sạch. Mình gộp thành một commit.
+  2. **`EXPIRED` trả `HOLD_EXPIRED`:** event vào lượt đã `EXPIRED` trả `HOLD_EXPIRED`, không phải `INVALID_TRANSITION`. Lý do là thanh toán trễ phải báo đúng nguyên nhân. Mình đã sửa dòng tương ứng trong bảng chuyển trạng thái ở plan.
+  3. **Cách tính `version`:**
+     - `version` tăng khi state thật sự đổi.
+     - Nếu event bị từ chối nhưng việc quét hết hạn đã đổi state, mình vẫn lưu state đó và tăng `version`, nếu không lượt quá hạn sẽ "sống lại".
+     - Chưa sửa câu "chỉ tăng khi event được chấp nhận" ở bất biến 4 trong plan.
+  
+  **Lệnh commit** (chạy từ gốc repo):
+  
+  ```bash
+  git add Homework3_Lab02/TASK_DECOMPOSITION.md Homework3_Lab02/src/inventory/types.js Homework3_Lab02/src/inventory/types.test.js
+  git commit -m "docs(hw3): add contracts and wbs" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+  
+  git add Homework3_Lab02/src/clock
+  git commit -m "feat(clock): add monotonic server clock" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+  
+  git add Homework3_Lab02/src/timer/countdown.js Homework3_Lab02/src/timer/anti-drift-timer.js
+  git commit -m "feat(timer): add deadline countdown and anti-drift timer" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+  
+  git add Homework3_Lab02/src/timer/timer.test.js
+  git commit -m "test(timer): cover drift, single final tick, cancel" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+  
+  git add Homework3_Lab02/drift-demo.html
+  git commit -m "feat(timer): add drift comparison demo" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+  
+  git add Homework3_Lab02/src/inventory/inventory-fsm.js
+  git commit -m "feat(inventory): add reservation state machine with lazy expiry and invariants" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+  
+  git add Homework3_Lab02/src/inventory/inventory-fsm.test.js
+  git commit -m "test(inventory): cover transitions, expiry and invariants" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+  ```
+  
+  Đó là 7 commit. Nếu bạn muốn giữ đúng 17 commit trong plan thì cho mình biết, mình sẽ tách `inventory-fsm.js` thành hai bước.
+  
+  Sau khi commit xong, mình làm nhóm D (store khóa lạc quan và mô phỏng người mua đồng thời) khi bạn bảo.
+
+
+> <ide_selection>The user selected the lines 1 to 289 from c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\Homework3_Lab02\TASK_DECOMPOSITION.md:
+  # Homework 3 — Task Decomposition
+  
+  > Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rules](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS: [Homework 2](../Homework2_Lab02/TASK_DECOMPOSITION.md).
+  > Trạng thái (2026-10-29): **nhóm A, B, C đã làm và verify (45 test của HW3, 739 test toàn repo), chưa commit**. B4 (`drift-demo.html`) mới kiểm bằng đọc mã, chưa chạy trên trình duyệt (việc F1 của bạn). Chưa làm nhóm D, E, F.
+  > Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task.
+  
+  ## 1. Thông tin chung
+  
+  | Mục | Nội dung |
+  |---|---|
+  | Tên bài | High-Concurrency Flash-Sale E-Commerce Engine |
+  | Thời hạn | 1 tuần |
+  | Bối cảnh | Siêu sale thị trường Việt Nam (Shopee, Lazada 11.11, flash sale nửa đêm) |
+  | Mục tiêu | Đồng hồ đếm ngược không trôi và máy trạng thái giữ hàng với khóa lạc quan; **không bao giờ bán quá số lượng** |
+  | Ngôn ngữ | JavaScript thuần, contract bằng JSDoc, `// @ts-check` (như Homework 1 và 2). Khung mã của đề viết bằng TypeScript chỉ là mẫu |
+  | Engine Mini-React | **Không dùng.** UI dựng bằng DOM API (`createElement`, `textContent`, `replaceChildren`) |
+  | Giờ máy chủ | Giả lập trong code (một hàm `serverNow` có độ lệch và độ trễ cấu hình được), không gọi API thật |
+  | Test | Vitest + jsdom, mỗi module một file `*.test.js` cạnh nó |
+  | Chạy thử | `python -m http.server 8765` từ gốc repo, mở `http://127.0.0.1:8765/Homework3_Lab02/index.html` |
+  
+  ### 1.1 Cấu trúc thư mục
+  
+  ```text
+  Homework3_Lab02/
+    index.html              trang demo (lang, title, main > h1, thẻ sản phẩm, panel giữ hàng, #status)
+    main.js                 điểm vào: nối clock, timer, store, UI; một hub sự kiện
+    main.test.js            test điểm vào, index.html, style.css
+    style.css
+    drift-demo.html         trang đo drift setInterval so với deadline (bằng chứng, task B4)
+    TASK_DECOMPOSITION.md
+    evidence/               ảnh chụp DevTools, kết quả đo
+    src/
+      clock/                server-clock.js
+      timer/                countdown.js, anti-drift-timer.js
+      inventory/            types.js, inventory-fsm.js, inventory-store.js, reserve-with-retry.js
+      sim/                  fake-server.js, buyers.js
+      app/                  flash-sale-app.js, format-time.js, milestones.js
+  ```
+  
+  Quy tắc phụ thuộc:
+  
+  - `inventory` không biết DOM, `requestAnimationFrame` hay `Date.now()`. Mọi thời điểm đi vào qua tham số `now`.
+  - `timer` chỉ biết hàm `now` và `raf` được truyền vào; không biết `inventory`.
+  - `clock` chỉ biết hàm lấy giờ máy chủ và `performance.now`.
+  - `sim` chỉ dùng để demo và test, `inventory` không import `sim`.
+  - Chỉ `app` và `main.js` biết tất cả và đụng DOM.
+  
+  Nhờ vậy `inventory` (phần quan trọng nhất) test được thuần, không cần fake timer; `timer` test bằng đồng hồ và `raf` giả, vì jsdom không đảm bảo `requestAnimationFrame` chạy theo thời gian thật.
+  
+  ## 2. Ràng buộc từ đề
+  
+  1. Đếm ngược chính xác đến mili giây bằng hiệu `Date.now()` so với mốc đích, không dùng `setInterval`.
+  2. Khóa tồn kho lạc quan bằng máy trạng thái hữu hạn: giữ hàng, hết hạn khóa, thanh toán.
+  3. `AI_FAILURE_AUDIT.md` ghi ít nhất 3 lỗi AI (người dùng viết, AI chỉ chỉnh câu chữ).
+  4. Tối thiểu 8 commit riêng biệt, Conventional Commits.
+  5. WCAG 2.2 AA cho UI (project-rules mục 8), thêm các tiêu chí ở mục 8.
+  
+  ## 3. Quyết định thiết kế và lý do
+  
+  | Quyết định | Lý do |
+  |---|---|
+  | Timer tách làm hai lớp: `createCountdown(targetTime, ...)` là lõi, `createAntiDriftTimer(durationMs, ...)` chỉ tính `targetTime = now() + durationMs` rồi gọi lõi | Khóa giữ hàng có mốc tuyệt đối `expiresAt`, đồng hồ sale có mốc tuyệt đối `startsAt`. Một lõi dùng cho cả hai, quyết định "đếm từ mốc đích" nằm ở một chỗ |
+  | Timer chỉ dùng để **hiển thị**, không quyết định hết hạn | `requestAnimationFrame` bị dừng khi tab ẩn nhưng hàng vẫn phải được nhả. Hết hạn do reducer quyết định bằng so sánh `now >= expiresAt` ở mỗi event, cộng một `setTimeout` đánh thức để UI cập nhật |
+  | Tính "giờ" bằng `serverAnchor + (performance.now() - monoAnchor)`, không đọc `Date.now()` mỗi tick | `Date.now()` nhảy khi NTP đồng bộ hoặc người dùng đổi giờ; `performance.now()` đơn điệu. Neo vào giờ máy chủ một lần lúc sync. Đây là chỗ **lệch có chủ ý** so với khung mẫu của đề (dùng `Date.now()` trực tiếp); phần deadline vẫn đúng tinh thần "tính từ mốc đích, không cộng dồn" |
+  | Mô hình tồn kho có số lượng: `{ total, sold, version, reservations }` và mỗi `Reservation` có FSM riêng | Sale thật có N hàng và nhiều người giữ cùng lúc. Bảng trạng thái theo từng món trong đề (`AVAILABLE` ... `SOLD`) trở thành trạng thái **suy ra**: `available = total - sold - số lượt giữ đang hiệu lực` |
+  | FSM là reducer thuần `transition(state, event) -> { state, result }` | Mọi chuyển trạng thái đi qua một hàm duy nhất (đúng ghi chú đề). Test từng cạnh không cần thời gian thật. Khi giảng viên đổi luật lúc bảo vệ thì chỉ sửa một chỗ |
+  | Khóa lạc quan bằng `version` (compare-and-swap), không dùng mutex | Đúng nghĩa "optimistic": đọc `version`, gửi `commit(expectedVersion, event)`; lệch thì `CONFLICT` và thử lại |
+  | Race xảy ra giữa `await` đọc và `await` ghi, nên store là **bất đồng bộ có độ trễ cấu hình** | JavaScript đơn luồng, chỉ có race khi có `await` xen vào. Không có độ trễ thì test "không bán quá" vô nghĩa vì luôn qua |
+  | Có một test chứng minh bản **ngây thơ** (đọc, chờ, ghi, không kiểm version) bán quá | Chứng minh race có thật và test của bản đúng thật sự bắt được; cũng là tư liệu cho phần bảo vệ trực tiếp |
+  
+  ### 3.1 Hợp đồng kiểu
+  
+  ```js
+  /** @typedef {'RESERVED'|'CHECKOUT'|'SOLD'|'EXPIRED'|'CANCELLED'} ReservationStatus */
+  
+  /**
+   * @typedef {Object} Reservation
+   * @property {number} id                 tăng dần, duy nhất trong một kho
+   * @property {string} buyerId
+   * @property {ReservationStatus} status
+   * @property {number} expiresAt          ms theo giờ máy chủ; mốc hết hạn của RESERVED và CHECKOUT
+   * @property {number} extensions         số lần đã gia hạn, tối đa MAX_EXTENSIONS
+   */
+  
+  /**
+   * @typedef {Object} Inventory
+   * @property {number} total
+   * @property {number} sold               số lượt ở trạng thái SOLD
+   * @property {number} version            tăng 1 mỗi lần một event được chấp nhận
+   * @property {{ startsAt: number, endsAt: number }} saleWindow
+   * @property {ReadonlyArray<Readonly<Reservation>>} reservations
+   */
+  
+  /**
+   * @typedef {{ type: 'RESERVE', buyerId: string, now: number }
+   *   | { type: 'BEGIN_CHECKOUT', id: number, now: number }
+   *   | { type: 'PAY_SUCCESS', id: number, now: number }
+   *   | { type: 'PAY_FAIL', id: number, now: number }
+   *   | { type: 'EXTEND', id: number, now: number }
+   *   | { type: 'CANCEL', id: number, now: number }
+   *   | { type: 'EXPIRE_DUE', now: number }} InventoryEvent
+   */
+  
+  /**
+   * @typedef {{ ok: true, id?: number }
+   *   | { ok: false, reason: 'SALE_NOT_LIVE'|'SOLD_OUT'|'NOT_FOUND'|'INVALID_TRANSITION'|'HOLD_EXPIRED'|'EXTENSION_LIMIT' }} TransitionResult
+   */
+  
+  /**
+   * @typedef {{ ok: true, state: Inventory, result: TransitionResult }
+   *   | { ok: false, reason: 'CONFLICT', current: Inventory }} CommitResult
+   */
+  ```
+  
+  ### 3.2 Bảng chuyển trạng thái của một `Reservation`
+  
+  | Từ | Event | Sang | Điều kiện |
+  |---|---|---|---|
+  | (chưa có) | `RESERVE` | `RESERVED` | `startsAt <= now < endsAt` và `available > 0`; đặt `expiresAt = now + HOLD_MS` |
+  | `RESERVED` | `BEGIN_CHECKOUT` | `CHECKOUT` | chưa quá `expiresAt`; đặt `expiresAt = now + CHECKOUT_MS` |
+  | `RESERVED` | `EXTEND` | `RESERVED` | chưa quá `expiresAt`, `extensions < MAX_EXTENSIONS`; `expiresAt += EXTEND_MS` |
+  | `CHECKOUT` | `PAY_SUCCESS` | `SOLD` | chưa quá `expiresAt`; `sold += 1` |
+  | `CHECKOUT` | `PAY_FAIL` | `CANCELLED` | hàng trả về kho (suy ra, không cần cộng trả) |
+  | `RESERVED`, `CHECKOUT` | `CANCEL` | `CANCELLED` | |
+  | `RESERVED`, `CHECKOUT` | `EXPIRE_DUE` | `EXPIRED` | `now >= expiresAt` (biên **bao gồm**) |
+  | `SOLD`, `CANCELLED` | mọi event | từ chối `INVALID_TRANSITION` | trạng thái kết thúc |
+  | `EXPIRED` | mọi event | từ chối `HOLD_EXPIRED` | trạng thái kết thúc; báo lý do rõ hơn cho người dùng |
+  
+  Hằng số mặc định (một chỗ, `types.js`): `HOLD_MS = 120_000`, `CHECKOUT_MS = 60_000`, `EXTEND_MS = 60_000`, `MAX_EXTENSIONS = 2`.
+  
+  Quy tắc áp dụng cho **mọi** event: reducer chạy `EXPIRE_DUE(now)` trước, rồi mới xử lý event. Nhờ đó lượt giữ đã quá hạn không thể thanh toán dù timer giao diện chưa kịp chạy (lazy expiry).
+  
+  Bất biến, kiểm bằng `verifyInvariants(state)`:
+  
+  1. `sold + (số lượt RESERVED hoặc CHECKOUT) <= total` ở mọi thời điểm.
+  2. `sold` đúng bằng số lượt ở trạng thái `SOLD`.
+  3. `id` của lượt giữ duy nhất; trạng thái kết thúc không bao giờ đổi.
+  4. `version` không giảm; chỉ tăng khi event được chấp nhận (event bị từ chối không đổi `version`).
+  
+  ### 3.3 Hợp đồng timer và clock
+  
+  ```js
+  /**
+   * @typedef {Object} TimerDeps
+   * @property {() => number} [now]                 mặc định Date.now
+   * @property {(cb: () => void) => number} [raf]   mặc định requestAnimationFrame
+   * @property {(id: number) => void} [caf]         mặc định cancelAnimationFrame
+   */
+  
+  /** @returns {() => void} hàm hủy; idempotent */
+  // createCountdown(targetTime, onTick, deps)
+  // createAntiDriftTimer(durationMs, onTick, deps)
+  ```
+  
+  Bất biến của timer:
+  
+  1. `onTick(remaining)` luôn nhận `remaining >= 0`, tính từ `targetTime - now()`, không cộng dồn.
+  2. `onTick(0)` được gọi **đúng một lần** rồi dừng lên lịch; nếu `targetTime` đã qua ngay từ đầu vẫn gọi `onTick(0)` đúng một lần.
+  3. Gọi hàm hủy trước khi hết giờ thì không còn `onTick` nào nữa (kể cả `onTick(0)`); gọi hủy nhiều lần không lỗi.
+  4. Khung mẫu của đề **gán `rafId` sau khi định nghĩa `tick`** và không bảo vệ lúc hủy giữa chừng; bản của mình giữ cờ `stopped` để callback đã lên lịch không chạy sau khi hủy.
+  
+  `createServerClock`:
+  
+  | Thành phần | Việc |
+  |---|---|
+  | `sync()` | Gọi `serverNow()` một lần, trừ nửa thời gian khứ hồi (Cristian), lưu `serverAnchor` và `monoAnchor = performance.now()` |
+  | `now()` | `serverAnchor + (mono() - monoAnchor)`; đơn điệu, không phụ thuộc đồng hồ hệ thống sau lần sync |
+  | `offset()` | `serverAnchor - Date.now()` lúc sync, hiện ra giao diện để chứng minh máy khách lệch giờ vẫn đúng |
+  
+  ## 4. WBS
+  
+  ### Nhóm A — Nền
+  
+  - [x] A1 Viết `src/inventory/types.js` (typedef mục 3.1, hằng số mục 3.2) và test khẳng định hằng số hợp lệ. Commit: `docs(hw3): add contracts and wbs`
+  
+  ### Nhóm B — Đồng hồ và timer
+  
+  - [x] B1 `src/clock/server-clock.js` + test: `now()` đơn điệu khi `Date.now()` bị đổi; `sync` bù nửa khứ hồi; trước `sync` thì ném lỗi rõ ràng. Commit: `feat(clock): add monotonic server clock`
+  - [x] B2 `src/timer/countdown.js` + `anti-drift-timer.js`. Commit: `feat(timer): add deadline countdown and anti-drift timer`
+  - [x] B3 Test timer bằng `now`/`raf` giả: không trôi khi mỗi frame trễ ngẫu nhiên; `onTick(0)` đúng một lần; hủy giữa chừng; mốc đã qua; `remaining` không âm; nhảy thời gian lớn (tab ẩn rồi quay lại) cho ra giá trị đúng ngay tick đầu. Commit: `test(timer): cover drift, single final tick, cancel`
+  - [x] B4 `drift-demo.html`: chạy song song `setInterval` kiểu cộng dồn và `createAntiDriftTimer` trong 60 giây, in sai lệch mỗi 5 giây vào bảng. Dùng làm bằng chứng cho báo cáo. Commit: `feat(timer): add drift comparison demo`
+  
+  ### Nhóm C — Máy trạng thái
+  
+  - [x] C1 `src/inventory/inventory-fsm.js`: `createInventory`, `transition`, bảng mục 3.2 (chưa có hết hạn). Commit: `feat(inventory): add reservation state machine`
+  - [x] C2 Thêm lazy expiry (`EXPIRE_DUE`, chạy trước mọi event), `EXTEND`, `verifyInvariants`. Commit: `feat(inventory): add lazy expiry, extension and invariants`
+  - [x] C3 Test FSM: mọi cạnh hợp lệ; mọi cạnh không hợp lệ bị từ chối và `version` không đổi; biên `now === expiresAt` là hết hạn; thanh toán lượt đã quá hạn bị từ chối `HOLD_EXPIRED`; ngoài `saleWindow` bị `SALE_NOT_LIVE`; `EXTEND` quá giới hạn; hết hàng; state trả về bị `Object.freeze`, state cũ không bị sửa. Commit: `test(inventory): cover transitions, expiry and invariants`
+  
+  ### Nhóm D — Khóa lạc quan và đồng thời
+  
+  - [ ] D1 `src/inventory/inventory-store.js`: `read()` trả bản chụp (có `version`), `commit(expectedVersion, event)` đồng bộ trong thân hàm; lệch `version` trả `CONFLICT`. Có `delay` cấu hình được để mô phỏng độ trễ mạng. Commit: `feat(inventory): add optimistic versioned store`
+  - [ ] D2 `src/inventory/reserve-with-retry.js`: đọc, chờ, `commit`; gặp `CONFLICT` thì đọc lại và thử lại tối đa `maxRetries`; thấy `available === 0` thì trả `SOLD_OUT` ngay, không thử. Commit: `feat(inventory): add reserve with bounded retry`
+  - [ ] D3 `src/sim/buyers.js` + test đồng thời: tồn 10, 200 người mua cùng lúc với độ trễ ngẫu nhiên cố định seed. Khẳng định đúng 10 lượt giữ thành công, tổng kết quả bằng 200, `verifyInvariants` đúng. Thêm test bản ngây thơ (không kiểm version) **bán quá** để chứng minh race có thật. Thêm test: mọi người cùng thanh toán, `sold === total`, không vượt. Commit: `test(inventory): simulate concurrent buyers without oversell`
+  
+  ### Nhóm E — Giao diện
+  
+  - [ ] E1 `index.html` + `style.css` + `src/app/format-time.js` (+ test: `mm:ss.mmm`, 0, giá trị lớn). Thẻ ngữ nghĩa, `<time>`, trạng thái bằng chữ. Commit: `feat(ui): add flash-sale page and styles`
+  - [ ] E2 `src/app/flash-sale-app.js` + `main.js`: nối clock, store, timer; một hub sự kiện (event delegation, `keydown` + `e.key`); render bằng DOM API; hiển thị `offset` giờ máy chủ. Có test jsdom. Commit: `feat(ui): wire clock, store and countdown`
+  - [ ] E3 `src/app/milestones.js` + trợ năng: thông báo mốc còn 60 giây, còn 10 giây, đã hết qua `role="status"` (mốc 10 giây và hết dùng `role="alert"`); nút "Gia hạn"; không đặt `aria-live` trên đồng hồ; `prefers-reduced-motion` ẩn phần mili giây. Test mốc chỉ thông báo một lần. Commit: `feat(a11y): add milestone announcements and hold extension`
+  - [ ] E4 `src/sim/fake-server.js` + nút "Mô phỏng người mua" chạy D3 trên giao diện, hiện số thành công, xung đột, hết hàng. Commit: `feat(ui): add buyer simulation control`
+  
+  ### Nhóm F — Kiểm chứng và tài liệu (việc của người dùng, trừ khi ghi khác)
+  
+  - [ ] F1 Chạy `drift-demo.html` 60 giây, chụp bảng kết quả vào `evidence/`; mở Performance panel xác nhận không có task dài do timer
+  - [ ] F2 Kiểm tra tab ẩn: bắt đầu giữ hàng, chuyển tab 30 giây, quay lại, giá trị còn lại đúng và khóa hết hạn đúng lúc (kể cả khi tab ẩn lúc hết hạn)
+  - [ ] F3 Kiểm tra bàn phím và trình đọc màn hình (NVDA hoặc Narrator): Tab tới mọi nút, thông báo mốc đọc đúng một lần, đồng hồ không bị đọc từng khung
+  - [ ] F4 Lighthouse accessibility, lưu `evidence/lighthouse.png`
+  - [ ] F5 `AI_FAILURE_AUDIT.md`: người dùng viết ≥ 3 lỗi AI có bằng chứng DevTools và bản sửa; AI chỉ chỉnh câu chữ. Gợi ý nơi AI hay sai ở mục 9
+  - [ ] F6 Cập nhật bảng WCAG (mục 8) bằng kết quả thật, ghi rõ đã kiểm cách nào. Commit: `docs(hw3): record drift measurement and wcag status`
+  - [ ] F7 Export prompt log vào `docs/prompt_logs/`
+  - [ ] F8 `AI_FAILURE_AUDIT.md` hoàn chỉnh. Commit: `docs(hw3): add AI failure audit`
+  
+  ## 5. Ánh xạ commit (≥ 8 theo đề)
+  
+  | # | Commit | Task |
+  |---|---|---|
+  | 1 | `docs(hw3): add contracts and wbs` | A1 |
+  | 2 | `feat(clock): add monotonic server clock` | B1 |
+  | 3 | `feat(timer): add deadline countdown and anti-drift timer` | B2 |
+  | 4 | `test(timer): cover drift, single final tick, cancel` | B3 |
+  | 5 | `feat(timer): add drift comparison demo` | B4 |
+  | 6 | `feat(inventory): add reservation state machine` | C1 |
+  | 7 | `feat(inventory): add lazy expiry, extension and invariants` | C2 |
+  | 8 | `test(inventory): cover transitions, expiry and invariants` | C3 |
+  | 9 | `feat(inventory): add optimistic versioned store` | D1 |
+  | 10 | `feat(inventory): add reserve with bounded retry` | D2 |
+  | 11 | `test(inventory): simulate concurrent buyers without oversell` | D3 |
+  | 12 | `feat(ui): add flash-sale page and styles` | E1 |
+  | 13 | `feat(ui): wire clock, store and countdown` | E2 |
+  | 14 | `feat(a11y): add milestone announcements and hold extension` | E3 |
+  | 15 | `feat(ui): add buyer simulation control` | E4 |
+  | 16 | `docs(hw3): record drift measurement and wcag status` | F6 |
+  | 17 | `docs(hw3): add AI failure audit` | F8 |
+  
+  Con số 17 vượt mức tối thiểu 8; có thể gộp B4 với B2 hoặc E4 với E2 nếu thấy quá vụn, miễn mỗi commit vẫn là một ý.
+  
+  ## 6. Kiểm chứng
+  
+  Trước khi tick một task: chạy `npx vitest run Homework3_Lab02` (và toàn repo `npm test` ở cuối mỗi nhóm), xem `git diff`, dán kết quả thật. Chưa có typecheck chạy tự động; `// @ts-check` chỉ có tác dụng trong editor. Nếu muốn typecheck bằng lệnh phải cài TypeScript (cài dependency, cần hỏi trước).
+  
+  ## 7. Chuẩn bị bảo vệ trực tiếp (3 phút)
+  
+  Mỗi quyết định nằm ở một chỗ để sửa nhanh. Các đột biến giảng viên có thể đưa ra và nơi sửa:
+  
+  | Đột biến có thể gặp | Nơi sửa | Cách kiểm chứng |
+  |---|---|---|
+  | Đổi biên hết hạn `>=` thành `>` | `inventory-fsm.js`, hàm hết hạn | test biên `now === expiresAt` |
+  | `PAY_FAIL` quay về `RESERVED` thay vì `CANCELLED` | bảng chuyển trong `inventory-fsm.js` | test cạnh `CHECKOUT` |
+  | Đổi `HOLD_MS` hoặc giới hạn gia hạn | `types.js` | đọc hằng số trong test |
+  | Bỏ kiểm `version` ở `commit` | `inventory-store.js` | test đồng thời phải đỏ (bán quá) |
+  | Đổi timer từ deadline sang đếm lùi cộng dồn | `countdown.js` | test drift phải đỏ |
+  | Hết hạn do timer thay vì lazy expiry | `inventory-fsm.js` | test thanh toán lượt quá hạn khi timer chưa chạy |
+  | Gọi `onTick(0)` hai lần hoặc không gọi | `countdown.js` | test `onTick(0)` đúng một lần |
+  
+  ## 8. Ghi chú WCAG 2.2 AA
+  
+  Cột "Trạng thái" chỉ điền sau khi đã kiểm tra thật (mục F6).
+  
+  | Tiêu chí | Cách đáp ứng | Cách kiểm | Trạng thái |
+  |---|---|---|---|
+  | 2.2.1 Timing Adjustable | Cảnh báo trước khi hết hạn, nút "Gia hạn" (tối đa `MAX_EXTENSIONS`) | thủ công + test milestones | chưa kiểm |
+  | 2.2.2 Pause, Stop, Hide | Đồng hồ đếm ngược là thông tin thời gian thực cần thiết; phần mili giây ẩn khi `prefers-reduced-motion`. **Cần xác nhận cách hiểu** | thủ công | chưa kiểm |
+  | 4.1.3 Status Messages | Mốc quan trọng qua `role="status"`/`role="alert"`, không `aria-live` trên đồng hồ | Narrator hoặc NVDA | chưa kiểm |
+  | 1.4.1 Use of Color | Trạng thái hàng bằng chữ ("Còn hàng", "Đang giữ", "Đã hết") | xem thủ công | chưa kiểm |
+  | 1.4.3 Contrast | Chữ thường tương phản ≥ 4.5:1 | Lighthouse + công cụ đo | chưa kiểm |
+  | 2.1.1 / 2.4.7 Keyboard, Focus Visible | Mọi điều khiển là `<button>`, focus rõ | thủ công bằng Tab | chưa kiểm |
+  | 2.5.8 Target Size | Vùng bấm ≥ 24×24 CSS px | thủ công + CSS | chưa kiểm |
+  | 3.3.7 Redundant Entry | Không bắt nhập lại thông tin giữa giữ hàng và thanh toán | thủ công | chưa kiểm |
+  | 2.3.1 Three Flashes | Không nhấp nháy | xem thủ công | chưa kiểm |
+  
+  ## 9. Nơi AI hay sai ở bài này (để chú ý khi review, không phải kết quả)
+  
+  Đây là các điểm cần **soi kỹ**, không phải lỗi đã xảy ra. Mục F5 chỉ được ghi những lỗi **thật sự xuất hiện** trong lúc làm, có bằng chứng DevTools của chính bạn.
+  
+  - Dùng `rAF` hoặc `setTimeout` để quyết định hết hạn thay vì so với `now`.
+  - Gọi `onTick(0)` hai lần, hoặc không bao giờ gọi khi `targetTime` đã qua.
+  - Dùng `Date.now()` mỗi tick rồi cộng dồn sai số.
+  - Đọc `version`, `await`, rồi ghi không kiểm lại (race đọc-ghi).
+  - Đặt `aria-live` trên đồng hồ chạy từng mili giây.
+  - `innerHTML` cho nội dung động trên giao diện.
+  - Dùng `setInterval` "chỉ để tạm" trong mô phỏng.
+  
+  ## 10. Câu hỏi còn mở
+  
+  1. `AI_FAILURE_AUDIT.md` dùng chung `docs/AI_FAILURE_AUDIT.md` cho cả lab hay làm riêng cho HW3? Đề lab nói 3 lỗi, đề HW3 nói "ít nhất 3". Cần hỏi thầy. Tạm thời: thêm mục HW3 vào file chung.
+  2. 2.2.2 (Pause, Stop, Hide) có chấp nhận lý do "đồng hồ là thông tin thời gian thực cần thiết" không, hay cần nút tắt hiển thị mili giây? Tạm thời: ẩn mili giây khi `prefers-reduced-motion`.
+  3. Hằng số `HOLD_MS` 120 giây, `CHECKOUT_MS` 60 giây, `MAX_EXTENSIONS` 2 là giá trị mình chọn để demo, đề không nêu. Đổi được ở một chỗ.
+  4. Khi `PAY_FAIL` mình chọn `CANCELLED` (trả hàng) thay vì quay về `RESERVED` như bảng phác thảo của đề; lý do: tránh giữ hàng vô hạn sau nhiều lần thất bại. Cần bạn xác nhận.
+  
+  
+  This may or may not be related to the current task.</ide_selection>
+    Hãy đọc `TASK_DECOMPOSITION.md`, `project-rules.md` và code hiện có, sau đó hoàn thành các phần D, E, F trong `Homework3_Lab02`. Giữ nguyên thiết kế của nhóm A, B, C, chỉ cải tiến vừa đủ, không over-engineer.
+  
+  - **Phần D – Concurrency:** Cài đặt Optimistic Locking bằng version, xử lý conflict và retry có giới hạn; mô phỏng 200 người mua cùng tranh 10 sản phẩm, kiểm tra không oversell và bổ sung test tái hiện race condition.
+  - **Phần E – UI & Accessibility:** Xây dựng giao diện flash-sale responsive với countdown, tồn kho, đặt hàng và mô phỏng nhiều người mua. Bổ sung thông báo các mốc thời gian, hỗ trợ bàn phím, screen reader và `prefers-reduced-motion`.
+  - **Phần F – Verification & Documentation:** Kiểm tra timer drift, tab chạy nền, accessibility và Lighthouse; cập nhật `AI_FAILURE_AUDIT.md`, checklist WCAG và `docs/prompt_logs/`. Chỉ ghi kết quả có bằng chứng thực tế, không bịa số liệu, lỗi AI hoặc ảnh chụp.
+  
+  Tuân thủ JavaScript, JSDoc, `// @ts-check` và cấu trúc test hiện có. Sau mỗi phần, chạy test liên quan; cuối cùng chạy `npx vitest run Homework3_Lab02` và test toàn repo. Kiểm tra diff, không sửa lại code đang hoạt động nếu không cần thiết. Không tự commit.
+  
+  Cuối cùng, báo cáo ngắn gọn các file đã sửa, tính năng hoàn thành, lệnh test và kết quả thực tế, cùng những bước cần mình kiểm tra thủ công.
+
+
+● Mình đọc `project-rules.md`, `AI_FAILURE_AUDIT.md` và `docs/prompt_logs/` trước khi làm D, E, F.
+
+  ⎿ Bash: Inspect audit doc, rules headings, prompt logs
+
+● Working tree đang sạch nên mình hiểu là bạn đã commit xong A–C. Mình bắt đầu nhóm D (store, retry, mô phỏng) rồi chạy test ngay.
+
+  ⎿ Edit: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/types.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/inventory-store.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/reserve-with-retry.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/sim/buyers.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/inventory-store.test.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/inventory/reserve-with-retry.test.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/sim/buyers.test.js
+  ⎿ Bash: Run HW3 tests after group D
+
+● Nhóm D pass (65 test). Mình thử bỏ kiểm `version` trong `commit` để xem test có đỏ không.
+
+  ⎿ Bash: Mutation check: remove version check, then restore
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/format-time.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/format-time.test.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/milestones.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/milestones.test.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/sim/fake-server.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/sim/fake-server.test.js
+
+● Tiếp theo là `index.html`, `style.css`, app và `main.js`.
+
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/index.html
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/style.css
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/flash-sale-app.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/main.js
+
+● Giờ viết test cho app và `main.js`/HTML/CSS.
+
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/flash-sale-app.test.js
+  ⎿ Write: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/main.test.js
+  ⎿ Bash: Run HW3 tests after group E
+
+● `import.meta.url` trong môi trường jsdom không dùng được. Mình xem HW2 đọc file thế nào rồi làm theo.
+
+  ⎿ Bash: See how HW2 test reads files
+
+● Dùng đường dẫn tương đối từ gốc repo như HW2.
+
+  ⎿ Bash: Fix test file paths and rerun HW3 tests
+
+● Những thay đổi "on disk" đó là của mình (sửa đường dẫn). Giờ mình cập nhật plan, chạy toàn repo và kiểm tra diff.
+
+  ⎿ Bash: Update plan, run all tests, review diff
+
+● `types.js` (mình vừa thêm `EventInput`) không hiện trong diff, mình kiểm tra lại.
+
+  ⎿ Bash: Check types.js state and recent commits
+
+● Mọi thứ khớp: `EventInput` trong `types.js` đã nằm trong commit `4ff59a8` của bạn (bạn commit sau khi mình sửa), nên không hiện là thay đổi mới.
+  
+  ## Kết quả
+  
+  **Test thực tế**
+  - `npx vitest run Homework3_Lab02`: 12 file, **112 test pass**.
+  - `npm test` toàn repo: 47 file, **806 test pass**.
+  - `git diff --check`: sạch. Chưa có file ngoài `Homework3_Lab02/` bị đổi.
+  
+  **Đã làm**
+  - **Nhóm D**
+    - Store có `version` và `commit` kiểu compare-and-swap ([inventory-store.js](Homework3_Lab02/src/inventory/inventory-store.js)).
+    - Retry có giới hạn ([reserve-with-retry.js](Homework3_Lab02/src/inventory/reserve-with-retry.js)).
+    - Mô phỏng 200 người mua tranh 10 hàng, có thanh toán đồng thời và bản ngây thơ ([buyers.js](Homework3_Lab02/src/sim/buyers.js)).
+    - Kết quả: đúng 10 lượt giữ, 190 báo hết hàng, `conflicts > 0`, bất biến đúng. Bản ngây thơ báo thành công cho cả 200 người trong khi kho chỉ có 1 lượt giữ còn lại (lost update).
+  - **Nhóm E**
+    - Trang demo ([index.html](Homework3_Lab02/index.html), [style.css](Homework3_Lab02/style.css), [flash-sale-app.js](Homework3_Lab02/src/app/flash-sale-app.js), [main.js](Homework3_Lab02/main.js)).
+    - Mốc 60s dùng `role="status"`, mốc 10s và hết giờ dùng `role="alert"`, mỗi mốc chỉ thông báo một lần ([milestones.js](Homework3_Lab02/src/app/milestones.js)).
+    - `prefers-reduced-motion` ẩn phần mili giây.
+    - Có `visibilitychange` và `setTimeout` đánh thức để nhả hàng khi tab ẩn.
+    - Có test quét mã nguồn cấm `innerHTML`, `var`, `setInterval`, `keypress`.
+  
+  **Điều cần biết**
+  - **Test bán quá:** bỏ kiểm `version` thì 5 test đỏ (đã thử rồi hoàn nguyên). Nhưng test "không bán quá" vẫn xanh vì `transition` cũng chặn `SOLD_OUT`. Mình đã ghi điều này vào plan mục 7, bạn nên nắm khi bảo vệ.
+  - **Nhóm F chưa làm:**
+    - Mình không tạo số đo, ảnh chụp hay lỗi AI nào.
+    - Mục 8 (WCAG) vẫn là "chưa kiểm".
+    - Mình không thêm mục HW3 vào `AI_FAILURE_AUDIT.md`, vì trong lúc làm chưa có lỗi AI nào được bạn xác nhận bằng bằng chứng.
+  - **Chưa chạy trên trình duyệt thật:** các test jsdom dùng đồng hồ và `rAF` giả. Chưa typecheck.
+  
+  **Bạn cần kiểm tay**
+  1. Chạy `python -m http.server 8765` từ gốc repo, mở `http://127.0.0.1:8765/Homework3_Lab02/index.html`. Sale mở sau 8 giây. Thử giữ hàng, thanh toán, gia hạn và nút mô phỏng.
+  2. Thử `?skew=5000` để xem chênh lệch giờ máy chủ hiện đúng.
+  3. **F1:** chạy `drift-demo.html` 60 giây (bấm "Làm bận luồng chính" vài lần) rồi chụp bảng vào `evidence/`.
+  4. **F2:** giữ hàng, chuyển sang tab khác khoảng 2 phút, quay lại. Kỳ vọng: hàng đã nhả và có thông báo hết hạn. Hold mặc định là 120 giây nên không cần chờ hết hạn khi tab ẩn ngắn hơn.
+  5. **F3:** Tab qua mọi nút, dùng Narrator hoặc NVDA kiểm các mốc.
+  6. **F4:** chạy Lighthouse accessibility và lưu `evidence/lighthouse.png`.
+  7. **F5, F7, F8:** viết `AI_FAILURE_AUDIT.md` từ lỗi thật bạn gặp, và export prompt log. Gửi mình nội dung thì mình chỉnh câu chữ.
+  8. Sau khi có kết quả thật, cập nhật cột "Trạng thái" ở mục 8 (F6).
+  
+  ## Lệnh commit (không có Co-Authored-By, bạn tự thêm)
+  
+  ```bash
+  git add Homework3_Lab02/src/inventory/inventory-store.js Homework3_Lab02/src/inventory/inventory-store.test.js
+  git commit -m "feat(inventory): add optimistic versioned store"
+  
+  git add Homework3_Lab02/src/inventory/reserve-with-retry.js Homework3_Lab02/src/inventory/reserve-with-retry.test.js
+  git commit -m "feat(inventory): add reserve with bounded retry"
+  
+  git add Homework3_Lab02/src/sim/buyers.js Homework3_Lab02/src/sim/buyers.test.js
+  git commit -m "test(inventory): simulate concurrent buyers without oversell"
+  
+  git add Homework3_Lab02/index.html Homework3_Lab02/style.css Homework3_Lab02/src/app/format-time.js Homework3_Lab02/src/app/format-time.test.js
+  git commit -m "feat(ui): add flash-sale page and styles"
+  
+  git add Homework3_Lab02/src/app/milestones.js Homework3_Lab02/src/app/milestones.test.js
+  git commit -m "feat(a11y): add milestone announcements and hold extension"
+  
+  git add Homework3_Lab02/src/sim/fake-server.js Homework3_Lab02/src/sim/fake-server.test.js Homework3_Lab02/src/app/flash-sale-app.js Homework3_Lab02/src/app/flash-sale-app.test.js Homework3_Lab02/main.js Homework3_Lab02/main.test.js
+  git commit -m "feat(ui): wire clock, store, countdown and buyer simulation"
+  
+  git add Homework3_Lab02/TASK_DECOMPOSITION.md
+  git commit -m "docs(hw3): tick groups D and E and record verification"
+  ```
+  
+  Commit số 5 gộp phần nút "Gia hạn" vào `flash-sale-app.js` ở commit số 6, vì nút nằm trong file đó. Nếu bạn muốn tên commit 5 sát hơn, đổi thành `feat(a11y): add milestone tracker`.
+
+
+> <ide_opened_file>The user opened the file c:\Dev\Project\24520626_QuangPhuHung_MSIS207_Lab02\docs\AI_FAILURE_AUDIT.md in the IDE. This may or may not be related to the current task.</ide_opened_file>
+    Làm nhóm F luôn đi, dùng edege để làm , hoàn thiện tất cả rồi tạo báo cáo tổng quan cho mình
+
+
+● Mình xem HW2 đã dùng Edge như thế nào và máy có gì sẵn, trước khi chọn cách làm.
+
+  ⎿ Bash: Find how HW2 used Edge, check Edge and tooling
+  ⎿ Bash: Create CDP helper in scratchpad and smoke test Edge
+
+● Edge chạy tốt. Phát hiện nhỏ: trang gọi `favicon.ico` bị 404, tạo lỗi console; mình sẽ sửa sau. Giờ chạy phép đo drift 60 giây ở nền.
+
+  ⎿ Bash: Run 60s drift measurement in Edge in background
+
+● Trong lúc đó, mình viết script kiểm tra accessibility (bàn phím thật, cây accessibility, tương phản, kích thước vùng bấm, reflow 320 px, reduced-motion, luồng đầy đủ).
+
+  ⎿ Bash: Write accessibility audit script
+
+● Heredoc bị lỗi cú pháp nên file chưa được ghi. Mình dùng công cụ Write cho file này, và đọc kết quả drift trước.
+
+  ⎿ Bash: Read drift measurement output
+  ⎿ Bash: Check evidence folder and task output
+
+● Script bị tắt khi shell kết thúc (mình đã lồng `&` bên trong tác vụ nền). Chạy lại đúng cách.
+
+  ⎿ Bash: Run 60s drift measurement in Edge
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+
+● Lần chạy đầu của drift đã ra kết quả (số liệu thật, có ghi chú về sai số lượng tử hóa 100 ms của `setInterval`). Mình chờ hai tác vụ nền còn lại.
+
+  ⎿ Bash: Wait for accessibility audit to progress
+
+● Trong lúc chờ, mình viết hai script cần thời gian thực: một cho các mốc thông báo và độ chính xác đồng hồ, một cho tab ẩn.
+
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Monitor: Wait for a11y audit to finish
+  ⎿ Monitor: placeholder
+
+● Mình chờ thông báo từ tác vụ a11y.
+
+  ⎿ Bash: Read a11y audit output so far
+  ⎿ Bash: Add empty favicon link to both pages
+  ⎿ Bash: Run accessibility audit in Edge
+  ⎿ Bash: Locate click handler and hold title
+  ⎿ Read: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/flash-sale-app.js
+  ⎿ Read: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/index.html
+  ⎿ Edit: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/flash-sale-app.js
+  ⎿ Edit: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/flash-sale-app.js
+  ⎿ Edit: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/index.html
+  ⎿ Edit: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/src/app/flash-sale-app.test.js
+
+● Sửa script đo: kiểm status/alert sau khi chúng có nội dung, và chờ thao tác trước hoàn tất.
+
+  ⎿ Bash: Patch a11y script checks and waits
+  ⎿ Bash: Run HW3 tests after focus fix
+
+● Test pass (114). Mình chạy lại a11y và đồng thời bắt đầu hai phép đo thời gian thực (mốc thông báo và tab ẩn), mỗi phép một Edge riêng.
+
+  ⎿ Bash: cd "C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhu
+  ⎿ Bash: cd "C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhu
+  ⎿ Bash: Rerun accessibility audit after focus fix
+  ⎿ Bash: Fix ring check and rerun a11y audit
+  ⎿ Bash: Add diagnostics to a11y script
+  ⎿ Monitor: Wait for milestone and hidden-tab runs
+
+● Đang chờ hai phép đo thời gian thực kết thúc. Mình đọc kết quả khi có thông báo.
+
+  ⎿ Monitor: noop
+  ⎿ Bash: Peek at running measurement outputs
+
+● Tab ẩn thật sự (`visibilityState` là `hidden`, 0 khung `rAF` trong 30 giây). Giá trị sau khi quay lại lệch −125 ms so với dự kiến. Mình chờ hai phép đo kết thúc.
+
+  ⎿ Monitor: Wait for both timed runs to finish
+
+● Trong lúc chờ, mình kiểm tra xem có cài Lighthouse tạm thời được không (vào thư mục tạm, không đụng repo).
+
+  ⎿ Bash: Check Lighthouse package version and size on npm
+  ⎿ Bash: Install Lighthouse in scratch folder only
+
+● Lighthouse đã cài vào thư mục tạm (không đụng repo). Mình đợi hai phép đo thời gian thực xong rồi mới chạy Lighthouse để tránh nhiễu.
+
+  ⎿ Monitor: Wait for both timed runs
+
+● Mình chờ thông báo từ monitor.
+
+  ⎿ Bash: Read milestone and hidden-tab results
+
+● Các sai lệch đồng hồ chỉ −1 đến −5 ms, tức là điều kiện ≤ 50 ms đạt. Điều kiện khác trong phép kiểm đang fail, mình xem số mẫu.
+
+  ⎿ Bash: Inspect drift samples in milestone evidence
+  ⎿ Bash: Read hidden-tab results and fix milestone script
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Bash: Measure hidden-tab setTimeout throttling
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Bash: Run Lighthouse desktop and mobile against Edge
+  ⎿ Bash: Extract Lighthouse scores into evidence JSON
+  ⎿ Bash: Run a11y audit three times alone to check flakiness
+  ⎿ Bash: Clean up draft evidence files
+  ⎿ Bash: cd "C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhu
+
+● Mình xem ảnh chụp để kiểm tra giao diện thật.
+
+  ⎿ Read: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/evidence/edge-02-holding.png
+  ⎿ Read: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/Homework3_Lab02/evidence/edge-drift-table.png
+
+● Ảnh khớp với số đo. Trong lúc chờ phép đo cuối, mình xem định dạng prompt log cũ để tạo log cho HW3 từ transcript thật của phiên này.
+
+  ⎿ Bash: Inspect prompt log format and session transcripts
+
+● Các log cũ là bản xuất từ giao diện Claude Code. Mình kiểm tra transcript của phiên hiện tại để tạo log HW3 từ dữ liệu thật.
+
+  ⎿ Bash: Inspect current session transcript structure
+
+● Transcript phiên này đúng là toàn bộ công việc HW3, dùng được để tạo prompt log. Mình kiểm tra phép đo mốc thông báo đã xong chưa.
+
+  ⎿ Bash: Check milestone run and tail of AI audit doc
+  ⎿ Read: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/docs/AI_FAILURE_AUDIT.md
+  ⎿ Edit: c:/Dev/Project/24520626_QuangPhuHung_MSIS207_Lab02/docs/AI_FAILURE_AUDIT.md
+  ⎿ Bash: Read milestone results
+  ⎿ Monitor: Wait for milestones run
+
+● Mình chờ phép đo cuối hoàn tất, rồi cập nhật `TASK_DECOMPOSITION.md` bằng số liệu thật.
+
+  ⎿ Bash: Read final milestone and evidence results, git status
+  ⎿ Bash: List headings of the plan file
+  ⎿ Bash: Update plan with F results, WCAG table and verification sections
+
+● Heredoc lại lỗi do ký tự trích dẫn. Mình ghi script Python bằng công cụ Write rồi chạy.
+
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Bash: Apply plan updates and verify headings
+  ⎿ Write: C:/Users/PHUHUN~1/AppData/Local/Temp/claude/c--Dev-Project-24520626-QuangPhuHung-MSIS207-Lab02/79aef28c-0292-41eb-b3d7-4d318c3d4a5c/scratchp
+  ⎿ Bash: Generate prompt log, run all tests, review diff
