@@ -1,7 +1,7 @@
 # Homework 3 — Task Decomposition
 
 > Bối cảnh: [Context](../docs/Context.md). Quy tắc: [project-rules](../docs/project-rules.md) và [Agents](../Agents.md). Mẫu WBS: [Homework 2](../Homework2_Lab02/TASK_DECOMPOSITION.md).
-> Trạng thái (2026-10-29): **nhóm A, B, C, D, E đã làm và verify bằng test tự động (112 test của HW3)**. Nhóm F là việc của bạn và **chưa có bằng chứng nào trong repo**: chưa chạy `drift-demo.html`, chưa kiểm tab ẩn, bàn phím, trình đọc màn hình, Lighthouse; `AI_FAILURE_AUDIT.md` chưa có mục HW3; chưa export prompt log. Cột "Trạng thái" ở mục 8 vì vậy vẫn là "chưa kiểm".
+> Trạng thái (2026-10-29): **nhóm A đến E đã làm và verify (114 test của HW3). Nhóm F đã đo bằng Edge headless điều khiển qua CDP và Lighthouse CLI; còn lại là việc cần người thật: nghe bằng NVDA hoặc Narrator (F3), đọc lại và xác nhận `AI_FAILURE_AUDIT.md` (F5, F8)**. Kết quả và bằng chứng ở mục 11; cột "Trạng thái" ở mục 8 đã điền theo đó. Các sửa sau phép đo (focus, favicon) và thư mục `evidence/` chưa commit.
 > Quy ước: tick `[x]` chỉ khi đã chạy lệnh kiểm chứng và thấy output thật. Mỗi lượt làm đúng một task.
 
 ## 1. Thông tin chung
@@ -199,16 +199,18 @@ Bất biến của timer:
 - [x] E3 `src/app/milestones.js` + trợ năng: thông báo mốc còn 60 giây, còn 10 giây, đã hết qua `role="status"` (mốc 10 giây và hết dùng `role="alert"`); nút "Gia hạn"; không đặt `aria-live` trên đồng hồ; `prefers-reduced-motion` ẩn phần mili giây. Test mốc chỉ thông báo một lần. Commit: `feat(a11y): add milestone announcements and hold extension`
 - [x] E4 `src/sim/fake-server.js` + nút "Mô phỏng người mua" chạy D3 trên giao diện, hiện số thành công, xung đột, hết hàng. Commit: `feat(ui): add buyer simulation control`
 
-### Nhóm F — Kiểm chứng và tài liệu (việc của người dùng, trừ khi ghi khác)
+### Nhóm F — Kiểm chứng và tài liệu
 
-- [ ] F1 Chạy `drift-demo.html` 60 giây, chụp bảng kết quả vào `evidence/`; mở Performance panel xác nhận không có task dài do timer
-- [ ] F2 Kiểm tra tab ẩn: bắt đầu giữ hàng, chuyển tab 30 giây, quay lại, giá trị còn lại đúng và khóa hết hạn đúng lúc (kể cả khi tab ẩn lúc hết hạn)
-- [ ] F3 Kiểm tra bàn phím và trình đọc màn hình (NVDA hoặc Narrator): Tab tới mọi nút, thông báo mốc đọc đúng một lần, đồng hồ không bị đọc từng khung
-- [ ] F4 Lighthouse accessibility, lưu `evidence/lighthouse.png`
-- [ ] F5 `AI_FAILURE_AUDIT.md`: người dùng viết ≥ 3 lỗi AI có bằng chứng DevTools và bản sửa; AI chỉ chỉnh câu chữ. Gợi ý nơi AI hay sai ở mục 9
-- [ ] F6 Cập nhật bảng WCAG (mục 8) bằng kết quả thật, ghi rõ đã kiểm cách nào. Commit: `docs(hw3): record drift measurement and wcag status`
-- [ ] F7 Export prompt log vào `docs/prompt_logs/`
-- [ ] F8 `AI_FAILURE_AUDIT.md` hoàn chỉnh. Commit: `docs(hw3): add AI failure audit`
+Phần đo do AI chạy bằng Edge headless qua Chrome DevTools Protocol (script đặt ngoài repo, không cài gì vào repo) và Lighthouse CLI cài trong thư mục tạm. Kết quả chi tiết ở mục 11.
+
+- [x] F1 Đo drift 60 giây bằng `drift-demo.html` trong Edge, kèm ba lần làm bận luồng chính 300 ms: [drift-measurement.json](evidence/drift-measurement.json), [edge-drift-table.png](evidence/edge-drift-table.png). Long task chỉ là ba lần chặn có chủ ý. Chưa mở Performance panel bằng tay.
+- [x] F2 Kiểm tab ẩn trong Edge (tab thật sự `hidden`, `rAF` 0 khung trong 30 giây): giá trị sau khi quay lại đúng, hàng nhả đúng khi hết hạn lúc tab ẩn, thông báo đúng một lần. **Có một chỉ số không đạt ngưỡng đặt trước:** hết hạn khi ẩn trễ 3021 ms so với ngưỡng 2000 ms (mục 11.2). Bằng chứng: [edge-hidden-tab.json](evidence/edge-hidden-tab.json), [edge-hidden-timer-throttle.json](evidence/edge-hidden-timer-throttle.json).
+- [ ] F3 Bàn phím: **đã kiểm** bằng phím Tab, Enter, Space thật qua CDP (41 kiểm tra, [edge-a11y-audit.json](evidence/edge-a11y-audit.json)). Trình đọc màn hình (NVDA hoặc Narrator): **chưa làm, cần bạn nghe và ghi lại**.
+- [x] F4 Lighthouse CLI 13.6.0 trên Edge, trang `index.html` ở trạng thái vừa tải: Performance, Accessibility, Best Practices, SEO đều 100, cả desktop và mobile ([lighthouse-hw3.json](evidence/lighthouse-hw3.json), báo cáo HTML cùng thư mục). Không có ảnh `lighthouse.png` chụp tay trong DevTools; bạn có thể chụp thêm nếu thầy cần ảnh.
+- [x] F5 Mục "Homework 3" trong [AI_FAILURE_AUDIT.md](../docs/AI_FAILURE_AUDIT.md): 3 lỗi chính và 2 lỗi phụ, mỗi lỗi có output thật. **AI viết từ phiên làm, bạn cần đọc lại và xác nhận** (xem ghi chú đầu mục).
+- [x] F6 Cập nhật bảng WCAG (mục 8) bằng kết quả thật. Commit: `docs(hw3): record edge measurements and wcag status`
+- [x] F7 Prompt log: [promt_log_init_hm3.txt](../docs/prompt_logs/promt_log_init_hm3.txt), sinh từ transcript thật của phiên, không phải bản `/export` của giao diện (xem mục 11.6).
+- [x] F8 `AI_FAILURE_AUDIT.md` có mục HW3. Commit: `docs(hw3): add AI failure audit`
 
 ## 5. Ánh xạ commit (≥ 8 theo đề)
 
@@ -254,19 +256,22 @@ Mỗi quyết định nằm ở một chỗ để sửa nhanh. Các đột biế
 
 ## 8. Ghi chú WCAG 2.2 AA
 
-Cột "Trạng thái" chỉ điền sau khi đã kiểm tra thật (mục F6).
+Cột "Trạng thái" chỉ ghi điều đã kiểm thật. "Một phần" nghĩa là còn việc chưa làm, nêu rõ ở cột đó. Không có mục nào được khẳng định "đạt WCAG".
 
 | Tiêu chí | Cách đáp ứng | Cách kiểm | Trạng thái |
 |---|---|---|---|
-| 2.2.1 Timing Adjustable | Cảnh báo trước khi hết hạn, nút "Gia hạn" (tối đa `MAX_EXTENSIONS`) | thủ công + test milestones | chưa kiểm |
-| 2.2.2 Pause, Stop, Hide | Đồng hồ đếm ngược là thông tin thời gian thực cần thiết; phần mili giây ẩn khi `prefers-reduced-motion`. **Cần xác nhận cách hiểu** | thủ công | chưa kiểm |
-| 4.1.3 Status Messages | Mốc quan trọng qua `role="status"`/`role="alert"`, không `aria-live` trên đồng hồ | Narrator hoặc NVDA | chưa kiểm |
-| 1.4.1 Use of Color | Trạng thái hàng bằng chữ ("Còn hàng", "Đang giữ", "Đã hết") | xem thủ công | chưa kiểm |
-| 1.4.3 Contrast | Chữ thường tương phản ≥ 4.5:1 | Lighthouse + công cụ đo | chưa kiểm |
-| 2.1.1 / 2.4.7 Keyboard, Focus Visible | Mọi điều khiển là `<button>`, focus rõ | thủ công bằng Tab | chưa kiểm |
-| 2.5.8 Target Size | Vùng bấm ≥ 24×24 CSS px | thủ công + CSS | chưa kiểm |
-| 3.3.7 Redundant Entry | Không bắt nhập lại thông tin giữa giữ hàng và thanh toán | thủ công | chưa kiểm |
-| 2.3.1 Three Flashes | Không nhấp nháy | xem thủ công | chưa kiểm |
+| 2.2.1 Timing Adjustable | Cảnh báo ở còn 1 phút (`role="status"`) và 10 giây (`role="alert"`), nút "Gia hạn thêm 1 phút" | Edge 130 giây: mốc đúng một lần, cách mốc hết giờ 59997 và 9997 ms; Space trên "Gia hạn" hoạt động | Một phần: `MAX_EXTENSIONS = 2`, trong khi 2.2.1 (tùy chọn Extend) nói gia hạn được ít nhất 10 lần. Khóa giữ hàng có thể coi là giới hạn thiết yếu, nhưng đây là cách hiểu của mình, **chưa được thầy xác nhận**. Nút Gia hạn chỉ có ở bước giữ hàng, không có ở bước thanh toán |
+| 2.2.2 Pause, Stop, Hide | Đồng hồ đếm ngược là thông tin thời gian thực; phần mili giây ẩn khi `prefers-reduced-motion: reduce` | Edge: giả lập reduced-motion thì `.ms` có `display: none`, bỏ giả lập thì hiện lại | Một phần: không có nút tạm dừng riêng; dựa vào cách hiểu "thông tin thiết yếu" (mục 10.2) |
+| 2.3.1 Three Flashes | Không có hiệu ứng nhấp nháy; chỉ đổi văn bản | Đọc mã CSS, không có animation hay transition | Đã kiểm bằng đọc mã |
+| 2.4.3 Focus Order | Sau thao tác làm nút bị ẩn hoặc vô hiệu, focus chuyển về tiêu đề panel (`keepFocus`) | Edge, phím thật: trước khi sửa focus rơi về body (lỗi H3-2), sau khi sửa là `h2#hold-title` sau Giữ hàng, Tiến hành thanh toán, Xác nhận thanh toán | Đã kiểm trong Edge, 3 thao tác |
+| 4.1.3 Status Messages | `#status role="status"` và `#alert role="alert"` rỗng lúc tải; mỗi thông báo thay bằng một `<p>` mới; không `aria-live` trên `<time>` | Edge: cây accessibility có vùng status; mốc thông báo đúng một lần (đo bằng MutationObserver) | Một phần: **chưa nghe bằng NVDA hoặc Narrator** nên chưa biết trình đọc màn hình có đọc đúng |
+| 1.4.1 Use of Color | Trạng thái bằng chữ ("Đang mở bán", "Đang giữ hàng", "Đã mua", "Hết hạn giữ hàng") | Đọc DOM và ảnh chụp trong Edge | Đã kiểm |
+| 1.4.3 Contrast | Chữ tối trên nền trắng, nút xanh `#0b57d0` chữ trắng | Edge, tính tỉ lệ từ `getComputedStyle`: 13 đoạn chữ ở trạng thái vừa tải (thấp nhất 6,39:1) và 23 đoạn khi đang giữ hàng (thấp nhất 6,39:1); loại chữ của nút bị vô hiệu hóa (được miễn). Lighthouse Accessibility 100 | Một phần: chưa đo trạng thái hover |
+| 1.4.10 Reflow | Bố cục một cột, nút full-width dưới 30rem | Edge ở 320 px: `scrollWidth` bằng `clientWidth` (không cuộn ngang) | Một phần: chưa thử zoom 400% bằng tay |
+| 2.1.1 Keyboard | Mọi điều khiển là `<button>`; skip link | Edge, phím thật: Tab theo thứ tự skip link, Giữ hàng, Tiến hành thanh toán, Gia hạn; Enter và Space kích hoạt; luồng giữ hàng, gia hạn, thanh toán, mô phỏng hoàn tất bằng bàn phím | Đã kiểm bằng phím gửi qua CDP; chưa thử bàn phím vật lý hay trình duyệt khác |
+| 2.4.7 Focus Visible | Viền 3 px khi `:focus-visible` | Edge: mọi phần tử nhận focus có `outline-style: solid` và độ rộng 3 px | Đã kiểm |
+| 2.5.8 Target Size | Nút cao tối thiểu 44 px, rộng tối thiểu 24 px | Edge ở 1280 px và 320 px: mọi nút và skip link ≥ 24×24 | Đã kiểm |
+| 3.3.7 Redundant Entry | Trang không có ô nhập liệu | Đọc `index.html` | Không áp dụng |
 
 ## 9. Nơi AI hay sai ở bài này (để chú ý khi review, không phải kết quả)
 
@@ -286,3 +291,79 @@ Cột "Trạng thái" chỉ điền sau khi đã kiểm tra thật (mục F6).
 2. 2.2.2 (Pause, Stop, Hide) có chấp nhận lý do "đồng hồ là thông tin thời gian thực cần thiết" không, hay cần nút tắt hiển thị mili giây? Tạm thời: ẩn mili giây khi `prefers-reduced-motion`.
 3. Hằng số `HOLD_MS` 120 giây, `CHECKOUT_MS` 60 giây, `MAX_EXTENSIONS` 2 là giá trị mình chọn để demo, đề không nêu. Đổi được ở một chỗ.
 4. Khi `PAY_FAIL` mình chọn `CANCELLED` (trả hàng) thay vì quay về `RESERVED` như bảng phác thảo của đề; lý do: tránh giữ hàng vô hạn sau nhiều lần thất bại. Cần bạn xác nhận.
+
+## 11. Kết quả kiểm chứng (đo ngày 2026-10-29)
+
+Môi trường: Edge 156.0.4314.50 chạy headless, viewport 1280×900 (320×640 cho reflow), điều khiển bằng Chrome DevTools Protocol. Script đo nằm ngoài repo; kết quả thô nằm trong [evidence/](evidence/). Trang được phục vụ bằng static server cục bộ. Giờ máy chủ là giả lập (mục 1).
+
+### 11.1 Drift (F1)
+
+Ba lần bấm "Làm bận luồng chính 300 ms" ở khoảng giây 10, 25, 40. Hai lần chạy 60 giây cho cùng xu hướng; bảng dưới là lần chạy cuối ([drift-measurement.json](evidence/drift-measurement.json)).
+
+| Đã trôi (s) | Sai lệch `setInterval` cộng dồn (ms) | Sai lệch deadline (ms) |
+|---|---|---|
+| 5 | 3,8 | 0,8 |
+| 10 | 312,1 | 0,1 |
+| 25 | 519,4 | 0,4 |
+| 40 | 623,5 | 0,5 |
+| 60 | 703,6 | 3,6 |
+
+- Bộ cộng dồn lệch tới khoảng 0,7 giây sau 60 giây và không tự hồi phục; bộ deadline dưới 1 ms ở mọi hàng, trừ hàng cuối (3,6 ms) vì đo đúng lúc khung hình cuối và giá trị bị chặn ở 0.
+- Lần chạy đầu cho 100,2 ms ở giây 5 dù chưa có lần chặn nào: đó là sai số lượng tử hóa của `setInterval` 100 ms (đọc ngay trước một nhịp), không phải drift. Vì vậy các hàng đầu khác nhau giữa hai lần chạy.
+- `PerformanceObserver` ghi đúng 3 long task (301, 300, 300 ms), trùng thời điểm các lần bấm chặn; không có long task nào khác do timer.
+
+### 11.2 Tab ẩn (F2)
+
+Tab A bị ẩn bằng cách đưa tab B lên trước (`visibilityState` là `hidden`, đã kiểm).
+
+| Phép đo | Kết quả | Đạt |
+|---|---|---|
+| Số khung `rAF` trong 30 giây ẩn | 0 | có (xác nhận `rAF` dừng) |
+| Giá trị còn lại ngay sau khi quay lại | hiển thị 83890 ms, dự kiến 84015 ms, lệch −125 ms (gồm độ trễ giữ hàng giả lập) | có (ngưỡng ±400 ms) |
+| Hết hạn khi tab đang ẩn: hàng đã nhả, trạng thái "Hết hạn giữ hàng", tồn kho 10/10 | có, không cần quay lại tab | có |
+| Thông báo hết hạn qua `role="alert"` | đúng 1 lần, kể cả sau khi quay lại | có |
+| Độ trễ cập nhật giao diện so với mốc hết hạn khi ẩn | **3021 ms** | **không** (ngưỡng đặt trước 2000 ms) |
+
+Giải thích độ trễ 3021 ms: khi tab ẩn, Edge giãn `setTimeout` thành khoảng 1 giây ([edge-hidden-timer-throttle.json](evidence/edge-hidden-timer-throttle.json): ba `setTimeout(40 ms)` nối tiếp mất 1751, 249 và 991 ms ở trạng thái `hidden`, so với 42, 46, 41 ms khi hiện). Luồng hết hạn gồm ba bước dùng độ trễ mạng giả lập bằng `setTimeout` (đọc, commit, đọc lại), nên cộng lại cỡ 3 giây. Đây là **suy luận khớp với số đo, chưa thử bằng cách bỏ độ trễ giả lập**. Đây chỉ là độ trễ hiển thị: tính đúng đắn do `transition` quyết định theo `now >= expiresAt` ở mỗi lần commit, nên người khác vẫn mua được hàng đúng mốc hết hạn và thanh toán quá hạn vẫn bị từ chối (có test).
+
+### 11.3 Mốc thông báo và độ chính xác đồng hồ (F2, F3)
+
+Giữ hàng rồi chờ hết 120 giây trong Edge, ghi MutationObserver trên `#status` và `#alert` ([edge-milestones.json](evidence/edge-milestones.json), 9 kiểm tra pass):
+
+- Mốc 1 phút: đúng 1 lần, vùng `role="status"`, cách mốc hết giờ 59997 ms.
+- Mốc 10 giây: đúng 1 lần, vùng `role="alert"`, cách mốc hết giờ 9997 ms.
+- Hết giờ: đúng 1 lần, vùng `role="alert"`; hàng trả về kho (còn 10 / 10).
+- 11 mẫu giá trị đồng hồ hiển thị so với mốc hết hạn trong 110 giây: sai lệch từ −6 đến +1 ms, không có xu hướng tăng.
+
+Hạn chế: các chỉ số "cách mốc" so với mốc hết giờ do chính giao diện ghi nhận (cùng một đồng hồ), nên chúng chứng minh các mốc đúng khoảng cách và không trôi, không chứng minh so với đồng hồ ngoài.
+
+### 11.4 Bàn phím, trợ năng, reflow (F3)
+
+41 kiểm tra pass, 0 fail, chạy riêng lẻ 3 lần liên tiếp đều như vậy ([edge-a11y-audit.json](evidence/edge-a11y-audit.json); ảnh `edge-01` đến `edge-05` cùng thư mục). Nội dung: heading phân cấp, mọi button có tên truy cập trong cây accessibility, `<time>` không nằm trong vùng live, Tab đúng thứ tự, Enter và Space, focus không rơi về body, viền focus 3 px, tương phản, vùng bấm, reduced-motion, reflow 320 px, `?skew=5000` hiển thị chênh lệch +5004 ms và đồng hồ mở bán vẫn đúng giờ máy chủ, mô phỏng 200 người mua trong Edge (10 thành công, 190 báo hết hàng, 508 lần CONFLICT, không bán quá, bất biến đạt; bản ngây thơ báo thành công cho 200 người).
+
+Các lần chạy trước của script này có kiểm tra fail: một lỗi thật của trang (focus rơi về body, đã sửa, xem lỗi H3-2) và vài lỗi của script đo (vùng status rỗng không vào cây accessibility, ghi nhận cả mục `BODY` khi Tab ra khỏi tài liệu, đếm cả mẫu lấy sau khi hết hạn). Một lần chạy lúc đang có hai Edge khác chạy song song còn chập chờn ở bước "Tiến hành thanh toán" (hết giờ chờ 5 giây); chưa xác định nguyên nhân chắc chắn, giả thuyết là phím Enter bị cờ `busy` chặn khi thao tác trước chưa xong. Chạy riêng lẻ thì không tái hiện.
+
+### 11.5 Lighthouse (F4)
+
+Lighthouse 13.6.0 trên Edge headless, `index.html` ở trạng thái vừa tải, cấu hình mặc định của Lighthouse.
+
+| Cấu hình | Performance | Accessibility | Best Practices | SEO |
+|---|---|---|---|---|
+| Desktop | 100 | 100 | 100 | 100 |
+| Mobile | 100 | 100 | 100 | 100 |
+
+Điểm chưa tối đa ở mức audit (không làm giảm điểm tổng): CLS 0,06 trên mobile; gợi ý minify JavaScript, cache lifetimes, render-blocking (do static server cục bộ không nén và không đặt cache). Lighthouse chỉ kiểm DOM ở trạng thái vừa tải, không kiểm trạng thái đang giữ hàng hay kết quả mô phỏng.
+
+### 11.6 Prompt log (F7)
+
+[promt_log_init_hm3.txt](../docs/prompt_logs/promt_log_init_hm3.txt) được sinh bằng script từ file transcript của phiên (lời nhắn của bạn, câu trả lời của AI, tên và mô tả lệnh đã gọi; bỏ output dài của công cụ và khối suy nghĩ). Định dạng khác bản `/export` của giao diện dùng cho các bài trước; nếu thầy yêu cầu đúng định dạng đó, hãy chạy `/export` rồi thay file.
+
+## 12. Checklist nghiệm thu
+
+- [x] Đồng hồ đếm ngược đến mili giây, không trôi khi đo dài (11.1, 11.3) và khi tab bị ẩn (11.2, giá trị đúng sau khi quay lại)
+- [x] Máy trạng thái tồn kho có giữ hàng, hết hạn khóa, thanh toán; chuyển trạng thái hợp lệ (C3, 114 test)
+- [x] Không bán quá khi nhiều yêu cầu đồng thời (D3 và 11.4); có test tái hiện race bằng bản ngây thơ
+- [x] `AI_FAILURE_AUDIT.md` có mục HW3, 3 lỗi chính có bằng chứng và bản sửa (chờ bạn xác nhận; bằng chứng từ CDP, không phải ảnh chụp DevTools bằng tay)
+- [ ] Tối thiểu 8 commit riêng biệt đúng Conventional Commits: các commit A đến E đã có; còn các commit cho nhóm F và các sửa sau phép đo
+- [ ] Kiểm tra WCAG 2.2 AA (mục 8): nhiều tiêu chí "Đã kiểm", nhưng 2.2.1, 2.2.2, 4.1.3, 1.4.3, 1.4.10 còn "Một phần"; chưa nghe bằng trình đọc màn hình
+- [x] Prompt log đã có trong `docs/prompt_logs/` (sinh từ transcript, xem 11.6)
